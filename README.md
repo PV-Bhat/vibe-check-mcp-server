@@ -62,6 +62,16 @@ vibe_learn({
 
 ## Installation
 
+### Installing via Smithery
+
+To install vibe-check-mcp-server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server):
+
+```bash
+npx -y @smithery/cli install @PV-Bhat/vibe-check-mcp-server --client claude
+```
+
+### Manual Installation
+
 ```bash
 # Install dependencies
 npm install
