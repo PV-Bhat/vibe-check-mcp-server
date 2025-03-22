@@ -2,7 +2,7 @@
   "vibe-check": {
     "command": "node",
     "args": [
-      "C:\\Users\\MAMATHA\\Desktop\\vibe-check-mcp\\build\\index.js"
+      "/path/to/vibe-check-mcp/build/index.js"
     ],
     "env": {
       "GEMINI_API_KEY": "YOUR_GEMINI_API_KEY"

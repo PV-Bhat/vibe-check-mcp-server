@@ -40,6 +40,14 @@
     "ai",
     "learnlm"
   ],
-  "author": "",
+  "author": "PV Bhat",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PV-Bhat/vibe-check-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PV-Bhat/vibe-check-mcp-server/issues"
+  },
+  "homepage": "https://github.com/PV-Bhat/vibe-check-mcp-server#readme",
   "license": "MIT"
 }
