@@ -1,6 +1,9 @@
 # 🧠 Vibe Check MCP
 
 [![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Generated-Image-March-22-2025-3-18-PM-png.jpg](https://i.postimg.cc/76MPvY3q/Generated-Image-March-22-2025-3-18-PM-png.jpg)](https://postimg.cc/CB5pk0r2)
+
+[![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/yourusername/vibe-check-mcp)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Pattern Status](https://img.shields.io/badge/pattern-interrupted-red)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 
