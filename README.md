@@ -76,11 +76,11 @@ vibe_learn({
 
 ### Vibe Check in Action
 
-![Vibe Check identifies ambiguity](https://raw.githubusercontent.com/PV-Bhat/vibe-check-mcp-server/main/docs/images/vibe-check-example1.png)
+![Vibe Check identifies ambiguity](https://i.postimg.cc/zDb0JXGb/vibe-check-example1.png)
 
 *Figure 1: Vibe Check identifies ambiguity in terminology (MCP) and prompts for clarification*
 
-![Gemini search for MCPs](https://raw.githubusercontent.com/PV-Bhat/vibe-check-mcp-server/main/docs/images/vibe-check-example2.png)
+![Gemini search for MCPs](https://i.postimg.cc/90yT3Hv4/vibe-check-example2.png)
 
 *Figure 2: After Vibe Check feedback, proper search techniques are used to clarify ambiguous terms*
 
