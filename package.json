@@ -1,0 +1,45 @@
+{
+  "name": "vibe-check-mcp",
+  "version": "0.2.0",
+  "description": "Vibe Check MCP for preventing cascading errors in AI-assisted coding through metacognitive pattern interrupts",
+  "main": "build/index.js",
+  "type": "module",
+  "bin": {
+    "vibe-check-mcp": "./build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "prepare": "npm run build",
+    "start": "node build/index.js",
+    "dev": "tsc-watch --onSuccess \"node build/index.js\""
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.2.1",
+    "@modelcontextprotocol/sdk": "0.6.0",
+    "axios": "^1.8.4",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.25",
+    "tsc-watch": "^6.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "claude",
+    "vibe-check",
+    "vibe-coding",
+    "metacognition",
+    "pattern-interrupt",
+    "ai",
+    "learnlm"
+  ],
+  "author": "",
+  "license": "MIT"
+}
