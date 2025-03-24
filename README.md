@@ -6,9 +6,8 @@
 [![Pattern Status](https://img.shields.io/badge/pattern-interrupted-red)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
 [![Vibe Check MCP Server](https://img.shields.io/badge/vibecheck%20-mcp.so-blue)](https://mcp.so/server/vibe-check-mcp-server/PV-Bhat)
-[![mcp.so badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
 
-Also find Vibecheck on: [mcpservers.org](https://github.com/wong2/awesome-mcp-servers?tab=readme-ov-file#community-servers), [Glama.ai](https://glama.ai/mcp/servers/@PV-Bhat/vibe-check-mcp-server/)
+Also find Vibecheck on: [mcpservers.org](https://github.com/wong2/awesome-mcp-servers?tab=readme-ov-file#community-servers), [Glama.ai](https://glama.ai/mcp/servers/@PV-Bhat/vibe-check-mcp-server/), [mcp.so](https://mcp.so/server/vibe-check-mcp-server/PV-Bhat)
 
 _Your AI's inner rubber duck when it can't rubber duck itself._
 
