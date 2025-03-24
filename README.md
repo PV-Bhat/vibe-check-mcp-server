@@ -202,6 +202,24 @@ Vibe Check implements a dual-layer metacognitive architecture based on recursive
 For more details on the underlying design principles, see [Philosophy](./docs/philosophy.md).
 </details>
 
+## Vibe Check in Action (Continued)
+
+![VC1](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/VC1.png)
+
+---
+
+![V2](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vc2.png)
+
+---
+
+
+![V3](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vc3.png)
+
+---
+
+
+![V4](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vc4.png)
+
 ## Documentation
 
 | Document | Description |
