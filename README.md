@@ -92,39 +92,19 @@ vibe_learn({
 })
 ```
 
-## Real-World Impact
-
 ### Vibe Check in Action
 
-![Vibe Check identifies ambiguity](https://i.postimg.cc/zDb0JXGb/vibe-check-example1.png)
-
-*Figure 1: Vibe Check identifies ambiguity in terminology (MCP) and prompts for clarification*
-
-![Gemini search for MCPs](https://i.postimg.cc/90yT3Hv4/vibe-check-example2.png)
-
-*Figure 2: After Vibe Check feedback, proper search techniques are used to clarify ambiguous terms*
-
-### Before & After
-
 **Before Vibe Check:**
-```
-User: "Write a function to check if a string is a palindrome"
 
-Agent: *generates 150 lines of code with custom character handling classes, 
-        internationalization support, and a factory pattern*
-```
+![before](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/VCC1.png)
+
+_Claude assumes the meaning of MCP despite ambiguity, leading to all subsequent steps having this wrong assumption_
 
 **After Vibe Check:**
-```
-User: "Write a function to check if a string is a palindrome"
 
-Agent: *starts complex approach*
+![after](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/VCC2.png)
 
-Vibe Check: "Are we sure we need a class-based approach for this simple string operation?"
-
-Agent: *course corrects*
-return s === s.split('').reverse().join('');
-```
+_Vibe Check MCP is called, and points out the ambiguity, which forces Claude to acknowledge this lack of information and proactively address it_
 
 ## Installation & Setup
 
@@ -136,7 +116,7 @@ To install vibe-check-mcp-server for Claude Desktop automatically via [Smithery]
 npx -y @smithery/cli install @PV-Bhat/vibe-check-mcp-server --client claude
 ```
 
-### Manual Installation
+### Manual Installation via npm (Recommended)
 
 ```bash
 # Clone the repo
