@@ -1,16 +1,36 @@
 # 🧠 Vibe Check MCP
+![Logo](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vibe%20(1).jpeg)
 
 [![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Pattern Status](https://img.shields.io/badge/pattern-interrupted-red)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
-> Your AI's inner rubber duck when it can't rubber duck itself.
+[![Vibe Check MCP Server](https://img.shields.io/badge/vibecheck%20-mcp.so-blue)](https://mcp.so/server/vibe-check-mcp-server/PV-Bhat)
+[![mcp.so badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
+
+Also find Vibecheck on: [mcpservers.org](https://github.com/wong2/awesome-mcp-servers?tab=readme-ov-file#community-servers), [Glama.ai](https://glama.ai/mcp/servers/@PV-Bhat/vibe-check-mcp-server/)
+
+_Your AI's inner rubber duck when it can't rubber duck itself._
 
 ## What is Vibe Check?
 
-Vibe Check is a metacognitive pattern interrupt system for the vibe coding era. It provides the essential "Hold on... this ain't it" moment that your AI assistants can't generate for themselves.
+In the **"vibe coding"** era, AI agents now have incredible capabilities, but the question has now moved:
 
-It's not about making your AI smarter—it's about adding the layer of doubt, questioning, and course correction that humans naturally apply to their own thought processes.
+from 
+> "Can my AI agent really do this **complex task**?" 
+
+to
+ 
+> "Can my AI agent understand that I want to write a **simple program**, not an _infracstructure for a multi-billion dollar tech company_?"
+
+It provides the essential "Hold up... this ain't it" moment that AI agents don't currently have: a built in self-correcting oversight layer. It's the definitive Vibe Coder's sanity check MCP server: 
+
+- Prevent cascading errors in AI workflows by implementing strategic pattern interrupts. 
+- Uses tool call "Vibe Check" with LearnLM 1.5 Pro (Gemini API), fine-tuned for pedagogy and metacognition to enhance complex workflow strategy, and prevents tunnel vision errors.
+- Implements "Vibe Distill" to encourage plan simplification, prevent over-engineering solutions, and minimize contextual drift in agents.
+- Self-improving feedback loops: Agents can log mistakes into "Vibe Learn" to improve semantic recall and help the oversight AI target patterns over time.
+
+**TLDR; Implement an agent fine-tuned to stop your agent and make it reconsider before it confidently implements something wrong.**
 
 ## The Problem: Pattern Inertia
 
