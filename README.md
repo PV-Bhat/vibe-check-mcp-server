@@ -21,7 +21,7 @@ from
 
 to
  
-> "Can my AI agent understand that I want to write a **simple program**, not an _infracstructure for a multi-billion dollar tech company_?"
+> "Can my AI agent understand that I want to write a **simple program**, not an _infrastructure for a multi-billion dollar tech company_?"
 
 It provides the essential "Hold up... this ain't it" moment that AI agents don't currently have: a built in self-correcting oversight layer. It's the definitive Vibe Coder's sanity check MCP server: 
 
