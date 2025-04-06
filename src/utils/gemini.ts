@@ -6,7 +6,7 @@ let genAI: GoogleGenerativeAI;
 let apiKey: string;
 
 // Use only one Gemini model for simplicity
-const MODEL_ID = 'gemini-2.0-flash-001';
+const MODEL_ID = 'learnlm-1.5-pro-experimental';
 
 // Initialize the Gemini API client
 export function initializeGemini(key: string): void {
