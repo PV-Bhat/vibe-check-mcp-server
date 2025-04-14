@@ -335,8 +335,9 @@ async function main() {
   };
   
   // Connect to transport
-  const transport = new WebSocketServerTransport();
+  const transport = new WebSocketServerTransport({ port: 3000 });
   await server.connect(transport);
+
   
   console.error('Vibe Check MCP server running');
 }
