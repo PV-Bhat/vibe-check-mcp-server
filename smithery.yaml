@@ -1,7 +1,7 @@
 # Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
 
 startCommand:
-  type: stdio
+  type: ws
   configSchema:
     # JSON Schema defining the configuration options for the MCP.
     type: object
