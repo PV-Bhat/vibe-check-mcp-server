@@ -4,9 +4,6 @@
   "description": "Vibe Check MCP for preventing cascading errors in AI-assisted coding through metacognitive pattern interrupts",
   "main": "build/index.js",
   "type": "module",
-  "bin": {
-    "vibe-check-mcp": "./build/index.js"
-  },
   "files": [
     "build"
   ],
