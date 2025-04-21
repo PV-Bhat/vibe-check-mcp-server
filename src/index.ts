@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import * as dotenv from 'dotenv';
+dotenv.config(); // Load environment variables from .env file
+
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -17,6 +20,22 @@ import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from './tools/vibeLear
 // Import Gemini integration
 import { initializeGemini } from './utils/gemini.js';
 import { STANDARD_CATEGORIES } from './utils/storage.js';
+
+// Validate API key at startup
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+  console.error("ERROR: GEMINI_API_KEY environment variable is missing. Server cannot start without a valid API key.");
+  process.exit(1);
+} else {
+  console.error("GEMINI_API_KEY found. Initializing API...");
+  try {
+    initializeGemini(apiKey);
+    console.error('Gemini API initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize Gemini API:', error);
+    process.exit(1);
+  }
+}
 
 /**
  * Create the MCP server with appropriate capabilities
@@ -37,7 +56,8 @@ const server = new Server(
  * Handler for listing available tools
  */
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
+  console.error("Received tools/list request");
+  const response = {
     tools: [
       {
         name: "vibe_check",
@@ -145,18 +165,23 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       }
     ]
   };
+  console.error(`Responding with ${response.tools.length} tools`);
+  return response;
 });
 
 /**
  * Handler for tool invocation
  */
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  console.error(`Received tools/call request for tool: ${request.params.name}`);
+  
   const { name, arguments: args } = request.params;
   
   switch (name) {
     case "vibe_check": {
       // Validate required userRequest
       if (!args || !args.userRequest || typeof args.userRequest !== 'string' || args.userRequest.trim() === '') {
+        console.error("Invalid vibe_check request: missing userRequest");
         throw new McpError(
           ErrorCode.InvalidParams,
           'FULL user request is required for alignment checking and to prevent bias'
@@ -177,7 +202,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         confidence: typeof args.confidence === 'number' ? args.confidence : undefined
       };
       
+      console.error("Executing vibe_check tool...");
       const result = await vibeCheckTool(input);
+      console.error("vibe_check execution complete");
       
       return {
         content: [
@@ -192,6 +219,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "vibe_distill": {
       // Validate required parameters
       if (!args || typeof args.plan !== 'string') {
+        console.error("Invalid vibe_distill request: missing plan");
         throw new McpError(
           ErrorCode.InvalidParams,
           'Invalid input: plan is required and must be a string'
@@ -200,6 +228,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       
       // Validate required userRequest
       if (!args.userRequest || typeof args.userRequest !== 'string' || args.userRequest.trim() === '') {
+        console.error("Invalid vibe_distill request: missing userRequest");
         throw new McpError(
           ErrorCode.InvalidParams,
           'FULL user request is required for proper distillation and alignment'
@@ -213,7 +242,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         sessionId: typeof args.sessionId === 'string' ? args.sessionId : undefined
       };
       
+      console.error("Executing vibe_distill tool...");
       const result = await vibeDistillTool(input);
+      console.error("vibe_distill execution complete");
       
       return {
         content: [
@@ -230,6 +261,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           typeof args.mistake !== 'string' || 
           typeof args.category !== 'string' || 
           typeof args.solution !== 'string') {
+        console.error("Invalid vibe_learn request: missing required parameters");
         throw new McpError(
           ErrorCode.InvalidParams,
           'Invalid input: mistake, category, and solution are required and must be strings'
@@ -244,7 +276,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         sessionId: typeof args.sessionId === 'string' ? args.sessionId : undefined
       };
       
+      console.error("Executing vibe_learn tool...");
       const result = await vibeLearnTool(input);
+      console.error("vibe_learn execution complete");
       
       return {
         content: [
@@ -257,6 +291,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
     
     default:
+      console.error(`Unknown tool requested: ${name}`);
       throw new McpError(
         ErrorCode.MethodNotFound,
         `Unknown tool: ${name}`
@@ -316,29 +351,22 @@ function formatVibeLearnOutput(result: VibeLearnOutput): string {
 async function main() {
   console.error('Starting Vibe Check MCP server...');
   
-  // Initialize Gemini API with environment variable
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (apiKey) {
-    try {
-      initializeGemini(apiKey);
-      console.error('Gemini API initialized successfully');
-    } catch (error) {
-      console.error('Failed to initialize Gemini API:', error);
-    }
-  } else {
-    console.error('Warning: GEMINI_API_KEY environment variable not set. Metacognitive questioning functionality will be limited.');
-  }
-  
   // Set up error handler
   server.onerror = (error) => {
     console.error("[Vibe Check Error]", error);
   };
   
-  // Connect to transport
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  
-  console.error('Vibe Check MCP server running');
+  try {
+    // Connect to transport
+    console.error('Connecting to transport...');
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    
+    console.error('Vibe Check MCP server running');
+  } catch (error) {
+    console.error("Error connecting to transport:", error);
+    process.exit(1);
+  }
 }
 
 // Start the server
