@@ -1,12 +1,11 @@
-// src/index.ts
+// src/index.ts --------------------------------------------------------------
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
-  CallToolRequest,
-  ToolDescription
+  CallToolRequest
 } from "@modelcontextprotocol/sdk/types.js";
 
 import { z } from "zod";
@@ -29,12 +28,23 @@ import {
   VibeLearnOutput
 } from "./tools/vibeLearn.js";
 
-// ──────────────── 1.  Zod schemas (single source of truth) ────────────────
+// ────────────────────────────────
+// 0.  Local helper type
+// ────────────────────────────────
+interface ToolDescription {
+  name: string;
+  description: string;
+  inputSchema: z.ZodTypeAny;
+}
+
+// ────────────────────────────────
+// 1.  Zod schemas (one source of truth)
+// ────────────────────────────────
 const vibeCheckSchema = z.object({
   plan:        z.string(),
   userRequest: z.string(),
   thinkingLog: z.string().optional(),
-  phase:       z.enum(["planning", "implementation", "review"]).optional()
+  phase:       z.enum(["planning","implementation","review"]).optional()
 });
 
 const vibeDistillSchema = z.object({
@@ -48,26 +58,32 @@ const vibeLearnSchema  = z.object({
   solution: z.string()
 });
 
-// ──────────────── 2.  Gemini (optional) ────────────────
+// ────────────────────────────────
+// 2.  Gemini (optional)
+// ────────────────────────────────
 if (process.env.GEMINI_API_KEY) {
   try {
-    // initializeGemini(process.env.GEMINI_API_KEY);          // <- your helper
+    // initializeGemini(process.env.GEMINI_API_KEY);
     console.error("[LOG] Gemini initialised");
   } catch (e) {
     console.error("[ERR] Gemini init failed:", e);
   }
 } else {
-  console.error("[WARN] GEMINI_API_KEY not set – Gemini tools will fail");
+  console.error("[WARN] GEMINI_API_KEY not set – Gemini‑based tools will fail");
 }
 
-// ──────────────── 3.  Server with tools capability ────────────────
+// ────────────────────────────────
+// 3.  Server with “tools” capability
+// ────────────────────────────────
 const server = new Server({
   name:         "vibe-check-mcp",
   version:      "0.2.0",
-  capabilities: { tools: {} }          // <- informs SDK we handle tools/*
+  capabilities: { tools: {} }
 });
 
-// ──────────────── 4.  tools/list handler ────────────────
+// ────────────────────────────────
+// 4.  tools/list  → static descriptors
+// ────────────────────────────────
 const toolList: ToolDescription[] = [
   {
     name: "vibe_check",
@@ -88,7 +104,9 @@ const toolList: ToolDescription[] = [
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: toolList }));
 
-// ──────────────── 5.  tools/call dispatcher ────────────────
+// ────────────────────────────────
+// 5.  tools/call  → dispatcher
+// ────────────────────────────────
 server.setRequestHandler(
   CallToolRequestSchema,
   async (req: CallToolRequest) => {
@@ -138,7 +156,9 @@ server.setRequestHandler(
   }
 );
 
-// ──────────────── 6.  STDIO transport ────────────────
+// ────────────────────────────────
+// 6.  STDIO transport hookup
+// ────────────────────────────────
 const transport = new StdioServerTransport();
 await server.connect(transport);
 console.error("[OK] vibe‑check‑mcp ready (stdio)");
