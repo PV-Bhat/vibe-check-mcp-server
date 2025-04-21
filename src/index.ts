@@ -1,90 +1,45 @@
 // src/index.ts
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { Server }            from "@modelcontextprotocol/sdk/server/index.js";
+import { tools }             from "@modelcontextprotocol/sdk/server/tools.js";   // ← wrap helper
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
+import { z }                 from "zod";
 
-import { vibeCheckTool  } from "./tools/vibeCheck.js";
-import { vibeDistillTool } from "./tools/vibeDistill.js";
-import { vibeLearnTool   } from "./tools/vibeLearn.js";
+// 1.  create the lean base Server
+const base = new Server({ name: "vibe-check-mcp", version: "0.2.0" });
 
-// ────────────────────────────────────────────────────────────
-// 1. start Gemini (if you need it)
-// ────────────────────────────────────────────────────────────
-const key = process.env.GEMINI_API_KEY;
-if (!key) console.error("[WARN] GEMINI_API_KEY not set – tools that call Gemini will fail");
+// 2.  wrap it – “upgrade” to a Tools‑aware server
+const server = tools(base);                // ‹– now `.tool()` exists and is correctly typed
 
-// ────────────────────────────────────────────────────────────
-// 2. create server + transport
-// ────────────────────────────────────────────────────────────
-const server    = new Server({ name: "vibe-check-mcp", version: "0.2.0" });
-const transport = new StdioServerTransport();
-
-// ────────────────────────────────────────────────────────────
-// 3. register tools – each call automatically wires‑up
-//    tools/list  +  tools/call
-// ────────────────────────────────────────────────────────────
+// 3.  define each tool
 server.tool(
   "vibe_check",
   z.object({
     plan:        z.string(),
-    userRequest: z.string(),
-    thinkingLog: z.string().optional(),
-    phase:       z.enum(["planning","implementation","review"]).optional(),
+    userRequest: z.string()
   }),
   async args => {
-    /* TODO – your existing vibeCheckTool wrapper */
-    const out = await vibeCheckTool(args);
-    return {
-      content: [{
-        type : "text",
-        text : out.questions +
-              (out.patternAlert ? `\n\n**Pattern Alert:** ${out.patternAlert}` : "")
-      }]
-    };
+    /* your implementation */
+    return { content: [{ type: "text", text: "✅ check OK" }] };
   }
 );
 
 server.tool(
   "vibe_distill",
-  z.object({
-    plan:        z.string(),
-    userRequest: z.string(),
-  }),
+  z.object({ plan: z.string(), userRequest: z.string() }),
   async args => {
-    /* TODO – your existing vibeDistillTool wrapper */
-    const out = await vibeDistillTool(args);
-    return {
-      content: [{
-        type    : "markdown",
-        markdown: `${out.distilledPlan}\n\n**Why:** ${out.rationale}`
-      }]
-    };
+    /* … */
   }
 );
 
 server.tool(
   "vibe_learn",
-  z.object({
-    mistake : z.string(),
-    category: z.string(),
-    solution: z.string(),
-  }),
+  z.object({ mistake: z.string(), category: z.string(), solution: z.string() }),
   async args => {
-    /* TODO – your existing vibeLearnTool wrapper */
-    const out = await vibeLearnTool(args);
-    const list = out.topCategories
-                    .map(c => `- ${c.category} (${c.count})`).join("\n");
-    return {
-      content: [{
-        type : "text",
-        text : `✅ Logged.  Current tally: ${out.currentTally}\n${list}`
-      }]
-    };
+    /* … */
   }
 );
 
-// ────────────────────────────────────────────────────────────
-// 4. go live
-// ────────────────────────────────────────────────────────────
+// 4.  stdio transport
+const transport = new StdioServerTransport();
 await server.connect(transport);
-console.error("[OK] vibe‑check‑mcp is ready (stdio)");
+console.error("[OK] vibe‑check‑mcp ready (stdio)");
