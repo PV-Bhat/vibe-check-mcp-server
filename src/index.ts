@@ -1,37 +1,34 @@
-// ────────────────────────────────────────────────────────────
-//  src/index.ts   (TypeScript >= 5.3, Node ≥ 18, ESM 'type':module)
-// ────────────────────────────────────────────────────────────
+// src/index.ts --------------------------------------------------------------
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { tool } from "@modelcontextprotocol/sdk/server/tools.js";   // <- NEW
 import { z } from "zod";
 
-// Your domain logic (already written)
+// your existing helpers
 import { vibeCheckTool,  VibeCheckInput  } from "./tools/vibeCheck.js";
 import { vibeDistillTool, VibeDistillInput } from "./tools/vibeDistill.js";
 import { vibeLearnTool,  VibeLearnInput  } from "./tools/vibeLearn.js";
 
-// ───────── 1. create the MCP server ─────────
+// ──────────────────────────────────────────────────────────────
+// 1. create server (advertise tools capability so init succeeds)
 const server = new Server({
   name:         "vibe-check-mcp",
   version:      "0.2.0",
-  capabilities: { tools: {} }          // ← advertises that we support tools
+  capabilities: { tools: {} }
 });
 
-// Helper to wrap plain‑text results
-const text  = (txt: string) => ({ type: "text", text: txt });
-const md    = (md : string) => ({ type: "markdown", markdown: md });
+// convenience helpers
+const text = (t: string) => ({ type: "text", text: t });
+const md   = (m: string) => ({ type: "markdown", markdown: m });
 
-// ───────── 2. vibe_check ─────────
-server.tool(
-  "vibe_check",
-
-  // NOTE: pass **shape**, not z.object()
+// ──────────────────────────────────────────────────────────────
+// 2. register tools ‑‑ use *function* tool(server,...)
+tool(server, "vibe_check",
   {
-    plan:           z.string(),
-    userRequest:    z.string(),
-
-    thinkingLog:    z.string().optional(),
+    plan:        z.string(),
+    userRequest: z.string(),
+    thinkingLog: z.string().optional(),
     availableTools: z.array(z.string()).optional(),
     focusAreas:     z.array(z.string()).optional(),
     sessionId:      z.string().optional(),
@@ -39,19 +36,13 @@ server.tool(
     phase:          z.enum(["planning","implementation","review"]).optional(),
     confidence:     z.number().optional()
   },
-
-  // handler
   async (args: VibeCheckInput) => {
     const r = await vibeCheckTool(args);
-    return {
-      content: [ text(r.questions + (r.patternAlert ? `\n\n**Pattern Alert:** ${r.patternAlert}` : "")) ]
-    };
+    return { content: [text(r.questions + (r.patternAlert ? `\n\n**Pattern Alert:** ${r.patternAlert}` : ""))] };
   }
 );
 
-// ───────── 3. vibe_distill ─────────
-server.tool(
-  "vibe_distill",
+tool(server, "vibe_distill",
   {
     plan:        z.string(),
     userRequest: z.string(),
@@ -59,13 +50,11 @@ server.tool(
   },
   async (args: VibeDistillInput) => {
     const r = await vibeDistillTool(args);
-    return { content: [ md(`${r.distilledPlan}\n\n**Rationale:** ${r.rationale}`) ] };
+    return { content: [md(`${r.distilledPlan}\n\n**Rationale:** ${r.rationale}`)] };
   }
 );
 
-// ───────── 4. vibe_learn ─────────
-server.tool(
-  "vibe_learn",
+tool(server, "vibe_learn",
   {
     mistake:  z.string(),
     category: z.string(),
@@ -75,13 +64,12 @@ server.tool(
   async (args: VibeLearnInput) => {
     const r = await vibeLearnTool(args);
     const summary = r.topCategories.map(c => `- ${c.category} (${c.count})`).join("\n");
-    return {
-      content: [ text(`✅ Pattern logged (tally ${r.currentTally}).\nTop Categories:\n${summary}`) ]
-    };
+    return { content: [text(`✅ Pattern logged (tally ${r.currentTally}).\nTop Categories:\n${summary}`)] };
   }
 );
 
-// ───────── 5. connect transport ─────────
+// ──────────────────────────────────────────────────────────────
+// 3. connect STDIO transport
 server.connect(new StdioServerTransport());
 
-console.log("✅ Vibe‑Check MCP server ready (STDIO).");
+console.log("✅ Vibe‑Check MCP server ready.");
