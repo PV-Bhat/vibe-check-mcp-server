@@ -1,104 +1,90 @@
 #!/usr/bin/env node
 
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/transports/stdio";
+import { Server } from "@modelcontextprotocol/sdk/server";
 import {
+  InitializeRequestSchema,
   ListToolsRequestSchema,
-  CallToolRequestSchema,
-  ErrorCode,
   McpError,
-} from "@modelcontextprotocol/sdk/types.js";
+  ErrorCode,
+  isToolRun,
+} from "@modelcontextprotocol/sdk";
+import { vibeCheckTool, VibeCheckInput } from "./tools/vibeCheck.js";
+import { vibeDistillTool, VibeDistillInput } from "./tools/vibeDistill.js";
+import { vibeLearnTool, VibeLearnInput } from "./tools/vibeLearn.js";
 
-import {
-  vibeCheckTool,
-  VibeCheckInput,
-  VibeCheckOutput,
-} from "./tools/vibeCheck.js";
-import {
-  vibeDistillTool,
-  VibeDistillInput,
-  VibeDistillOutput,
-} from "./tools/vibeDistill.js";
-import {
-  vibeLearnTool,
-  VibeLearnInput,
-  VibeLearnOutput,
-} from "./tools/vibeLearn.js";
+async function main() {
+  // 1) Wire up stdio transport and server
+  const transport = new StdioServerTransport();
+  const server = new Server({ transport });
 
-// 1) Create the server with its name/version and declare it supports "tools"
-const server = new Server(
-  { name: "vibe-check-mcp", version: "0.2.0" },
-  { capabilities: { tools: {} } }
-);
+  console.error("vibe‑check MCP server starting…");
 
-// 2) Handler for listing available tools
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [
-    {
-      name: "vibe_check",
-      description: "Metacognitive questioning to identify assumptions and break tunnel vision.",
-      // omit parameters or set to null to let clients infer
-      parameters: null,
-    },
-    {
-      name: "vibe_distill",
-      description: "Distill core mistakes and solutions for review and learning.",
-      parameters: null,
-    },
-    {
-      name: "vibe_learn",
-      description: "Store and categorize mistakes for future reference.",
-      parameters: null,
-    },
-  ],
-}));
+  // 2) Handle initialize
+  server.setRequestHandler(InitializeRequestSchema, async req => ({
+    protocolVersion: req.params.protocolVersion,
+    serverInfo: { name: "vibe‑check‑mcp", version: "0.2.0" },
+    // tell the client we support tools
+    capabilities: { tools: {} },
+  }));
 
-// 3) Handler for executing tool invocations
-server.setRequestHandler(CallToolRequestSchema, async (req) => {
-  const { name, arguments: args } = req.params;
-  switch (name) {
-    case "vibe_check": {
-      const input = args as VibeCheckInput;
-      const output = await vibeCheckTool(input);
-      return {
-        content: [
-          { type: "application/json", data: output as VibeCheckOutput },
-        ],
-      };
+  // 3) List available tools
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: [
+      { name: "vibe_check",   description: "Ask metacognitive questions to break tunnel vision" },
+      { name: "vibe_distill", description: "Summarize key decisions and mistakes"       },
+      { name: "vibe_learn",   description: "Provide learning tips based on mistakes"   },
+    ],
+  }));
+
+  // 4) Tool: vibe_check
+  server.setRequestHandler(isToolRun("vibe_check"), async req => {
+    if (!req.params) {
+      throw new McpError(ErrorCode.InvalidRequest, "Missing parameters for vibe_check");
     }
+    const input = req.params as VibeCheckInput;
+    const { questions, patternAlert } = await vibeCheckTool(input);
+    return {
+      content: [
+        { name: "questions",    value: questions },
+        ...(patternAlert ? [{ name: "patternAlert", value: patternAlert }] : []),
+      ],
+    };
+  });
 
-    case "vibe_distill": {
-      const input = args as VibeDistillInput;
-      const output = await vibeDistillTool(input);
-      return {
-        content: [
-          { type: "application/json", data: output as VibeDistillOutput },
-        ],
-      };
+  // 5) Tool: vibe_distill
+  server.setRequestHandler(isToolRun("vibe_distill"), async req => {
+    if (!req.params) {
+      throw new McpError(ErrorCode.InvalidRequest, "Missing parameters for vibe_distill");
     }
+    const input = req.params as VibeDistillInput;
+    const { summary } = await vibeDistillTool(input);
+    return {
+      content: [
+        { name: "summary", value: summary },
+      ],
+    };
+  });
 
-    case "vibe_learn": {
-      const input = args as VibeLearnInput;
-      const output = await vibeLearnTool(input);
-      return {
-        content: [
-          { type: "application/json", data: output as VibeLearnOutput },
-        ],
-      };
+  // 6) Tool: vibe_learn
+  server.setRequestHandler(isToolRun("vibe_learn"), async req => {
+    if (!req.params) {
+      throw new McpError(ErrorCode.InvalidRequest, "Missing parameters for vibe_learn");
     }
+    const input = req.params as VibeLearnInput;
+    const { tips } = await vibeLearnTool(input);
+    return {
+      content: [
+        { name: "tips", value: tips },
+      ],
+    };
+  });
 
-    default:
-      // use MethodNotFound (ToolNotFound was removed) and only pass code+message
-      throw new McpError(
-        ErrorCode.MethodNotFound,
-        `Tool not found: ${name}`
-      );
-  }
-});
+  // 7) Start listening for MCP messages
+  await server.connect();
+}
 
-// 4) Wire up the stdio transport and start listening
-const transport = new StdioServerTransport();
-server.connect(transport).catch((err) => {
-  console.error("Fatal transport error:", err);
+main().catch(err => {
+  console.error("Fatal error starting server:", err);
   process.exit(1);
 });
