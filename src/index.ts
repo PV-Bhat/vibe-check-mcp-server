@@ -1,10 +1,8 @@
 // src/index.ts
-// @ts-ignore TS2724 / TS2307: Ignore likely incorrect compiler error for McpServer import due to faulty SDK types. Examples show this path is correct.
+// @ts-ignore TS2307 / TS2724: Ignore likely incorrect compiler error for McpServer import based on examples.
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-// Import request types if needed, e.g., for capabilities, not strictly needed for server.tool handlers
-// import { CallToolRequest } from "@modelcontextprotocol/sdk/types.js";
 
 // Import Input/Output types from your tool files for handler args/return typing
 import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from "./tools/vibeCheck.js";
@@ -65,7 +63,7 @@ server.tool(
         userRequest: true
     }),
     // Handler function with explicit args type
-    async (args: VibeCheckInput): Promise<{ content: { type: 'text', text: string }[] }> => {
+    async (args: VibeCheckInput): Promise<{ content: { type: 'text', text: string }[] }> => { // Added explicit type for args
         console.error(`MCP Server: Executing tool: vibe_check...`);
         const result: VibeCheckOutput = await vibeCheckTool(args);
         console.error(`MCP Server: Tool vibe_check executed successfully.`);
@@ -87,7 +85,7 @@ server.tool(
         userRequest: true
     }),
     // Handler function with explicit args type
-    async (args: VibeDistillInput): Promise<{ content: { type: 'markdown', markdown: string }[] }> => {
+    async (args: VibeDistillInput): Promise<{ content: { type: 'markdown', markdown: string }[] }> => { // Added explicit type for args
         console.error(`MCP Server: Executing tool: vibe_distill...`);
         const result: VibeDistillOutput = await vibeDistillTool(args);
         console.error(`MCP Server: Tool vibe_distill executed successfully.`);
@@ -111,7 +109,7 @@ server.tool(
         solution: true
     }),
     // Handler function with explicit args type
-    async (args: VibeLearnInput): Promise<{ content: { type: 'text', text: string }[] }> => {
+    async (args: VibeLearnInput): Promise<{ content: { type: 'text', text: string }[] }> => { // Added explicit type for args
         console.error(`MCP Server: Executing tool: vibe_learn...`);
         const result: VibeLearnOutput = await vibeLearnTool(args);
         console.error(`MCP Server: Tool vibe_learn executed successfully.`);
@@ -128,28 +126,21 @@ console.error("MCP Server: StdioServerTransport created.");
 
 // Connect the server and transport
 console.error("MCP Server: Connecting server to transport...");
-// Wrap connect in an async IIFE (Immediately Invoked Function Expression) as connect is async
 (async () => {
     try {
         await server.connect(transport);
         console.error("MCP Server: Server connected to transport. Ready for messages.");
     } catch (error) {
         console.error("MCP Server: Error connecting server to transport:", error);
-        process.exit(1); // Exit if connection fails
+        process.exit(1);
     }
 })();
-
 
 // Assign callback to 'onclose' property
 if (transport.onclose) {
     transport.onclose = () => {
         console.error("MCP Server: Transport closed event received.");
-        // Optionally exit the process when the transport closes
-        // process.exit(0);
     };
 } else {
      console.error("MCP Server: transport.onclose property not found.");
 }
-
-// Keep process alive until transport closes (or handle signals)
-// process.stdin.resume(); // Keep Node running, uncomment if needed but check SDK behavior first
