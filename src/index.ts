@@ -1,165 +1,87 @@
 // src/index.ts
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-import {
-  ListToolsRequestSchema,
-  CallToolRequestSchema,
-  CallToolRequest
-} from "@modelcontextprotocol/sdk/types.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";      // MCP server class :contentReference[oaicite:0]{index=0}
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";  // STDIO transport :contentReference[oaicite:1]{index=1}
+import { z } from "zod";                                                  // For defining input schemas :contentReference[oaicite:2]{index=2}
 
-import { z } from "zod";
+import { vibeCheckTool } from "./tools/vibeCheck.js";
+import { vibeDistillTool } from "./tools/vibeDistill.js";
+import { vibeLearnTool } from "./tools/vibeLearn.js";
 
-import {
-  vibeCheckTool,
-  VibeCheckInput,
-  VibeCheckOutput
-} from "./tools/vibeCheck.js";
-import {
-  vibeDistillTool,
-  VibeDistillInput,
-  VibeDistillOutput
-} from "./tools/vibeDistill.js";
-import {
-  vibeLearnTool,
-  VibeLearnInput,
-  VibeLearnOutput
-} from "./tools/vibeLearn.js";
-
-/* --------------------------------------------------------------------- */
-/*  0.  Optional: Initialize Gemini (if you need it)                     */
-/* --------------------------------------------------------------------- */
-if (process.env.GEMINI_API_KEY) {
-  try {
-    // initializeGemini(process.env.GEMINI_API_KEY);
-    console.error("[LOG] Gemini initialized");
-  } catch (err) {
-    console.error("[ERR] Gemini init failed:", err);
-  }
-} else {
-  console.error("[WARN] GEMINI_API_KEY not set – Gemini‑based tools will fail");
-}
-
-/* --------------------------------------------------------------------- */
-/*  1.  Zod schemas for tool inputs                                      */
-/* --------------------------------------------------------------------- */
-const vibeCheckSchema = z.object({
-  plan:        z.string(),
-  userRequest: z.string(),
-  thinkingLog: z.string().optional(),
-  phase:       z.enum(["planning","implementation","review"]).optional()
+// 1. Initialize the MCP server
+const server = new McpServer({
+  name: "vibe-check-mcp",
+  version: "0.2.0"
 });
 
-const vibeDistillSchema = z.object({
-  plan:        z.string(),
-  userRequest: z.string()
-});
-
-const vibeLearnSchema = z.object({
-  mistake:  z.string(),
-  category: z.string(),
-  solution: z.string()
-});
-
-/* --------------------------------------------------------------------- */
-/*  2.  Create Server with tools capability                              */
-/* --------------------------------------------------------------------- */
-const server = new Server({
-  name:         "vibe-check-mcp",
-  version:      "0.2.0",
-  capabilities: { tools: {} }
-});
-
-/* --------------------------------------------------------------------- */
-/*  3.  tools/list – return static tool descriptors                      */
-/* --------------------------------------------------------------------- */
-const toolList = [
-  {
-    name:        "vibe_check",
-    description: "Metacognitive check for plan alignment and assumption testing.",
-    inputSchema: vibeCheckSchema
-  },
-  {
-    name:        "vibe_distill",
-    description: "Distils a plan to its essential core.",
-    inputSchema: vibeDistillSchema
-  },
-  {
-    name:        "vibe_learn",
-    description: "Logs mistake patterns for future improvement.",
-    inputSchema: vibeLearnSchema
-  }
-];
-
-server.setRequestHandler(
-  ListToolsRequestSchema,
-  async () => ({ tools: toolList })
-);
-
-/* --------------------------------------------------------------------- */
-/*  4.  tools/call – dispatch to your tool implementations                */
-/* --------------------------------------------------------------------- */
-server.setRequestHandler(
-  CallToolRequestSchema,
-  async (req: CallToolRequest) => {
-    const { name, arguments: raw = {} } = req.params;
-
-    switch (name) {
-      case "vibe_check": {
-        const args: VibeCheckInput = vibeCheckSchema.parse(raw);
-        const out:  VibeCheckOutput = await vibeCheckTool(args);
-        return {
-          content: [
-            {
-              type: "text",
-              text:
-                out.questions +
-                (out.patternAlert
-                  ? `\n\n**Pattern Alert:** ${out.patternAlert}`
-                  : "")
-            }
-          ]
-        };
-      }
-
-      case "vibe_distill": {
-        const args: VibeDistillInput = vibeDistillSchema.parse(raw);
-        const out:  VibeDistillOutput = await vibeDistillTool(args);
-        return {
-          content: [
-            {
-              type:     "markdown",
-              markdown: `${out.distilledPlan}\n\n**Rationale:** ${out.rationale}`
-            }
-          ]
-        };
-      }
-
-      case "vibe_learn": {
-        const args: VibeLearnInput = vibeLearnSchema.parse(raw);
-        const out:  VibeLearnOutput = await vibeLearnTool(args);
-        const summary = out.topCategories
-          .map(c => `- ${c.category} (${c.count})`)
-          .join("\n");
-        return {
-          content: [
-            {
-              type: "text",
-              text: `✅ Logged. Current tally: ${out.currentTally}\n\n${summary}`
-            }
-          ]
-        };
-      }
-
-      default:
-        throw new Error(`Unknown tool "${name}"`);
-    }
+// 2. Define the `vibe_check` tool
+server.tool(
+  "vibe_check",
+  z.object({
+    plan: z.string(),
+    userRequest: z.string(),
+    thinkingLog: z.string().optional(),
+    availableTools: z.array(z.string()).optional(),
+    focusAreas: z.array(z.string()).optional(),
+    sessionId: z.string().optional(),
+    previousAdvice: z.string().optional(),
+    phase: z.enum(["planning", "implementation", "review"]).optional(),
+    confidence: z.number().optional()
+  }).required({ plan: true, userRequest: true }),
+  async (args) => {
+    const result = await vibeCheckTool(args);
+    return {
+      content: [{
+        type: "text",
+        text: result.questions + (result.patternAlert ? `\n\n**Pattern Alert:** ${result.patternAlert}` : "")
+      }]
+    };
   }
 );
 
-/* --------------------------------------------------------------------- */
-/*  5.  Hook up STDIO transport & start serving                          */
-/* --------------------------------------------------------------------- */
+// 3. Define the `vibe_distill` tool
+server.tool(
+  "vibe_distill",
+  z.object({
+    plan: z.string(),
+    userRequest: z.string(),
+    sessionId: z.string().optional()
+  }).required({ plan: true, userRequest: true }),
+  async (args) => {
+    const result = await vibeDistillTool(args);
+    return {
+      content: [{
+        type: "markdown",
+        markdown: result.distilledPlan + `\n\n**Rationale:** ${result.rationale}`
+      }]
+    };
+  }
+);
+
+// 4. Define the `vibe_learn` tool
+server.tool(
+  "vibe_learn",
+  z.object({
+    mistake: z.string(),
+    category: z.string(),
+    solution: z.string(),
+    sessionId: z.string().optional()
+  }).required({ mistake: true, category: true, solution: true }),
+  async (args) => {
+    const result = await vibeLearnTool(args);
+    const summary = result.topCategories
+      .map(cat => `- ${cat.category} (${cat.count})`)
+      .join("\n");
+    return {
+      content: [{
+        type: "text",
+        text: `✅ Pattern logged. Current tally: ${result.currentTally}.\nTop Categories:\n${summary}`
+      }]
+    };
+  }
+);
+
+// 5. Set up the STDIO transport and connect
 const transport = new StdioServerTransport();
-await server.connect(transport);
-console.error("[OK] vibe-check-mcp ready (stdio)");
+server.connect(transport);
+console.log("Vibe Check MCP Server started using STDIO transport.");
