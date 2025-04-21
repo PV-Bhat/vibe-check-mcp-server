@@ -1,102 +1,176 @@
-// src/index.ts
+#!/usr/bin/env node
+
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   InitializeRequestSchema,
   ListToolsRequestSchema,
   CallToolRequestSchema,
-  type InitializeRequest,
-  type CallToolRequest,
+  InitializeRequest,
+  CallToolRequest
 } from "@modelcontextprotocol/sdk/types.js";
-import { z } from "zod";
+import { z, ZodTypeAny } from "zod";
 
-import { vibeCheckTool, type VibeCheckInput }   from "./tools/vibeCheck.js";
-import { vibeDistillTool, type VibeDistillInput } from "./tools/vibeDistill.js";
-import { vibeLearnTool, type VibeLearnInput }     from "./tools/vibeLearn.js";
+import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from "./tools/vibeCheck.js";
+import { vibeDistillTool, VibeDistillInput, VibeDistillOutput } from "./tools/vibeDistill.js";
+import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from "./tools/vibeLearn.js";
+import { initializeGemini } from "./utils/gemini.js";
+import { MistakeEntry } from "./utils/storage.js";
 
-////////////////////////////////////////////////////////////////////////////////
-// 0.  Schemas (Zod gives us both runtime validation and static typing)
-////////////////////////////////////////////////////////////////////////////////
-const vibeCheckSchema   = z.object({ plan:z.string(), userRequest:z.string(),
-  thinkingLog:z.string().optional(), availableTools:z.string().array().optional(),
-  focusAreas:z.string().array().optional(), sessionId:z.string().optional(),
-  previousAdvice:z.string().optional(),
-  phase:z.enum(["planning","implementation","review"]).optional(),
-  confidence:z.number().optional() }).strict();
+console.error("[LOG] MCP Server: Script starting...");
 
-const vibeDistillSchema = z.object({ plan:z.string(), userRequest:z.string(),
-  sessionId:z.string().optional() }).strict();
+// ────────────────────────────────────────────────────────────────────────
+// 0. Local helper type
+// ────────────────────────────────────────────────────────────────────────
+interface ToolDescription {
+  name: string;
+  description: string;
+  inputSchema: ZodTypeAny;
+}
 
-const vibeLearnSchema   = z.object({ mistake:z.string(), category:z.string(),
-  solution:z.string(), sessionId:z.string().optional() }).strict();
+// ────────────────────────────────────────────────────────────────────────
+// 1. Zod Schemas
+// ────────────────────────────────────────────────────────────────────────
+const vibeCheckSchema = z.object({
+  plan: z.string(),
+  userRequest: z.string(),
+  thinkingLog: z.string().optional(),
+  availableTools: z.array(z.string()).optional(),
+  focusAreas: z.array(z.string()).optional(),
+  sessionId: z.string().optional(),
+  previousAdvice: z.string().optional(),
+  phase: z.enum(["planning", "implementation", "review"]).optional(),
+  confidence: z.number().optional()
+}).required({ plan: true, userRequest: true });
 
-////////////////////////////////////////////////////////////////////////////////
-// 1.  Server bootstrap
-////////////////////////////////////////////////////////////////////////////////
-const SERVER_INFO = { name: "vibe-check-mcp", version: "0.2.0" };
+const vibeDistillSchema = z.object({
+  plan: z.string(),
+  userRequest: z.string(),
+  sessionId: z.string().optional()
+}).required({ plan: true, userRequest: true });
 
+const vibeLearnSchema = z.object({
+  mistake: z.string(),
+  category: z.string(),
+  solution: z.string(),
+  sessionId: z.string().optional()
+}).required({ mistake: true, category: true, solution: true });
+
+// ────────────────────────────────────────────────────────────────────────
+// 2. Deferred Gemini initialization
+// ────────────────────────────────────────────────────────────────────────
+console.error("[LOG] Starting async Gemini initialization...");
+const geminiInit = initializeGemini()
+  .then(() => console.error("[OK] Gemini initialized"))
+  .catch(err => console.error("[ERR] Gemini initialization failed:", err));
+
+// ────────────────────────────────────────────────────────────────────────
+// Constants for server info
+// ────────────────────────────────────────────────────────────────────────
+const SERVER_NAME = "vibe-check-mcp";
+const SERVER_VERSION = "0.2.0";
+
+// ────────────────────────────────────────────────────────────────────────
+// 3. Server Instantiation
+// ────────────────────────────────────────────────────────────────────────
+console.error("[LOG] Creating Server instance...");
 const server = new Server({
-  ...SERVER_INFO,
-  capabilities: { tools: {} }   // required so the client will ask for tools/list
+  name: SERVER_NAME,
+  version: SERVER_VERSION,
+  capabilities: { tools: {} }
 });
+console.error("[LOG] Server instance created.");
 
-server.setRequestHandler(InitializeRequestSchema, async (req:InitializeRequest) => ({
-  protocolVersion: req.params.protocolVersion,
-  serverInfo:      SERVER_INFO,
-  capabilities:    { tools: {} },
-}));
+// ────────────────────────────────────────────────────────────────────────
+// 4. Initialize handler
+// ────────────────────────────────────────────────────────────────────────
+server.setRequestHandler(InitializeRequestSchema, async (req: InitializeRequest) => {
+  console.error("[LOG] Received initialize request");
+  return {
+    protocolVersion: req.params.protocolVersion,
+    serverInfo: { name: SERVER_NAME, version: SERVER_VERSION },
+    capabilities: { tools: {} }
+  };
+});
+console.error("[LOG] Initialize handler set.");
 
-// tools/list ---------------------------------------------------------------
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [
-    { name:"vibe_check",   description:"Metacognitive check", inputSchema:vibeCheckSchema },
-    { name:"vibe_distill", description:"Distil a plan",       inputSchema:vibeDistillSchema },
-    { name:"vibe_learn",   description:"Log mistake",         inputSchema:vibeLearnSchema },
-  ]
-}));
+// ────────────────────────────────────────────────────────────────────────
+// 5. tools/list Handler
+// ────────────────────────────────────────────────────────────────────────
+const toolList: ToolDescription[] = [
+  { name: "vibe_check", description: "Metacognitive check...", inputSchema: vibeCheckSchema },
+  { name: "vibe_distill", description: "Distills a plan...", inputSchema: vibeDistillSchema },
+  { name: "vibe_learn", description: "Logs mistake patterns...", inputSchema: vibeLearnSchema }
+];
 
-// tools/call ---------------------------------------------------------------
-server.setRequestHandler(CallToolRequestSchema, async (req:CallToolRequest) => {
-  const { name, arguments:raw={} } = req.params;
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  console.error("[LOG] Received tools/list request");
+  return { tools: toolList };
+});
+console.error("[LOG] tools/list handler set.");
+
+// ────────────────────────────────────────────────────────────────────────
+// 6. tools/call Handler
+// ────────────────────────────────────────────────────────────────────────
+server.setRequestHandler(CallToolRequestSchema, async (req: CallToolRequest) => {
+  await geminiInit;  // ensure Gemini is ready before any tool runs
+  const toolName = req.params.name;
+  const rawArgs = req.params.arguments ?? {};
+  console.error(`[LOG] Received tools/call for: ${toolName}`);
 
   try {
-    switch (name) {
-      case "vibe_check": {
-        const args = vibeCheckSchema.parse(raw) as VibeCheckInput;
-        const out  = await vibeCheckTool(args);
-        return { content:[{type:"text",text:out.questions + (out.patternAlert?`\n\nPattern: ${out.patternAlert}`:"")}] };
+    switch (toolName) {
+      case 'vibe_check': {
+        const args = vibeCheckSchema.parse(rawArgs);
+        console.error(`[LOG] Executing: ${toolName}`);
+        const result = await vibeCheckTool(args);
+        console.error(`[LOG] Completed: ${toolName}`);
+        return { content: [{ type: "text", text: result.questions + (result.patternAlert ? `\n\n**Pattern Alert:** ${result.patternAlert}` : "") }] };
       }
-      case "vibe_distill": {
-        const args = vibeDistillSchema.parse(raw) as VibeDistillInput;
-        const out  = await vibeDistillTool(args);
-        return { content:[{type:"markdown",markdown:`${out.distilledPlan}\n\n**Why:** ${out.rationale}`} ] };
+      case 'vibe_distill': {
+        const args = vibeDistillSchema.parse(rawArgs);
+        console.error(`[LOG] Executing: ${toolName}`);
+        const result = await vibeDistillTool(args);
+        console.error(`[LOG] Completed: ${toolName}`);
+        return { content: [{ type: "markdown", markdown: result.distilledPlan + `\n\n**Rationale:** ${result.rationale}` }] };
       }
-      case "vibe_learn": {
-        const args = vibeLearnSchema.parse(raw) as VibeLearnInput;
-        const out  = await vibeLearnTool(args);
-        const cats = out.topCategories.map(c=>`• ${c.category} (${c.count})`).join("\n");
-        return { content:[{type:"text",text:`Logged ✅\nCurrent tally: ${out.currentTally}\n\nTop categories:\n${cats}`}] };
+      case 'vibe_learn': {
+        const args = vibeLearnSchema.parse(rawArgs);
+        console.error(`[LOG] Executing: ${toolName}`);
+        const result = await vibeLearnTool(args);
+        console.error(`[LOG] Completed: ${toolName}`);
+        const summary = result.topCategories.map((cat: any) => `- ${cat.category} (${cat.count})`).join('\n');
+        return { content: [{ type: "text", text: `✅ Pattern logged. Tally for category: ${result.currentTally}.\nTop Categories:\n${summary}` }] };
       }
       default:
-        return { error:{ code:"tool_not_found", message:`Unknown tool "${name}"` } };
+        console.error(`[ERR] Unknown tool requested: ${toolName}`);
+        throw new Error(`Unknown tool "${toolName}"`);
     }
-  } catch(err:any){
-    if (err instanceof z.ZodError) {
-      return { error:{ code:"invalid_params", message:err.errors.map(e=>e.message).join(", ") } };
+  } catch (error: any) {
+    console.error(`[ERR] Error during tools/call for ${toolName}:`, error);
+    if (error instanceof z.ZodError) {
+      return { error: { code: "invalid_params", message: `Invalid arguments for ${toolName}: ${error.errors.map(e => e.message).join(', ')}` } };
     }
-    return { error:{ code:"tool_execution_error", message:err.message } };
+    return { error: { code: "tool_execution_error", message: `Error executing tool ${toolName}: ${error.message}` } };
   }
 });
+console.error("[LOG] tools/call handler set.");
 
-////////////////////////////////////////////////////////////////////////////////
-// 2.  Attach stdio transport
-////////////////////////////////////////////////////////////////////////////////
+// ────────────────────────────────────────────────────────────────────────
+// 7. Transport Connection
+// ────────────────────────────────────────────────────────────────────────
+console.error("[LOG] Connecting transport...");
+const transport = new StdioServerTransport();
 (async () => {
   try {
-    await server.connect(new StdioServerTransport());
-    console.error("[OK] vibe‑check‑mcp ready (stdio)");
-  } catch (e) {
-    console.error("[FATAL] could not start server:", e);
+    await server.connect(transport);
+    console.error(`[OK] ${SERVER_NAME} v${SERVER_VERSION} ready (stdio)`);
+  } catch (error) {
+    console.error("[ERR] Fatal error connecting server:", error);
     process.exit(1);
   }
 })();
+
+transport.onclose = () => {
+  console.error("[LOG] Transport closed event received.");
+};
