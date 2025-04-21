@@ -1,6 +1,6 @@
 // src/index.ts
 import { Server }            from "@modelcontextprotocol/sdk/server/index.js";
-import { tools }             from "@modelcontextprotocol/sdk/server/tools.js";   // ← wrap helper
+import { tools }             from "@modelcontextprotocol/sdk/server/tools";   // ← wrap helper
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z }                 from "zod";
 
