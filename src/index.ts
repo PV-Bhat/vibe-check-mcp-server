@@ -1,6 +1,6 @@
 // src/index.ts
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"; // <-- Use McpServer from mcp.js
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"; // <-- Use StdioServerTransport from stdio.js
+import { McpServer } from "@modelcontextprotocol/sdk"; // <-- Try importing McpServer from the package root
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"; // <-- This import worked, keep it
 import { ListToolsRequestSchema, CallToolRequestSchema, CallToolRequest } from "@modelcontextprotocol/sdk/types.js";
 import { vibeCheckTool } from "./tools/vibeCheck.js";
 import { vibeDistillTool } from "./tools/vibeDistill.js";
@@ -14,10 +14,10 @@ type CategorySummaryItem = {
   recentExample: MistakeEntry;
 };
 
-// Create server instance using the correct class name and constructor signature from the example
-const server = new McpServer({ // <-- Use McpServer, 1 argument
+// Create server instance using the correct class name
+const server = new McpServer({
   name: "vibe-check-mcp",
-  version: "0.2.0" // Ensure this matches your package.json
+  version: "0.2.0"
 });
 
 // Define tools using ListToolsRequestSchema handler
@@ -91,7 +91,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
         return { content: [{ type: "markdown", markdown: result.distilledPlan + `\n\n**Rationale:** ${result.rationale}` }] };
       case 'vibe_learn':
         result = await vibeLearnTool(args as any) as VibeLearnOutput;
-        // Apply explicit type to 'cat' parameter
         const summary = result.topCategories.map((cat: CategorySummaryItem) => `- ${cat.category} (${cat.count})`).join('\n');
         return { content: [{ type: "text", text: `✅ Pattern logged. Tally for category: ${result.currentTally}.\nTop Categories:\n${summary}` }] };
       default:
@@ -109,9 +108,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
 });
 
 // Create the transport instance using the correct class name
-const transport = new StdioServerTransport(); // <-- Use StdioServerTransport
+const transport = new StdioServerTransport();
 
-// Connect the server and transport as shown in the example
+// Connect the server and transport
 server.connect(transport);
 
 console.log("Vibe Check MCP Server started using StdioTransport.");
