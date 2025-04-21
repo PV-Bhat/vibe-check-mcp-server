@@ -63,10 +63,10 @@ const server = new Server({
 // ────────────────────────────────
 // 3. initialize handler
 // ────────────────────────────────
-server.setRequestHandler(InitializeRequestSchema, async req => ({
+server.setRequestHandler("initialize", async req => ({
   protocolVersion: req.params.protocolVersion,
   serverInfo:      { name: "vibe-check-mcp", version: "0.2.0" },
-  capabilities:    { tools: {} }     // ← fixed line
+  capabilities:    { tools: {} }
 }));
 
 // ────────────────────────────────
