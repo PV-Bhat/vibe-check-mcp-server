@@ -6,8 +6,8 @@ import {
     CallToolRequestSchema,
     CallToolRequest,
     InitializeRequest,
-    InitializeRequestSchema, // <-- Import InitializeRequestSchema
-    ToolDefinition // <-- Import ToolDefinition
+    InitializeRequestSchema
+    // Removed ToolDefinition import as it's not found
 } from "@modelcontextprotocol/sdk/types.js";
 import { vibeCheckTool } from "./tools/vibeCheck.js";
 import { vibeDistillTool } from "./tools/vibeDistill.js";
@@ -22,25 +22,21 @@ try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
         console.error("MCP Server: WARNING - GEMINI_API_KEY environment variable not found!");
-        // Continue without Gemini if key is missing, tools might fail later
     } else {
         initializeGemini(apiKey);
         console.error("MCP Server: Gemini client potentially initialized.");
     }
 } catch (err: any) {
     console.error("MCP Server: ERROR initializing Gemini client -", err);
-    // Continue anyway, tools using it will fail
 }
 // ------------------------------------
 
-// Define the type for the 'cat' parameter explicitly
 type CategorySummaryItem = {
   category: string;
   count: number;
   recentExample: MistakeEntry;
 };
 
-// Create server instance
 console.error("MCP Server: Creating Server instance...");
 const server = new Server({
   name: "vibe-check-mcp",
@@ -48,13 +44,11 @@ const server = new Server({
 });
 console.error("MCP Server: Server instance created.");
 
-// --- Add an explicit Initialize handler ---
-// Use the Schema as the first argument, not the string "initialize"
+// --- Initialize handler ---
 server.setRequestHandler(InitializeRequestSchema, async (request: InitializeRequest) => {
-    // Cannot reliably log request.id here based on type errors
     console.error(`MCP Server: Received initialize request`);
     const response = {
-        protocolVersion: request.params.protocolVersion, // Echo back client's version
+        protocolVersion: request.params.protocolVersion,
         serverInfo: {
             name: "vibe-check-mcp",
             version: "0.2.0",
@@ -70,8 +64,8 @@ server.setRequestHandler(InitializeRequestSchema, async (request: InitializeRequ
 console.error("MCP Server: Setting ListTools request handler...");
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   console.error("MCP Server: ListTools request received.");
-  // Explicitly type the tools array
-  const tools: ToolDefinition[] = [
+  // Remove explicit ToolDefinition[] type, let TypeScript infer
+  const tools = [
      {
       name: "vibe_check",
       description: "Metacognitive check for plan alignment and assumption testing.",
@@ -80,12 +74,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         properties: {
           plan: { type: "string" },
           userRequest: { type: "string" },
-          thinkingLog: { type: "string" },
-          availableTools: { type: "array", items: { type: "string" } },
-          focusAreas: { type: "array", items: { type: "string" } },
-          sessionId: { type: "string" },
-          previousAdvice: { type: "string" },
-          phase: { type: "string", enum: ["planning", "implementation", "review"] },
+          // ... other properties ...
           confidence: { type: "number" }
         },
         required: ["plan", "userRequest"]
@@ -120,7 +109,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     }
   ];
    console.error("MCP Server: Returning tool list.");
-   return { tools }; // Type 'tools' variable here
+   return { tools };
 });
 console.error("MCP Server: ListTools request handler set.");
 
@@ -130,7 +119,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
   const toolName = request.params.name;
   const args = request.params.arguments ?? {};
 
-  // Cannot reliably log request.id here based on type errors
   console.error(`MCP Server: CallToolRequest received for tool: ${toolName}`);
 
   try {
@@ -176,8 +164,13 @@ console.error("MCP Server: Connecting server to transport...");
 server.connect(transport);
 console.error("MCP Server: Server connected to transport. Ready for messages.");
 
-// Use the corrected event name 'onclose'
-transport.onclose(() => { // <-- Corrected event name
-    console.error("MCP Server: Transport closed event received.");
-});
+// Assign callback to 'onclose' property instead of calling it
+if (transport.onclose) { // Check if property exists
+    transport.onclose = () => { // Assign the callback function
+        console.error("MCP Server: Transport closed event received.");
+    };
+} else {
+     console.error("MCP Server: transport.onclose property not found.");
+}
+
 // Removed listener for non-existent onDidDispose
