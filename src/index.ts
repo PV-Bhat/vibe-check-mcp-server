@@ -17,10 +17,13 @@ import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from "./tools/vibeLear
 import { initializeGemini } from "./utils/gemini.js";
 import { MistakeEntry } from "./utils/storage.js";
 
+// ────────────────────────────────────────────────────────────────────────
+// Entry-point logging
+// ────────────────────────────────────────────────────────────────────────
 console.error("[LOG] MCP Server: Script starting...");
 
 // ────────────────────────────────────────────────────────────────────────
-// 0. Local helper type
+// 0. Helper type for listing tools
 // ────────────────────────────────────────────────────────────────────────
 interface ToolDescription {
   name: string;
@@ -29,50 +32,56 @@ interface ToolDescription {
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// 1. Zod Schemas
+// 1. Zod Schemas for tool inputs
 // ────────────────────────────────────────────────────────────────────────
-const vibeCheckSchema = z.object({
-  plan: z.string(),
-  userRequest: z.string(),
-  thinkingLog: z.string().optional(),
-  availableTools: z.array(z.string()).optional(),
-  focusAreas: z.array(z.string()).optional(),
-  sessionId: z.string().optional(),
-  previousAdvice: z.string().optional(),
-  phase: z.enum(["planning", "implementation", "review"]).optional(),
-  confidence: z.number().optional()
-}).required({ plan: true, userRequest: true });
+const vibeCheckSchema = z
+  .object({
+    plan: z.string(),
+    userRequest: z.string(),
+    thinkingLog: z.string().optional(),
+    availableTools: z.array(z.string()).optional(),
+    focusAreas: z.array(z.string()).optional(),
+    sessionId: z.string().optional(),
+    previousAdvice: z.string().optional(),
+    phase: z.enum(["planning", "implementation", "review"]).optional(),
+    confidence: z.number().optional()
+  })
+  .required({ plan: true, userRequest: true });
 
-const vibeDistillSchema = z.object({
-  plan: z.string(),
-  userRequest: z.string(),
-  sessionId: z.string().optional()
-}).required({ plan: true, userRequest: true });
+const vibeDistillSchema = z
+  .object({
+    plan: z.string(),
+    userRequest: z.string(),
+    sessionId: z.string().optional()
+  })
+  .required({ plan: true, userRequest: true });
 
-const vibeLearnSchema = z.object({
-  mistake: z.string(),
-  category: z.string(),
-  solution: z.string(),
-  sessionId: z.string().optional()
-}).required({ mistake: true, category: true, solution: true });
-
-// ────────────────────────────────────────────────────────────────────────
-// 2. Deferred Gemini initialization
-// ────────────────────────────────────────────────────────────────────────
-console.error("[LOG] Starting async Gemini initialization...");
-const geminiInit = initializeGemini()
-  .then(() => console.error("[OK] Gemini initialized"))
-  .catch(err => console.error("[ERR] Gemini initialization failed:", err));
+const vibeLearnSchema = z
+  .object({
+    mistake: z.string(),
+    category: z.string(),
+    solution: z.string(),
+    sessionId: z.string().optional()
+  })
+  .required({ mistake: true, category: true, solution: true });
 
 // ────────────────────────────────────────────────────────────────────────
-// Constants for server info
+// 2. Initialize Gemini (non-blocking)
+// ────────────────────────────────────────────────────────────────────────
+try {
+  const apiKey = process.env.GEMINI_API_KEY || "";
+  initializeGemini(apiKey);
+  console.error("[LOG] Gemini initialized");
+} catch (err: unknown) {
+  console.error("[ERR] Gemini init failed", err);
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// 3. Server metadata and instantiation
 // ────────────────────────────────────────────────────────────────────────
 const SERVER_NAME = "vibe-check-mcp";
-const SERVER_VERSION = "0.2.0";
+const SERVER_VERSION = "0.2.0"; // match package.json
 
-// ────────────────────────────────────────────────────────────────────────
-// 3. Server Instantiation
-// ────────────────────────────────────────────────────────────────────────
 console.error("[LOG] Creating Server instance...");
 const server = new Server({
   name: SERVER_NAME,
@@ -82,25 +91,30 @@ const server = new Server({
 console.error("[LOG] Server instance created.");
 
 // ────────────────────────────────────────────────────────────────────────
-// 4. Initialize handler
+// 4. Handle initialize/handshake
 // ────────────────────────────────────────────────────────────────────────
-server.setRequestHandler(InitializeRequestSchema, async (req: InitializeRequest) => {
-  console.error("[LOG] Received initialize request");
-  return {
-    protocolVersion: req.params.protocolVersion,
-    serverInfo: { name: SERVER_NAME, version: SERVER_VERSION },
-    capabilities: { tools: {} }
-  };
-});
+server.setRequestHandler(
+  InitializeRequestSchema,
+  async (req: InitializeRequest) => {
+    console.error("[LOG] Received initialize request");
+    const resp = {
+      protocolVersion: req.params.protocolVersion,
+      serverInfo: { name: SERVER_NAME, version: SERVER_VERSION },
+      capabilities: { tools: {} }
+    };
+    console.error("[LOG] Sending initialize response");
+    return resp;
+  }
+);
 console.error("[LOG] Initialize handler set.");
 
 // ────────────────────────────────────────────────────────────────────────
-// 5. tools/list Handler
+// 5. tools/list — advertise available tools
 // ────────────────────────────────────────────────────────────────────────
 const toolList: ToolDescription[] = [
-  { name: "vibe_check", description: "Metacognitive check...", inputSchema: vibeCheckSchema },
-  { name: "vibe_distill", description: "Distills a plan...", inputSchema: vibeDistillSchema },
-  { name: "vibe_learn", description: "Logs mistake patterns...", inputSchema: vibeLearnSchema }
+  { name: "vibe_check", description: "Metacognitive check for user plans", inputSchema: vibeCheckSchema },
+  { name: "vibe_distill", description: "Distills a plan into concise steps", inputSchema: vibeDistillSchema },
+  { name: "vibe_learn", description: "Logs and summarizes mistake patterns", inputSchema: vibeLearnSchema }
 ];
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -110,67 +124,93 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 console.error("[LOG] tools/list handler set.");
 
 // ────────────────────────────────────────────────────────────────────────
-// 6. tools/call Handler
+// 6. tools/call — dispatch incoming tool invocations
 // ────────────────────────────────────────────────────────────────────────
-server.setRequestHandler(CallToolRequestSchema, async (req: CallToolRequest) => {
-  await geminiInit;  // ensure Gemini is ready before any tool runs
-  const toolName = req.params.name;
-  const rawArgs = req.params.arguments ?? {};
-  console.error(`[LOG] Received tools/call for: ${toolName}`);
+server.setRequestHandler(
+  CallToolRequestSchema,
+  async (req: CallToolRequest) => {
+    const toolName = req.params.name;
+    const rawArgs = req.params.arguments ?? {};
+    console.error(`[LOG] Received tools/call for: ${toolName}`);
 
-  try {
-    switch (toolName) {
-      case 'vibe_check': {
-        const args = vibeCheckSchema.parse(rawArgs);
-        console.error(`[LOG] Executing: ${toolName}`);
-        const result = await vibeCheckTool(args);
-        console.error(`[LOG] Completed: ${toolName}`);
-        return { content: [{ type: "text", text: result.questions + (result.patternAlert ? `\n\n**Pattern Alert:** ${result.patternAlert}` : "") }] };
+    try {
+      switch (toolName) {
+        case "vibe_check": {
+          const args = vibeCheckSchema.parse(rawArgs) as VibeCheckInput;
+          console.error(`[LOG] Executing: ${toolName}`);
+          const result = await vibeCheckTool(args);
+          console.error(`[LOG] Completed: ${toolName}`);
+          return {
+            content: [{
+              type: "text",
+              text:
+                result.questions +
+                (result.patternAlert ? `\n\n**Pattern Alert:** ${result.patternAlert}` : "")
+            }]
+          };
+        }
+
+        case "vibe_distill": {
+          const args = vibeDistillSchema.parse(rawArgs) as VibeDistillInput;
+          console.error(`[LOG] Executing: ${toolName}`);
+          const result = await vibeDistillTool(args);
+          console.error(`[LOG] Completed: ${toolName}`);
+          return {
+            content: [{ type: "markdown", markdown: result.distilledPlan + `\n\n**Rationale:** ${result.rationale}` }]
+          };
+        }
+
+        case "vibe_learn": {
+          const args = vibeLearnSchema.parse(rawArgs) as VibeLearnInput;
+          console.error(`[LOG] Executing: ${toolName}`);
+          const result = await vibeLearnTool(args);
+          console.error(`[LOG] Completed: ${toolName}`);
+          type LearnCategorySummary = { category: string; count: number; recentExample: MistakeEntry };
+          const summary = result.topCategories
+            .map((cat: LearnCategorySummary) => `- ${cat.category} (${cat.count})`)
+            .join("\n");
+          return {
+            content: [{
+              type: "text",
+              text: `✅ Pattern logged. Tally for category: ${result.currentTally}.\nTop Categories:\n${summary}`
+            }]
+          };
+        }
+
+        default:
+          console.error(`[ERR] Unknown tool requested: ${toolName}`);
+          throw new Error(`Unknown tool "${toolName}"`);
       }
-      case 'vibe_distill': {
-        const args = vibeDistillSchema.parse(rawArgs);
-        console.error(`[LOG] Executing: ${toolName}`);
-        const result = await vibeDistillTool(args);
-        console.error(`[LOG] Completed: ${toolName}`);
-        return { content: [{ type: "markdown", markdown: result.distilledPlan + `\n\n**Rationale:** ${result.rationale}` }] };
+    } catch (error: unknown) {
+      console.error(`[ERR] Error during tools/call for ${toolName}:`, error);
+      if (error instanceof z.ZodError) {
+        return { error: { code: "invalid_params", message: `Invalid args for ${toolName}: ${error.errors.map(e => e.message).join(", ")}` } };
       }
-      case 'vibe_learn': {
-        const args = vibeLearnSchema.parse(rawArgs);
-        console.error(`[LOG] Executing: ${toolName}`);
-        const result = await vibeLearnTool(args);
-        console.error(`[LOG] Completed: ${toolName}`);
-        const summary = result.topCategories.map((cat: any) => `- ${cat.category} (${cat.count})`).join('\n');
-        return { content: [{ type: "text", text: `✅ Pattern logged. Tally for category: ${result.currentTally}.\nTop Categories:\n${summary}` }] };
-      }
-      default:
-        console.error(`[ERR] Unknown tool requested: ${toolName}`);
-        throw new Error(`Unknown tool "${toolName}"`);
+      const msg = error instanceof Error ? error.message : String(error);
+      return { error: { code: "tool_execution_error", message: `Error executing ${toolName}: ${msg}` } };
     }
-  } catch (error: any) {
-    console.error(`[ERR] Error during tools/call for ${toolName}:`, error);
-    if (error instanceof z.ZodError) {
-      return { error: { code: "invalid_params", message: `Invalid arguments for ${toolName}: ${error.errors.map(e => e.message).join(', ')}` } };
-    }
-    return { error: { code: "tool_execution_error", message: `Error executing tool ${toolName}: ${error.message}` } };
   }
-});
+);
 console.error("[LOG] tools/call handler set.");
 
 // ────────────────────────────────────────────────────────────────────────
-// 7. Transport Connection
+// 7. Connect transport (stdio)
 // ────────────────────────────────────────────────────────────────────────
-console.error("[LOG] Connecting transport...");
 const transport = new StdioServerTransport();
+console.error("[LOG] Connecting transport...");
 (async () => {
   try {
     await server.connect(transport);
-    console.error(`[OK] ${SERVER_NAME} v${SERVER_VERSION} ready (stdio)`);
-  } catch (error) {
-    console.error("[ERR] Fatal error connecting server:", error);
+    console.error("[OK] vibe-check-mcp ready (stdio)");
+  } catch (err) {
+    console.error("[ERR] Fatal error connecting server:", err);
     process.exit(1);
   }
 })();
 
-transport.onclose = () => {
-  console.error("[LOG] Transport closed event received.");
-};
+// Optional transport close handler
+if (typeof transport.onclose === 'function') {
+  transport.onclose = () => console.error("[LOG] Transport closed event received.");
+} else {
+  console.error("[LOG] transport.onclose property not found or not assignable.");
+}
