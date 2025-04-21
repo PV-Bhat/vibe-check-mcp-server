@@ -5,8 +5,7 @@ import { Server }                from "@modelcontextprotocol/sdk/server/index.js
 import { StdioServerTransport }  from "@modelcontextprotocol/sdk/server/stdio.js";
 
 // 2.  helper –– singular “tool.js”, not “tools.js”
-import { tool }                  from "@modelcontextprotocol/sdk/server/tool.js";
-
+import { tool } from "@modelcontextprotocol/sdk/server/tools-helpers.js";
 // 3. misc deps
 import { z }           from "zod";
 import { vibeCheckTool,  VibeCheckInput  } from "./tools/vibeCheck.js";
