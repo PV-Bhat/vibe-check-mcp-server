@@ -17,7 +17,8 @@
     "@google/generative-ai": "^0.2.1",
     "@modelcontextprotocol/sdk": "^1.10.1",
     "axios": "^1.8.4",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@types/node": "^20.17.25",
