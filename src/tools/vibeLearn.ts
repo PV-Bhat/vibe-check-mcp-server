@@ -1,123 +1,142 @@
-import { addMistake, getMistakeCategorySummary, MistakeEntry } from '../utils/storage.js';
+#!/usr/bin/env node
 
-// Vibe Learn tool interfaces
-export interface VibeLearnInput {
-  mistake: string;
-  category: string;
-  solution: string;
-  sessionId?: string;
-}
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  InitializeRequestSchema,
+  ListToolsRequestSchema,
+  CallToolRequestSchema
+} from "@modelcontextprotocol/sdk/types.js";
+import { z, ZodTypeAny } from "zod";
 
-export interface VibeLearnOutput {
-  added: boolean;
-  currentTally: number;
-  topCategories: Array<{
-    category: string;
-    count: number;
-    recentExample: MistakeEntry;
-  }>;
-}
+import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from "./tools/vibeCheck.js";
+import { vibeDistillTool, VibeDistillInput, VibeDistillOutput } from "./tools/vibeDistill.js";
+import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from "./tools/vibeLearn.js";
 
-/**
- * The vibe_learn tool records one-sentence mistakes and solutions
- * to build a pattern recognition system for future improvement
- */
-export async function vibeLearnTool(input: VibeLearnInput): Promise<VibeLearnOutput> {
-  try {
-    // Validate input
-    if (!input.mistake) {
-      throw new Error('Mistake description is required');
-    }
-    if (!input.category) {
-      throw new Error('Mistake category is required');
-    }
-    if (!input.solution) {
-      throw new Error('Solution is required');
-    }
-    
-    // Enforce single-sentence constraints
-    const mistake = enforceOneSentence(input.mistake);
-    const solution = enforceOneSentence(input.solution);
-    
-    // Normalize category to one of our standard categories if possible
-    const category = normalizeCategory(input.category);
-    
-    // Add mistake to log
-    const entry = addMistake(mistake, category, solution);
-    
-    // Get category summaries
-    const categorySummary = getMistakeCategorySummary();
-    
-    // Find current tally for this category
-    const categoryData = categorySummary.find(m => m.category === category);
-    const currentTally = categoryData?.count || 1;
-    
-    // Get top 3 categories
-    const topCategories = categorySummary.slice(0, 3);
-    
-    return {
-      added: true,
-      currentTally,
-      topCategories
-    };
-  } catch (error) {
-    console.error('Error in vibe_learn tool:', error);
-    return {
-      added: false,
-      currentTally: 0,
-      topCategories: []
-    };
-  }
-}
+// Zod Schemas
+const vibeCheckSchema = z.object({
+  plan: z.string(),
+  userRequest: z.string(),
+  thinkingLog: z.string().optional(),
+  availableTools: z.array(z.string()).optional(),
+  focusAreas: z.array(z.string()).optional(),
+  sessionId: z.string().optional(),
+  previousAdvice: z.string().optional(),
+  phase: z.enum(["planning","implementation","review"]).optional(),
+  confidence: z.number().optional()
+}).strict();
 
-/**
- * Ensure text is a single sentence
- */
-function enforceOneSentence(text: string): string {
-  // Remove newlines
-  let sentence = text.replace(/\r?\n/g, ' ');
-  
-  // Split by sentence-ending punctuation
-  const sentences = sentence.split(/([.!?])\s+/);
-  
-  // Take just the first sentence
-  if (sentences.length > 0) {
-    // If there's punctuation, include it
-    const firstSentence = sentences[0] + (sentences[1] || '');
-    sentence = firstSentence.trim();
-  }
-  
-  // Ensure it ends with sentence-ending punctuation
-  if (!/[.!?]$/.test(sentence)) {
-    sentence += '.';
-  }
-  
-  return sentence;
-}
+const vibeDistillSchema = z.object({
+  plan: z.string(),
+  userRequest: z.string(),
+  sessionId: z.string().optional()
+}).strict();
 
-/**
- * Normalize category to one of our standard categories
- */
-function normalizeCategory(category: string): string {
-  // Standard categories
-  const standardCategories = {
-    'Complex Solution Bias': ['complex', 'complicated', 'over-engineered', 'complexity'],
-    'Feature Creep': ['feature', 'extra', 'additional', 'scope creep'],
-    'Premature Implementation': ['premature', 'early', 'jumping', 'too quick'],
-    'Misalignment': ['misaligned', 'wrong direction', 'off target', 'misunderstood'],
-    'Overtooling': ['overtool', 'too many tools', 'unnecessary tools']
+const vibeLearnSchema = z.object({
+  mistake: z.string(),
+  category: z.string(),
+  solution: z.string(),
+  sessionId: z.string().optional()
+}).strict();
+
+// Server setup
+type ToolDescription = { name: string; description: string; inputSchema: ZodTypeAny };
+const SERVER_NAME = "vibe-check-mcp";
+const SERVER_VERSION = "0.2.0";
+
+console.error("[LOG] Initializing MCP server...");
+const server = new Server({
+  name: SERVER_NAME,
+  version: SERVER_VERSION,
+  capabilities: { tools: {} }
+});
+
+// Initialize handler
+server.setRequestHandler(InitializeRequestSchema, async (req) => {
+  console.error("[LOG] Received initialize");
+  return {
+    protocolVersion: req.params.protocolVersion,
+    serverInfo: { name: SERVER_NAME, version: SERVER_VERSION },
+    capabilities: { tools: {} }
   };
-  
-  // Convert category to lowercase for matching
-  const lowerCategory = category.toLowerCase();
-  
-  // Try to match to a standard category
-  for (const [standardCategory, keywords] of Object.entries(standardCategories)) {
-    if (keywords.some(keyword => lowerCategory.includes(keyword))) {
-      return standardCategory;
+});
+
+// List tools
+const tools: ToolDescription[] = [
+  { name: "vibe_check", description: "Metacognitive questioning tool", inputSchema: vibeCheckSchema },
+  { name: "vibe_distill", description: "Distills a plan into concise steps", inputSchema: vibeDistillSchema },
+  { name: "vibe_learn", description: "Logs and analyzes mistakes", inputSchema: vibeLearnSchema }
+];
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  console.error("[LOG] Received tools/list");
+  return { tools };
+});
+
+// Call tool
+server.setRequestHandler(CallToolRequestSchema, async (req) => {
+  const toolName = req.params.name;
+  const rawArgs = req.params.arguments ?? {};
+  console.error(`[LOG] Received tools/call for ${toolName}`);
+  try {
+    switch (toolName) {
+      case "vibe_check": {
+        const args = vibeCheckSchema.parse(rawArgs) as VibeCheckInput;
+        const result = await vibeCheckTool(args);
+        return {
+          content: [
+            { type: "text", text: result.questions + (result.patternAlert ? `\n\n**Pattern Alert:** ${result.patternAlert}` : "") }
+          ]
+        };
+      }
+      case "vibe_distill": {
+        const args = vibeDistillSchema.parse(rawArgs) as VibeDistillInput;
+        const result = await vibeDistillTool(args);
+        return {
+          content: [
+            { type: "markdown", markdown: `${result.distilledPlan}\n\n**Rationale:** ${result.rationale}` }
+          ]
+        };
+      }
+      case "vibe_learn": {
+        const args = vibeLearnSchema.parse(rawArgs) as VibeLearnInput;
+        const result = await vibeLearnTool(args);
+        const summary = result.topCategories
+          .map(c => `- ${c.category} (${c.count})`)
+          .join("\n");
+        return {
+          content: [
+            { type: "text", text: `✅ Pattern logged. Tally: ${result.currentTally}.\nTop Categories:\n${summary}` }
+          ]
+        };
+      }
+      default:
+        console.error(`[ERR] Unknown tool: ${toolName}`);
+        return { error: { code: "tool_not_found", message: `Unknown tool \"${toolName}\"` } };
     }
+  } catch (err: any) {
+    console.error(`[ERR] Error in ${toolName}:`, err);
+    if (err instanceof z.ZodError) {
+      return { error: { code: "invalid_params", message: err.errors.map(e => e.message).join(", ") } };
+    }
+    return { error: { code: "tool_execution_error", message: err.message || String(err) } };
   }
-  
-  // If no match, return the original category
-  return category;
-}
+});
+
+// Transport connection
+const transport = new StdioServerTransport();
+console.error("[LOG] Connecting transport...");
+(async () => {
+  try {
+    await server.connect(transport);
+    console.error("[OK] Server ready (stdio)");
+  } catch (err: any) {
+    console.error("[FATAL] Could not connect server:", err);
+    process.exit(1);
+  }
+})();
+
+// Handle transport close
+type OnClose = () => void;
+(transport as any).onclose = (() => {
+  console.error("[LOG] Transport closed");
+}) as OnClose;
