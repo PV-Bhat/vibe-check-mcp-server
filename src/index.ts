@@ -1,6 +1,6 @@
 // src/index.ts
-import { McpServer } from "@modelcontextprotocol/sdk/server/index.js"; // <-- Try importing McpServer from server/index.js again
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"; // <-- This import is correct
+import { Server } from "@modelcontextprotocol/sdk/server/index.js"; // <-- Use 'Server' as suggested by TS2724
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"; // <-- Correct transport class & path
 import { ListToolsRequestSchema, CallToolRequestSchema, CallToolRequest } from "@modelcontextprotocol/sdk/types.js";
 import { vibeCheckTool } from "./tools/vibeCheck.js";
 import { vibeDistillTool } from "./tools/vibeDistill.js";
@@ -14,11 +14,14 @@ type CategorySummaryItem = {
   recentExample: MistakeEntry;
 };
 
-// Create server instance using the McpServer class
-const server = new McpServer({
+// Create the transport instance first
+const transport = new StdioServerTransport();
+
+// Create server instance using 'Server', passing options and transport
+const server = new Server({ // <-- Use 'Server' class
   name: "vibe-check-mcp",
   version: "0.2.0" // Ensure this matches your package.json
-});
+}, transport); // <-- Pass transport as the second argument
 
 // Define tools using ListToolsRequestSchema handler
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -107,10 +110,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
   }
 });
 
-// Create the transport instance using the correct class name
-const transport = new StdioServerTransport();
-
-// Connect the server and transport
+// Connect the server - This call might be unnecessary now if the transport is handled
+// fully by the constructor, but let's leave it unless it causes an error.
+// If the build succeeds but you get runtime errors, try removing this line.
 server.connect(transport);
 
 console.log("Vibe Check MCP Server started using StdioTransport.");
