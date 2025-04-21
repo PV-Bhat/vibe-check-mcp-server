@@ -4,9 +4,6 @@
   "description": "Vibe Check MCP for preventing cascading errors in AI-assisted coding through metacognitive pattern interrupts",
   "main": "build/index.js",
   "type": "module",
-  "bin": {
-    "vibe-check-mcp": "./build/index.js"
-  },
   "files": [
     "build"
   ],
@@ -19,8 +16,10 @@
   "dependencies": {
     "@google/generative-ai": "^0.2.1",
     "@modelcontextprotocol/sdk": "0.5.0",
+
     "axios": "^1.8.4",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@types/node": "^20.17.25",

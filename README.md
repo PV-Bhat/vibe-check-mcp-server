@@ -1,27 +1,36 @@
 # 🧠 Vibe Check MCP
 
-[![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
-[![Generated-Image-March-22-2025-3-18-PM-png.jpg](https://i.postimg.cc/76MPvY3q/Generated-Image-March-22-2025-3-18-PM-png.jpg)](https://postimg.cc/CB5pk0r2)
+<img src="https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vibelogo.png" alt="Logo" width="150" height="150">
 
-[![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/yourusername/vibe-check-mcp)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Pattern Status](https://img.shields.io/badge/pattern-interrupted-red)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
+[![Vibe Check MCP Server](https://img.shields.io/badge/vibecheck%20-mcp.so-blue)](https://mcp.so/server/vibe-check-mcp-server/PV-Bhat)
 
-> Your AI's inner rubber duck when it can't rubber duck itself.
+Also find Vibecheck on: [mcpservers.org](https://github.com/wong2/awesome-mcp-servers?tab=readme-ov-file#community-servers), [Glama.ai](https://glama.ai/mcp/servers/@PV-Bhat/vibe-check-mcp-server/), [mcp.so](https://mcp.so/server/vibe-check-mcp-server/PV-Bhat)
 
-## You know that feeling...
-
-- Your LLM confidently generates 60 lines of code to print "Hello World"
-- You ask for a simple CSV parser and get a microservice architecture
-- Your agent's plan starts with "First, we'll implement a custom language"
-
-We've all been there. Time to vibe check.
+_Your AI's inner rubber duck when it can't rubber duck itself._
 
 ## What is Vibe Check?
 
-Vibe Check is a metacognitive pattern interrupt system for the vibe coding era. It provides the essential "Hold on... this ain't it" moment that your AI assistants can't generate for themselves.
+In the **"vibe coding"** era, AI agents now have incredible capabilities, but the question has now moved:
 
-It's not about making your AI smarter—it's about adding the layer of doubt, questioning, and course correction that humans naturally apply to their own thought processes.
+from 
+> "Can my AI agent really do this **complex task**?" 
+
+to
+ 
+> "Can my AI agent understand that I want to write a **simple program**, not an _infrastructure for a multi-billion dollar tech company_?"
+
+It provides the essential "Hold up... this ain't it" moment that AI agents don't currently have: a built in self-correcting oversight layer. It's the definitive Vibe Coder's sanity check MCP server: 
+
+- Prevent cascading errors in AI workflows by implementing strategic pattern interrupts. 
+- Uses tool call "Vibe Check" with LearnLM 1.5 Pro (Gemini API), fine-tuned for pedagogy and metacognition to enhance complex workflow strategy, and prevents tunnel vision errors.
+- Implements "Vibe Distill" to encourage plan simplification, prevent over-engineering solutions, and minimize contextual drift in agents.
+- Self-improving feedback loops: Agents can log mistakes into "Vibe Learn" to improve semantic recall and help the oversight AI target patterns over time.
+
+**TLDR; Implement an agent fine-tuned to stop your agent and make it reconsider before it confidently implements something wrong.**
 
 ## The Problem: Pattern Inertia
 
@@ -43,13 +52,13 @@ This **pattern inertia** leads to:
 - 🔌 **Overengineering**: Adding layers of abstraction to problems that don't need them
 - ❓ **Misalignment**: Solving an adjacent but different problem than the one you asked for
 
-## The Solution: Metacognitive Oversight
+## Features: Metacognitive Oversight Tools
 
 Vibe Check adds a metacognitive layer to your agent workflows with three integrated tools:
 
 ### 🛑 vibe_check
 
-**Pattern interrupt mechanism** that breaks tunnel vision with metacognitive questioning—like a git rebase but for your agent's thought process:
+**Pattern interrupt mechanism** that breaks tunnel vision with metacognitive questioning:
 
 ```javascript
 vibe_check({
@@ -62,7 +71,7 @@ vibe_check({
 
 ### ⚓ vibe_distill
 
-**Meta-thinking anchor point** that recalibrates complex workflows—the mental equivalent of clearing your /node_modules and starting with a clean package.json:
+**Meta-thinking anchor point** that recalibrates complex workflows:
 
 ```javascript
 vibe_distill({
@@ -73,7 +82,7 @@ vibe_distill({
 
 ### 🔄 vibe_learn
 
-**Self-improving feedback loop** that builds pattern recognition over time—like eslint rules that get smarter with each bug you find:
+**Self-improving feedback loop** that builds pattern recognition over time:
 
 ```javascript
 vibe_learn({
@@ -83,7 +92,31 @@ vibe_learn({
 })
 ```
 
-## Quick Start
+### Vibe Check in Action
+
+**Before Vibe Check:**
+
+![before](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/VCC1.png)
+
+_Claude assumes the meaning of MCP despite ambiguity, leading to all subsequent steps having this wrong assumption_
+
+**After Vibe Check:**
+
+![after](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/VCC2.png)
+
+_Vibe Check MCP is called, and points out the ambiguity, which forces Claude to acknowledge this lack of information and proactively address it_
+
+## Installation & Setup
+
+### Installing via Smithery
+
+To install vibe-check-mcp-server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server):
+
+```bash
+npx -y @smithery/cli install @PV-Bhat/vibe-check-mcp-server --client claude
+```
+
+### Manual Installation via npm (Recommended)
 
 ```bash
 # Clone the repo
@@ -116,9 +149,17 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-## Prompting Your Agent
+## Environment Configuration
 
-For effective pattern interrupts, include this in your system prompt:
+Create a `.env` file in the project root:
+
+```
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+## Agent Prompting Guide
+
+For effective pattern interrupts, include these instructions in your system prompt:
 
 ```
 As an autonomous agent, you will:
@@ -130,44 +171,24 @@ As an autonomous agent, you will:
 5. Build the feedback loop with vibe_learn to record resolved issues
 ```
 
-## When to Use
+## When to Use Each Tool
 
-- 🛑 **vibe_check**: When your agent starts explaining blockchain fundamentals for a todo app
-- ⚓ **vibe_distill**: When your agent's plan has more nested bullet points than your entire tech spec
-- 🔄 **vibe_learn**: After you've manually steered your agent back from the complexity abyss
+| Tool | When to Use |
+|------|-------------|
+| 🛑 **vibe_check** | When your agent starts explaining blockchain fundamentals for a todo app |
+| ⚓ **vibe_distill** | When your agent's plan has more nested bullet points than your entire tech spec |
+| 🔄 **vibe_learn** | After you've manually steered your agent back from the complexity abyss |
 
-## Real-World Examples
+## API Reference
 
-### Before Vibe Check:
-```
-User: "Write a function to check if a string is a palindrome"
+See the [Technical Reference](./docs/technical-reference.md) for complete API documentation.
 
-Agent: *generates 150 lines of code with custom character handling classes, 
-        internationalization support, and a factory pattern*
-```
-
-### After Vibe Check:
-```
-User: "Write a function to check if a string is a palindrome"
-
-Agent: *starts complex approach*
-
-Vibe Check: "Are we sure we need a class-based approach for this simple string operation?"
-
-Agent: *course corrects*
-return s === s.split('').reverse().join('');
-```
-
-For more detailed examples, check out our [Case Studies](./docs/case-studies.md).
-
----
+## Architecture
 
 <details>
-<summary><b>The Recursive Layer (Click If You Dare)</b></summary>
+<summary><b>The Metacognitive Architecture (Click to Expand)</b></summary>
 
-## Metacognitive Architecture
-
-Vibe Check implements a dual-layer metacognitive architecture based on recursive oversight principles. The key insights from our research:
+Vibe Check implements a dual-layer metacognitive architecture based on recursive oversight principles. Key insights:
 
 1. **Pattern Inertia Resistance**: LLM agents naturally demonstrate a momentum-like property in their reasoning paths, requiring external intervention to redirect.
 
@@ -179,18 +200,26 @@ Vibe Check implements a dual-layer metacognitive architecture based on recursive
 
 5. **Recursive Feedback Loops**: All observed missteps must be stored and leveraged to build longitudinal failure models that improve interrupt efficacy.
 
-### Why Traditional Prompting Fails
-
-Standard prompt engineering creates static guidance that cannot adapt to the dynamic nature of complex agent workflows. This leads to several failure modes:
-
-- **Trajectorial Misalignment**: Progressive drift from user intent as the workflow evolves
-- **Recursive Over-optimization**: Solving increasingly complex versions of the wrong problem
-- **Epistemic Tunneling**: Becoming trapped in limited solution spaces due to initial framework choices
-- **Intention-Action Gaps**: Disconnection between high-level goals and implementation details
-
-Vibe Check addresses these failures through dynamic, phase-aware metacognitive interrupts that force agents to periodically recalibrate their reasoning against user intent.
-
+For more details on the underlying design principles, see [Philosophy](./docs/philosophy.md).
 </details>
+
+## Vibe Check in Action (Continued)
+
+![VC1](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/VC1.png)
+
+---
+
+![V2](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vc2.png)
+
+---
+
+
+![V3](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vc3.png)
+
+---
+
+
+![V4](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vc4.png)
 
 ## Documentation
 

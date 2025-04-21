@@ -6,20 +6,29 @@ dotenv.config(); // Load environment variables from .env file
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
-  CallToolRequestSchema,
-  ErrorCode,
+  InitializeRequestSchema,
   ListToolsRequestSchema,
-  McpError,
+  CallToolRequestSchema
 } from "@modelcontextprotocol/sdk/types.js";
+import { z, ZodTypeAny } from "zod";
 
-// Import tool implementations
-import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from './tools/vibeCheck.js';
-import { vibeDistillTool, VibeDistillInput, VibeDistillOutput } from './tools/vibeDistill.js';
-import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from './tools/vibeLearn.js';
+import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from "./tools/vibeCheck.js";
+import { vibeDistillTool, VibeDistillInput, VibeDistillOutput } from "./tools/vibeDistill.js";
+import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from "./tools/vibeLearn.js";
 
-// Import Gemini integration
-import { initializeGemini } from './utils/gemini.js';
-import { STANDARD_CATEGORIES } from './utils/storage.js';
+// Zod Schemas
+const vibeCheckSchema = z.object({
+  plan: z.string(),
+  userRequest: z.string(),
+  thinkingLog: z.string().optional(),
+  availableTools: z.array(z.string()).optional(),
+  focusAreas: z.array(z.string()).optional(),
+  sessionId: z.string().optional(),
+  previousAdvice: z.string().optional(),
+  phase: z.enum(["planning","implementation","review"]).optional(),
+  confidence: z.number().optional()
+}).strict();
+
 
 // Validate API key at startup
 const apiKey = process.env.GEMINI_API_KEY;
@@ -164,10 +173,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         }
       }
     ]
+
   };
   console.error(`Responding with ${response.tools.length} tools`);
   return response;
 });
+
 
 /**
  * Handler for tool invocation
@@ -296,36 +307,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         ErrorCode.MethodNotFound,
         `Unknown tool: ${name}`
       );
+
   }
 });
 
-/**
- * Format vibe check output as markdown
- */
-function formatVibeCheckOutput(result: VibeCheckOutput): string {
-  let output = result.questions;
-  
-  // Add pattern alert section if present
-  if (result.patternAlert) {
-    // Check if the pattern alert is already in the response
-    if (!output.includes("Pattern Alert:") && !output.includes("pattern emerging:")) {
-      output += `\n\n**I notice a pattern emerging:** ${result.patternAlert}`;
-    }
-  }
-  
-  return output;
-}
-
-/**
- * Format vibe learn output as markdown
- */
-function formatVibeLearnOutput(result: VibeLearnOutput): string {
-  let output = '';
-  
-  if (result.added) {
-    output += `✅ Pattern logged successfully (category tally: ${result.currentTally})`;
-  } else {
-    output += '❌ Failed to log pattern';
+// Transport connection
+const transport = new StdioServerTransport();
+console.error("[LOG] Connecting transport...");
+(async () => {
+  try {
+    await server.connect(transport);
+    console.error("[OK] Server ready (stdio)");
+  } catch (err: any) {
+    console.error("[FATAL] Could not connect server:", err);
+    process.exit(1);
   }
   
   // Add top categories section
@@ -369,8 +364,8 @@ async function main() {
   }
 }
 
-// Start the server
-main().catch((error) => {
-  console.error("Server startup error:", error);
-  process.exit(1);
-});
+// Handle transport close
+type OnClose = () => void;
+(transport as any).onclose = (() => {
+  console.error("[LOG] Transport closed");
+}) as OnClose;
