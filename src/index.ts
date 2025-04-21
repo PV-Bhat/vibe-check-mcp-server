@@ -63,11 +63,14 @@ const server = new Server({
 // ────────────────────────────────
 // 3. initialize handler
 // ────────────────────────────────
-server.setRequestHandler("initialize", async req => ({
-  protocolVersion: req.params.protocolVersion,
-  serverInfo:      { name: "vibe-check-mcp", version: "0.2.0" },
-  capabilities:    { tools: {} }
-}));
+server.setRequestHandler(
+  "initialize" as any,          // ← satisfy the signature
+  async (req: any) => ({        // ← req is untyped JSON‑RPC object
+    protocolVersion: req.params?.protocolVersion ?? "2024-11-05",
+    serverInfo:      { name: "vibe-check-mcp", version: "0.2.0" },
+    capabilities:    { tools: {} }
+  })
+);
 
 // ────────────────────────────────
 // 4. tools/list handler
