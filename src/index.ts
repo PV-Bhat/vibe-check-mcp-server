@@ -1,6 +1,6 @@
 // src/index.ts
-import { Server } from "@modelcontextprotocol/sdk/server/index.js"; // <-- Use 'Server' as suggested by TS2724
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"; // <-- Correct transport class & path
+import { Server } from "@modelcontextprotocol/sdk/server/index.js"; // <-- Use 'Server' class
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"; // <-- Use correct transport class
 import { ListToolsRequestSchema, CallToolRequestSchema, CallToolRequest } from "@modelcontextprotocol/sdk/types.js";
 import { vibeCheckTool } from "./tools/vibeCheck.js";
 import { vibeDistillTool } from "./tools/vibeDistill.js";
@@ -14,14 +14,11 @@ type CategorySummaryItem = {
   recentExample: MistakeEntry;
 };
 
-// Create the transport instance first
-const transport = new StdioServerTransport();
-
-// Create server instance using 'Server', passing options and transport
-const server = new Server({ // <-- Use 'Server' class
+// Create server instance with ONLY the options object
+const server = new Server({ // <-- Constructor takes only ONE argument
   name: "vibe-check-mcp",
   version: "0.2.0" // Ensure this matches your package.json
-}, transport); // <-- Pass transport as the second argument
+});
 
 // Define tools using ListToolsRequestSchema handler
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -110,9 +107,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
   }
 });
 
-// Connect the server - This call might be unnecessary now if the transport is handled
-// fully by the constructor, but let's leave it unless it causes an error.
-// If the build succeeds but you get runtime errors, try removing this line.
-server.connect(transport);
+// Create the transport instance
+const transport = new StdioServerTransport();
+
+// Connect the server and transport *after* instantiation
+server.connect(transport); // <-- Connect method links them
 
 console.log("Vibe Check MCP Server started using StdioTransport.");
