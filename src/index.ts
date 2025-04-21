@@ -1,21 +1,29 @@
 // src/index.ts
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioTransport } from "@modelcontextprotocol/sdk/server/stdio.js"; // <-- Original path with .js
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"; // <-- Use McpServer from mcp.js
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"; // <-- Use StdioServerTransport from stdio.js
 import { ListToolsRequestSchema, CallToolRequestSchema, CallToolRequest } from "@modelcontextprotocol/sdk/types.js";
-import { vibeCheckTool } from "./tools/vibeCheck.js"; // <-- Local import needs .js
-import { vibeDistillTool } from "./tools/vibeDistill.js"; // <-- Local import needs .js
-import { vibeLearnTool } from "./tools/vibeLearn.js"; // <-- Local import needs .js
+import { vibeCheckTool } from "./tools/vibeCheck.js";
+import { vibeDistillTool } from "./tools/vibeDistill.js";
+import { vibeLearnTool, VibeLearnOutput } from "./tools/vibeLearn.js";
+import { MistakeEntry } from "./utils/storage.js";
 
-// Create server with required parameters
-const server = new Server({ // Leaving as is for now, hoping TS2554 resolves with other fixes
+// Define the type for the 'cat' parameter explicitly
+type CategorySummaryItem = {
+  category: string;
+  count: number;
+  recentExample: MistakeEntry;
+};
+
+// Create server instance using the correct class name and constructor signature from the example
+const server = new McpServer({ // <-- Use McpServer, 1 argument
   name: "vibe-check-mcp",
-  version: "0.2.0"
+  version: "0.2.0" // Ensure this matches your package.json
 });
 
 // Define tools using ListToolsRequestSchema handler
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
-    {
+     {
       name: "vibe_check",
       description: "Metacognitive check for plan alignment and assumption testing.",
       inputSchema: {
@@ -61,12 +69,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
             required: ["mistake", "category", "solution"]
         }
     }
+    // ... other tool definitions
   ]
 }));
 
 // Handle tool calls using CallToolRequestSchema handler
 server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
-  const toolName = request.params.name; // <-- Corrected access
+  const toolName = request.params.name;
   const args = request.params.arguments ?? {};
 
   console.log(`CallToolRequest received for tool: ${toolName}`);
@@ -81,8 +90,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
         result = await vibeDistillTool(args as any);
         return { content: [{ type: "markdown", markdown: result.distilledPlan + `\n\n**Rationale:** ${result.rationale}` }] };
       case 'vibe_learn':
-        result = await vibeLearnTool(args as any);
-        const summary = result.topCategories.map(cat => `- ${cat.category} (${cat.count})`).join('\n');
+        result = await vibeLearnTool(args as any) as VibeLearnOutput;
+        // Apply explicit type to 'cat' parameter
+        const summary = result.topCategories.map((cat: CategorySummaryItem) => `- ${cat.category} (${cat.count})`).join('\n');
         return { content: [{ type: "text", text: `✅ Pattern logged. Tally for category: ${result.currentTally}.\nTop Categories:\n${summary}` }] };
       default:
         throw new Error(`Tool '${toolName}' not found.`);
@@ -98,8 +108,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
   }
 });
 
-// Use StdioTransport for compatibility
-const transport = new StdioTransport();
+// Create the transport instance using the correct class name
+const transport = new StdioServerTransport(); // <-- Use StdioServerTransport
+
+// Connect the server and transport as shown in the example
 server.connect(transport);
 
 console.log("Vibe Check MCP Server started using StdioTransport.");
