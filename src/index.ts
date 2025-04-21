@@ -1,6 +1,6 @@
 // src/index.ts
-import { McpServer } from "@modelcontextprotocol/sdk"; // <-- Try importing McpServer from the package root
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"; // <-- This import worked, keep it
+import { McpServer } from "@modelcontextprotocol/sdk/server/index.js"; // <-- Try importing McpServer from server/index.js again
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"; // <-- This import is correct
 import { ListToolsRequestSchema, CallToolRequestSchema, CallToolRequest } from "@modelcontextprotocol/sdk/types.js";
 import { vibeCheckTool } from "./tools/vibeCheck.js";
 import { vibeDistillTool } from "./tools/vibeDistill.js";
@@ -14,10 +14,10 @@ type CategorySummaryItem = {
   recentExample: MistakeEntry;
 };
 
-// Create server instance using the correct class name
+// Create server instance using the McpServer class
 const server = new McpServer({
   name: "vibe-check-mcp",
-  version: "0.2.0"
+  version: "0.2.0" // Ensure this matches your package.json
 });
 
 // Define tools using ListToolsRequestSchema handler
