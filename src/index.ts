@@ -6,25 +6,29 @@ import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { z }                        from 'zod';
+import { z, ZodRawShape }           from 'zod';
 
 // ─────────────────────────────────────────────
-//  1. Define your tool’s Zod schema & types
+//  1. Define your tool’s Zod “raw shape” & types
 // ─────────────────────────────────────────────
-const VibeCheckParams = {
-  plan:          z.string(),
-  userRequest:  z.string(),
-  thinkingLog:   z.string().optional(),
-  availableTools: z.array(z.string()).optional(),
-  splitOutput:   z.boolean().optional(),
-  confidence:    z.number().optional(),
-};
-type VibeCheckInput = z.input<typeof z.object(VibeCheckParams)>;
-
 const VIBE_CHECK_TOOL = 'vibe-check';
 
+// This object is a ZodRawShape (string→ZodType) that registerTool accepts
+const VibeCheckParams: ZodRawShape = {
+  plan:           z.string(),
+  userRequest:    z.string(),
+  thinkingLog:    z.string().optional(),
+  availableTools: z.array(z.string()).optional(),
+  splitOutput:    z.boolean().optional(),
+  confidence:     z.number().optional(),
+};
+
+// Build a Zod schema from it so we can infer a TS type:
+const VibeCheckSchema = z.object(VibeCheckParams);
+type VibeCheckInput = z.infer<typeof VibeCheckSchema>;
+
 // ─────────────────────────────────────────────
-//  2. Bootstrap the server + transport
+//  2. Bootstrap the server + stdio transport
 // ─────────────────────────────────────────────
 async function main() {
   const transport = new StdioServerTransport();
@@ -38,10 +42,9 @@ async function main() {
   // ─────────────────────────────────────────────
   // 3. handle “initialize”
   // ─────────────────────────────────────────────
-  server.setRequestHandler(InitializeRequestSchema, async req => ({
+  server.setRequestHandler(InitializeRequestSchema, async (req) => ({
     protocolVersion: req.params.protocolVersion,
     serverInfo:      { name: 'vibe-check-mcp', version: '0.2.0' },
-    // tell the client what tools you support
     capabilities:    { tools: [VIBE_CHECK_TOOL] },
   }));
 
@@ -53,21 +56,19 @@ async function main() {
       {
         name:        VIBE_CHECK_TOOL,
         description: 'Do a vibe‑check on the user’s plan + request',
-        // pass the raw Zod shape here
         paramsSchema: VibeCheckParams,
       },
     ],
   }));
 
   // ─────────────────────────────────────────────
-  // 5. register your actual tool implementation
+  // 5. register your tool’s implementation
   // ─────────────────────────────────────────────
   server.registerTool(
     VIBE_CHECK_TOOL,
     VibeCheckParams,
-    async (args: VibeCheckInput, extra) => {
-      // This is where your vibe‑check logic goes.
-      // For demo, just echo back the inputs:
+    async (args: VibeCheckInput) => {
+      // ← your logic goes here. This just echoes back two text blocks:
       return {
         content: [
           { __type: 'text', text: `📋 Plan: ${args.plan}` },
@@ -78,22 +79,21 @@ async function main() {
   );
 
   // ─────────────────────────────────────────────
-  // 6. wire up “callTool” to invoke your registered tools
+  // 6. handle “callTool” by dispatching to registerTool’d handlers
   // ─────────────────────────────────────────────
-  server.setRequestHandler(CallToolRequestSchema, async req => {
+  server.setRequestHandler(CallToolRequestSchema, async (req) => {
     const { tool, params } = req.params;
-    // this will route to the handler you registered above
     return server.invokeTool(tool, params, req);
   });
 
   // ─────────────────────────────────────────────
-  // 7. start listening!
+  // 7. connect!
   // ─────────────────────────────────────────────
   await server.connect(transport);
   console.error('✅ Server started and listening on stdio');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('💥 Fatal startup error:', err);
   process.exit(1);
 });
