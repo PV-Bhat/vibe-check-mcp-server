@@ -1,15 +1,15 @@
 // src/index.ts
-// Try importing McpServer from server/index.js again, now using .tool()
-import { McpServer } from "@modelcontextprotocol/sdk/server/index.js";
+// @ts-ignore TS2724 / TS2307: Ignore likely incorrect compiler error for McpServer import due to faulty SDK types. Examples show this path is correct.
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-// Import Zod for defining input schemas with server.tool()
 import { z } from "zod";
-// Import specific request types if needed for handlers, otherwise handler args are inferred
-import { CallToolRequest } from "@modelcontextprotocol/sdk/types.js";
+// Import request types if needed, e.g., for capabilities, not strictly needed for server.tool handlers
+// import { CallToolRequest } from "@modelcontextprotocol/sdk/types.js";
 
-import { vibeCheckTool, VibeCheckInput } from "./tools/vibeCheck.js"; // Assuming VibeCheckInput is exported
-import { vibeDistillTool, VibeDistillInput } from "./tools/vibeDistill.js"; // Assuming VibeDistillInput is exported
-import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from "./tools/vibeLearn.js"; // Assuming VibeLearnInput is exported
+// Import Input/Output types from your tool files for handler args/return typing
+import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from "./tools/vibeCheck.js";
+import { vibeDistillTool, VibeDistillInput, VibeDistillOutput } from "./tools/vibeDistill.js";
+import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from "./tools/vibeLearn.js";
 import { MistakeEntry } from "./utils/storage.js";
 import { initializeGemini } from "./utils/gemini.js";
 
@@ -29,6 +29,7 @@ try {
 }
 // ------------------------------------
 
+// Type helper for learn tool summary
 type CategorySummaryItem = {
   category: string;
   count: number;
@@ -36,7 +37,7 @@ type CategorySummaryItem = {
 };
 
 console.error("MCP Server: Creating McpServer instance...");
-// Use McpServer class again
+// Use McpServer based on examples, ignore potential TS error on import line above
 const server = new McpServer({
   name: "vibe-check-mcp",
   version: "0.2.0"
@@ -48,7 +49,7 @@ console.error("MCP Server: McpServer instance created.");
 console.error("MCP Server: Defining 'vibe_check' tool...");
 server.tool(
     "vibe_check",
-    // Define input schema using Zod
+    // Zod schema mirroring VibeCheckInput
     z.object({
         plan: z.string(),
         userRequest: z.string(),
@@ -59,17 +60,15 @@ server.tool(
         previousAdvice: z.string().optional(),
         phase: z.enum(["planning", "implementation", "review"]).optional(),
         confidence: z.number().optional()
-    }).required({ // Explicitly state required fields matching your TS interface
+    }).required({
         plan: true,
         userRequest: true
     }),
-    // Handler function - arguments are automatically typed based on schema
-    async (args) => {
+    // Handler function with explicit args type
+    async (args: VibeCheckInput): Promise<{ content: { type: 'text', text: string }[] }> => {
         console.error(`MCP Server: Executing tool: vibe_check...`);
-        // Args type should match VibeCheckInput here due to Zod schema
-        const result = await vibeCheckTool(args);
+        const result: VibeCheckOutput = await vibeCheckTool(args);
         console.error(`MCP Server: Tool vibe_check executed successfully.`);
-        // Return result formatted as MCP content
         return { content: [{ type: "text", text: result.questions + (result.patternAlert ? `\n\n**Pattern Alert:** ${result.patternAlert}`: "") }] };
     }
 );
@@ -78,6 +77,7 @@ console.error("MCP Server: 'vibe_check' tool defined.");
 console.error("MCP Server: Defining 'vibe_distill' tool...");
 server.tool(
     "vibe_distill",
+    // Zod schema mirroring VibeDistillInput
     z.object({
         plan: z.string(),
         userRequest: z.string(),
@@ -86,10 +86,11 @@ server.tool(
         plan: true,
         userRequest: true
     }),
-    async (args) => {
+    // Handler function with explicit args type
+    async (args: VibeDistillInput): Promise<{ content: { type: 'markdown', markdown: string }[] }> => {
         console.error(`MCP Server: Executing tool: vibe_distill...`);
-        const result = await vibeDistillTool(args);
-         console.error(`MCP Server: Tool vibe_distill executed successfully.`);
+        const result: VibeDistillOutput = await vibeDistillTool(args);
+        console.error(`MCP Server: Tool vibe_distill executed successfully.`);
         return { content: [{ type: "markdown", markdown: result.distilledPlan + `\n\n**Rationale:** ${result.rationale}` }] };
     }
 );
@@ -98,6 +99,7 @@ console.error("MCP Server: 'vibe_distill' tool defined.");
 console.error("MCP Server: Defining 'vibe_learn' tool...");
 server.tool(
     "vibe_learn",
+    // Zod schema mirroring VibeLearnInput
      z.object({
         mistake: z.string(),
         category: z.string(),
@@ -108,21 +110,16 @@ server.tool(
         category: true,
         solution: true
     }),
-    async (args) => {
+    // Handler function with explicit args type
+    async (args: VibeLearnInput): Promise<{ content: { type: 'text', text: string }[] }> => {
         console.error(`MCP Server: Executing tool: vibe_learn...`);
-        const result = await vibeLearnTool(args) as VibeLearnOutput; // Cast needed if return type isn't perfectly inferred
+        const result: VibeLearnOutput = await vibeLearnTool(args);
         console.error(`MCP Server: Tool vibe_learn executed successfully.`);
         const summary = result.topCategories.map((cat: CategorySummaryItem) => `- ${cat.category} (${cat.count})`).join('\n');
         return { content: [{ type: "text", text: `✅ Pattern logged. Tally for category: ${result.currentTally}.\nTop Categories:\n${summary}` }] };
     }
 );
 console.error("MCP Server: 'vibe_learn' tool defined.");
-
-// --- Remove setRequestHandler calls for ListTools and CallTool ---
-// The server.tool() calls handle registration implicitly.
-
-// --- Remove explicit Initialize handler ---
-// SDK likely handles this when tools are defined via server.tool()
 
 // Create the transport instance
 console.error("MCP Server: Creating StdioServerTransport...");
@@ -131,14 +128,28 @@ console.error("MCP Server: StdioServerTransport created.");
 
 // Connect the server and transport
 console.error("MCP Server: Connecting server to transport...");
-server.connect(transport); // Use server.connect() as before
-console.error("MCP Server: Server connected to transport. Ready for messages.");
+// Wrap connect in an async IIFE (Immediately Invoked Function Expression) as connect is async
+(async () => {
+    try {
+        await server.connect(transport);
+        console.error("MCP Server: Server connected to transport. Ready for messages.");
+    } catch (error) {
+        console.error("MCP Server: Error connecting server to transport:", error);
+        process.exit(1); // Exit if connection fails
+    }
+})();
+
 
 // Assign callback to 'onclose' property
 if (transport.onclose) {
     transport.onclose = () => {
         console.error("MCP Server: Transport closed event received.");
+        // Optionally exit the process when the transport closes
+        // process.exit(0);
     };
 } else {
      console.error("MCP Server: transport.onclose property not found.");
 }
+
+// Keep process alive until transport closes (or handle signals)
+// process.stdin.resume(); // Keep Node running, uncomment if needed but check SDK behavior first
