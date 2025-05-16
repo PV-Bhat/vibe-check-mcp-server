@@ -1,5 +1,3 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/pv-bhat-vibe-check-mcp-server-badge.png)](https://mseep.ai/app/pv-bhat-vibe-check-mcp-server)
-
 # 🧠 Vibe Check MCP
 
 <img src="https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vibelogo.png" alt="Logo" width="150" height="150">
@@ -9,8 +7,10 @@
 [![Pattern Status](https://img.shields.io/badge/pattern-interrupted-red)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
 [![Vibe Check MCP Server](https://img.shields.io/badge/vibecheck%20-mcp.so-blue)](https://mcp.so/server/vibe-check-mcp-server/PV-Bhat)
+[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/6dd1b68e-85aa-40c8-83fb-f746653aca4f)
 
 Also find Vibecheck on: [mcpservers.org](https://github.com/wong2/awesome-mcp-servers?tab=readme-ov-file#community-servers), [Glama.ai](https://glama.ai/mcp/servers/@PV-Bhat/vibe-check-mcp-server/), [mcp.so](https://mcp.so/server/vibe-check-mcp-server/PV-Bhat)
+
 
 _Your AI's inner rubber duck when it can't rubber duck itself._
 
@@ -222,6 +222,11 @@ For more details on the underlying design principles, see [Philosophy](./docs/ph
 
 
 ![V4](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vc4.png)
+
+
+## Verifications
+
+<img src="https://mseep.net/pr/pv-bhat-vibe-check-mcp-server-badge.png" alt="Logo" width="100" height="100">
 
 ## Documentation
 
