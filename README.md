@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/pv-bhat-vibe-check-mcp-server-badge.png)](https://mseep.ai/app/pv-bhat-vibe-check-mcp-server)
+
 # 🧠 Vibe Check MCP
 
 <img src="https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vibelogo.png" alt="Logo" width="150" height="150">
