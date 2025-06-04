@@ -1,20 +1,28 @@
-import { addMistake, getMistakeCategorySummary, MistakeEntry } from '../utils/storage.js';
+import {
+  addLearningEntry,
+  getLearningCategorySummary,
+  getLearningEntries,
+  LearningEntry,
+  LearningType
+} from '../utils/storage.js';
 
 // Vibe Learn tool interfaces
 export interface VibeLearnInput {
   mistake: string;
   category: string;
-  solution: string;
+  solution?: string;
+  type?: LearningType;
   sessionId?: string;
 }
 
 export interface VibeLearnOutput {
   added: boolean;
   currentTally: number;
+  alreadyKnown?: boolean;
   topCategories: Array<{
     category: string;
     count: number;
-    recentExample: MistakeEntry;
+    recentExample: LearningEntry;
   }>;
 }
 
@@ -31,22 +39,30 @@ export async function vibeLearnTool(input: VibeLearnInput): Promise<VibeLearnOut
     if (!input.category) {
       throw new Error('Mistake category is required');
     }
-    if (!input.solution) {
-      throw new Error('Solution is required');
+    const entryType: LearningType = input.type ?? 'mistake';
+    if (entryType !== 'preference' && !input.solution) {
+      throw new Error('Solution is required for this entry type');
     }
     
     // Enforce single-sentence constraints
     const mistake = enforceOneSentence(input.mistake);
-    const solution = enforceOneSentence(input.solution);
+    const solution = input.solution ? enforceOneSentence(input.solution) : undefined;
     
     // Normalize category to one of our standard categories if possible
     const category = normalizeCategory(input.category);
     
-    // Add mistake to log
-    const entry = addMistake(mistake, category, solution);
+    // Check for similar mistake
+    const existing = getLearningEntries()[category] || [];
+    const alreadyKnown = existing.some(e => isSimilar(e.mistake, mistake));
+
+    // Add mistake to log if new
+    let entry: LearningEntry | undefined;
+    if (!alreadyKnown) {
+      entry = addLearningEntry(mistake, category, solution, entryType);
+    }
     
     // Get category summaries
-    const categorySummary = getMistakeCategorySummary();
+    const categorySummary = getLearningCategorySummary();
     
     // Find current tally for this category
     const categoryData = categorySummary.find(m => m.category === category);
@@ -54,9 +70,10 @@ export async function vibeLearnTool(input: VibeLearnInput): Promise<VibeLearnOut
     
     // Get top 3 categories
     const topCategories = categorySummary.slice(0, 3);
-    
+
     return {
-      added: true,
+      added: !alreadyKnown,
+      alreadyKnown,
       currentTally,
       topCategories
     };
@@ -64,6 +81,7 @@ export async function vibeLearnTool(input: VibeLearnInput): Promise<VibeLearnOut
     console.error('Error in vibe_learn tool:', error);
     return {
       added: false,
+      alreadyKnown: false,
       currentTally: 0,
       topCategories: []
     };
@@ -93,6 +111,18 @@ function enforceOneSentence(text: string): string {
   }
   
   return sentence;
+}
+
+/**
+ * Simple similarity check between two sentences
+ */
+function isSimilar(a: string, b: string): boolean {
+  const aWords = a.toLowerCase().split(/\W+/).filter(Boolean);
+  const bWords = b.toLowerCase().split(/\W+/).filter(Boolean);
+  if (aWords.length === 0 || bWords.length === 0) return false;
+  const overlap = aWords.filter(w => bWords.includes(w));
+  const ratio = overlap.length / Math.min(aWords.length, bWords.length);
+  return ratio >= 0.6;
 }
 
 /**

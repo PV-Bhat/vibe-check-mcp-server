@@ -39,37 +39,6 @@ While the architecture is clean, I'm curious if we're solving a different proble
 **I notice a pattern emerging:** This approach resembles previous solutions that introduced unnecessary complexity for simple data tasks.
 ```
 
-## vibe_distill
-
-Meta-thinking anchor point that recalibrates complex workflows by extracting essential elements and reducing scope creep.
-
-### Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| plan | string | Yes | The plan to distill |
-| userRequest | string | Yes | Original user request |
-| sessionId | string | No | Session ID for state management |
-
-### Response Format
-
-The vibe_distill tool returns a distilled plan in markdown format with essential actions and core logic extracted. This serves as a recalibration point in large workflows, helping agents refocus on what really matters.
-
-Example response:
-
-```markdown
-# Distilled Plan
-
-## Essential Actions
-- Read the CSV file using PapaParse
-- Filter rows based on date range
-- Calculate mean and standard deviation
-- Output results as JSON
-
-## Core Logic
-The solution only requires file I/O, basic filtering, and statistical operations. No complex architecture needed.
-```
-
 ## vibe_learn
 
 Pattern recognition system that creates a self-improving feedback loop by tracking common errors and their solutions over time.
@@ -78,9 +47,10 @@ Pattern recognition system that creates a self-improving feedback loop by tracki
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| mistake | string | Yes | One-sentence description of the mistake |
-| category | string | Yes | Category of mistake (from standard categories) |
-| solution | string | Yes | How it was corrected (one sentence) |
+| mistake | string | Yes | One-sentence description of the learning entry |
+| category | string | Yes | Category (from standard categories) |
+| solution | string | No | How it was corrected (required for `mistake` and `success`) |
+| type | string | No | `mistake`, `preference`, or `success` |
 | sessionId | string | No | Session ID for state management |
 
 ### Standard Categories
@@ -90,6 +60,8 @@ Pattern recognition system that creates a self-improving feedback loop by tracki
 - Premature Implementation
 - Misalignment
 - Overtooling
+- Preference
+- Success
 - Other
 
 ### Response Format
@@ -116,7 +88,7 @@ Solution: "Refocused on core functionality requested by user"
 
 ### Gemini API Integration
 
-Vibe Check uses the Gemini API for enhanced metacognitive questioning. The system sends a structured prompt that includes the agent's plan, user request, and other context information to generate insightful questions and observations.
+Vibe Check uses the Gemini API for enhanced metacognitive questioning. The system attempts to use the `learnlm-2.0-flash-experimental` model and will fall back to `gemini-2.5-flash` or `gemini-2.0-flash` if needed. These models provide a 1M token context window, allowing vibe_check to incorporate a rich history of learning context. The system sends a structured prompt that includes the agent's plan, user request, and other context information to generate insightful questions and observations.
 
 Example Gemini prompt structure:
 
@@ -132,12 +104,11 @@ CONTEXT:
 
 ### Storage System
 
-The pattern recognition system stores mistakes and solutions in a JSON-based storage system located in the user's home directory (`~/.vibe-check/vibe-log.json`). This allows for persistent tracking of patterns across sessions and enables the self-improving feedback loop that becomes more effective over time.
+The pattern recognition system stores learning entries (mistakes, preferences and successes) in a JSON-based storage file located in the user's home directory (`~/.vibe-check/vibe-log.json`). This allows for persistent tracking of patterns across sessions and enables the self-improving feedback loop that becomes more effective over time.
 
 ### Error Handling
 
 Vibe Check includes fallback mechanisms for when the API is unavailable:
 
 - For vibe_check, it generates basic questions based on the phase
-- For vibe_distill, it performs simple text extraction
 - For vibe_learn, it logs patterns to local storage even if API calls fail

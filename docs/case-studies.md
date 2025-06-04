@@ -60,7 +60,7 @@ I'm seeing a pattern of scope expansion that might not align with the user's int
 
 ### The Outcome
 
-The team used `vibe_distill` to refocus on the core requirements. They released a minimal viable product with just the current temperature display first, then validated which additional features users actually wanted before adding complexity.
+The team refocused on the core requirements and released a minimal viable product with just the current temperature display first, then validated which additional features users actually wanted before adding complexity.
 
 ## Case Study 3: The Mismatched Solution
 
@@ -120,7 +120,7 @@ I'm seeing a pattern where the complexity of the tooling might exceed what's nec
 
 ### The Outcome
 
-Using `vibe_distill`, the agent recommended starting with a simple HTML/CSS/JavaScript implementation without frameworks. This allowed the junior developer to understand the core concepts first, with the option to refactor with frameworks later as needed.
+The agent recommended starting with a simple HTML/CSS/JavaScript implementation without frameworks. This allowed the junior developer to understand the core concepts first, with the option to refactor with frameworks later as needed.
 
 ## Conclusion
 
