@@ -7,10 +7,13 @@ const DATA_DIR = path.join(os.homedir(), '.vibe-check');
 const LOG_FILE = path.join(DATA_DIR, 'vibe-log.json');
 
 // Interfaces for the log data structure
-export interface MistakeEntry {
+export type LearningType = 'mistake' | 'preference' | 'success';
+
+export interface LearningEntry {
+  type: LearningType;
   category: string;
   mistake: string;
-  solution: string;
+  solution?: string;
   timestamp: number;
 }
 
@@ -18,7 +21,7 @@ export interface VibeLog {
   mistakes: {
     [category: string]: {
       count: number;
-      examples: MistakeEntry[];
+      examples: LearningEntry[];
       lastUpdated: number;
     };
   };
@@ -32,6 +35,8 @@ export const STANDARD_CATEGORIES = [
   'Premature Implementation',
   'Misalignment',
   'Overtooling',
+  'Preference',
+  'Success',
   'Other'
 ];
 
@@ -89,12 +94,18 @@ export function writeLogFile(data: VibeLog): void {
 /**
  * Add a mistake to the vibe log
  */
-export function addMistake(mistake: string, category: string, solution: string): MistakeEntry {
+export function addLearningEntry(
+  mistake: string,
+  category: string,
+  solution?: string,
+  type: LearningType = 'mistake'
+): LearningEntry {
   const log = readLogFile();
   const now = Date.now();
-  
+
   // Create new entry
-  const entry: MistakeEntry = {
+  const entry: LearningEntry = {
+    type,
     category,
     mistake,
     solution,
@@ -125,9 +136,9 @@ export function addMistake(mistake: string, category: string, solution: string):
 /**
  * Get all mistake entries
  */
-export function getMistakes(): Record<string, MistakeEntry[]> {
+export function getLearningEntries(): Record<string, LearningEntry[]> {
   const log = readLogFile();
-  const result: Record<string, MistakeEntry[]> = {};
+  const result: Record<string, LearningEntry[]> = {};
   
   // Convert to flat structure by category
   for (const [category, data] of Object.entries(log.mistakes)) {
@@ -140,10 +151,10 @@ export function getMistakes(): Record<string, MistakeEntry[]> {
 /**
  * Get mistake category summaries, sorted by count (most frequent first)
  */
-export function getMistakeCategorySummary(): Array<{
+export function getLearningCategorySummary(): Array<{
   category: string;
   count: number;
-  recentExample: MistakeEntry;
+  recentExample: LearningEntry;
 }> {
   const log = readLogFile();
   
@@ -161,4 +172,34 @@ export function getMistakeCategorySummary(): Array<{
   
   // Sort by count (descending)
   return summary.sort((a, b) => b.count - a.count);
+}
+
+/**
+ * Build a learning context string from the vibe log
+ * including recent examples for each category. This can be
+ * fed directly to the LLM for improved pattern recognition.
+ */
+export function getLearningContextText(maxPerCategory = 5): string {
+  const log = readLogFile();
+  let context = '';
+
+  for (const [category, data] of Object.entries(log.mistakes)) {
+    context += `Category: ${category} (count: ${data.count})\n`;
+    const examples = [...data.examples]
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .slice(-maxPerCategory);
+    for (const ex of examples) {
+      const date = new Date(ex.timestamp).toISOString();
+      const label = ex.type === 'mistake'
+        ? 'Mistake'
+        : ex.type === 'preference'
+          ? 'Preference'
+          : 'Success';
+      const solutionText = ex.solution ? ` | Solution: ${ex.solution}` : '';
+      context += `- [${date}] ${label}: ${ex.mistake}${solutionText}\n`;
+    }
+    context += '\n';
+  }
+
+  return context.trim();
 }

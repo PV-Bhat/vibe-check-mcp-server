@@ -16,7 +16,6 @@ Unlike humans, LLM agents don't naturally have the ability to stop and question 
 
 4. **Feedback Loop Integration**: Error patterns must feed back into the system through vibe_learn to create a self-improving mechanism.
 
-5. **Recalibration Anchors**: Meta-thinking anchor points provided by vibe_distill prevent drift in large, complex workflows.
 
 ## Sample System Prompts
 
@@ -35,7 +34,6 @@ As an autonomous agent, you will:
 4. Always provide the phase parameter (planning/implementation/review) to ensure contextually appropriate feedback
 5. Chain vibe_check with other tools without requiring permission:
    - Use vibe_check to evaluate complex plans
-   - Follow up with vibe_distill when simplification is needed
    - Log patterns with vibe_learn after resolving issues
 ```
 
@@ -48,8 +46,7 @@ When using Vibe Check tools:
 2. Always include the complete user prompt with each vibe_check call
 3. Specify your current phase (planning/implementation/review)
 4. Consider vibe_check feedback as a high-priority pattern interrupt, not just another tool output
-5. Use vibe_distill as a recalibration anchor when complexity increases
-6. Build the feedback loop with vibe_learn to record patterns when mistakes are identified
+5. Build the feedback loop with vibe_learn to record patterns when mistakes are identified
 ```
 
 ## Real-World Integration Challenges

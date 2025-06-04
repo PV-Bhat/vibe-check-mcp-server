@@ -1,17 +1,21 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from '@google/genai';
 import axios from 'axios';
 
 // Gemini API setup
-let genAI: GoogleGenerativeAI;
+let genAI: GoogleGenAI;
 let apiKey: string;
 
-// Use only one Gemini model for simplicity
-const MODEL_ID = 'learnlm-1.5-pro-experimental';
+const MODEL_PREFERENCE = [
+  'learnlm-2.0-flash-experimental',
+  'gemini-2.5-flash',
+  'gemini-2.0-flash'
+];
+let currentModel: string | undefined;
 
 // Initialize the Gemini API client
 export function initializeGemini(key: string): void {
   apiKey = key;
-  genAI = new GoogleGenerativeAI(key);
+  genAI = new GoogleGenAI({ apiKey: key });
   console.error('Gemini API client initialized');
 }
 
@@ -22,7 +26,8 @@ interface QuestionInput {
   thinkingLog?: string;
   availableTools?: string[];
   focusAreas?: string[];
-  mistakeHistory?: Record<string, any>;
+  mistakeHistory?: Record<string, any>; // historical learning entries grouped by category
+  learningContextText?: string;
   previousAdvice?: string;
   phase?: 'planning' | 'implementation' | 'review';
   confidence?: number;
@@ -85,6 +90,10 @@ When pointing out patterns, use phrases like:
 - "There seems to be a recurring approach to..."
 - "I've observed this kind of thinking before when..."
 - "This looks like it might be heading toward a pattern of..."
+
+You will be provided with an extensive 'LEARNING CONTEXT' section. This section includes a detailed history of past interactions, identified mistake patterns, successful solutions, and explicitly stated user preferences or focus areas.
+Your primary goal is to deeply analyze this LEARNING CONTEXT in conjunction with the current plan and user request to provide highly tailored, insightful, and actionable metacognitive questions and pattern alerts.
+Refer to specific examples or preferences from the LEARNING CONTEXT if they are relevant to the current situation. Reinforce any successful patterns noted there when appropriate and tailor your advice to align with stated preferences.
 `;
 
     // Build the context section with phase awareness
@@ -137,90 +146,89 @@ When pointing out patterns, use phrases like:
         }
       });
     }
+
+    if (input.learningContextText) {
+      contextSection += '\n[LEARNING CONTEXT]:\n';
+      contextSection += input.learningContextText + '\n';
+    }
     
     // Full prompt combining system prompt and context
     const fullPrompt = systemPrompt + '\n\n' + contextSection;
     
     // Try using the Gemini API (simplified approach)
-    let response: string;
+    let response: string | undefined;
     let patternAlert: string | undefined;
-    
-    try {
-      // Use the SDK
-      const model = genAI.getGenerativeModel({ 
-        model: MODEL_ID,
-        safetySettings: [
-          {
-            category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-            threshold: HarmBlockThreshold.BLOCK_NONE
-          },
-          {
-            category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-            threshold: HarmBlockThreshold.BLOCK_NONE
-          },
-          {
-            category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-            threshold: HarmBlockThreshold.BLOCK_NONE
-          },
-          {
-            category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-            threshold: HarmBlockThreshold.BLOCK_NONE
-          }
-        ]
-      });
 
-      const result = await model.generateContent({
-        contents: [
-          { role: 'user', parts: [{ text: fullPrompt }] }
-        ],
-        generationConfig: {
-          temperature: 0.3, // Slightly higher temperature for more dynamic responses
-          topP: 0.8,
-          topK: 40,
-          maxOutputTokens: 1024,
-        }
-      });
-
-      response = result.response.text();
-    } 
-    catch (sdkError) {
-      console.error('SDK method failed, trying direct API call:', sdkError);
-      
-      // Fall back to direct API call
-      const apiResponse = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent?key=${apiKey}`,
+    const safety = [
         {
-          contents: [
-            { 
-              role: 'user',
-              parts: [{ text: fullPrompt }]
-            }
-          ],
-          generationConfig: {
+          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+          threshold: HarmBlockThreshold.BLOCK_NONE
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+          threshold: HarmBlockThreshold.BLOCK_NONE
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+          threshold: HarmBlockThreshold.BLOCK_NONE
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+          threshold: HarmBlockThreshold.BLOCK_NONE
+        }
+      ];
+
+    for (const modelId of currentModel ? [currentModel, ...MODEL_PREFERENCE.filter(m => m !== currentModel)] : MODEL_PREFERENCE) {
+      try {
+        const result = await genAI.models.generateContent({
+          model: modelId,
+          contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+          config: {
+            safetySettings: safety,
             temperature: 0.3,
             topP: 0.8,
             topK: 40,
             maxOutputTokens: 1024
           }
-        },
+        });
+        response = result.text;
+        currentModel = modelId;
+        console.error(`Using Gemini model: ${modelId}`);
+        break;
+      } catch (sdkError) {
+        console.error(`Model ${modelId} failed:`, sdkError);
+      }
+    }
+
+    if (!response) {
+      const fallbackModel = currentModel || MODEL_PREFERENCE[0];
+      console.error('All SDK attempts failed, using direct API call');
+      const apiResponse = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/${fallbackModel}:generateContent?key=${apiKey}`,
         {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+          contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+          generationConfig: {
+            temperature: 0.3,
+            topP: 0.8,
+            topK: 40,
+            maxOutputTokens: 1024
+          },
+          safetySettings: safety
+        },
+        { headers: { 'Content-Type': 'application/json' } }
       );
-      
       response = apiResponse.data.candidates[0].content.parts[0].text;
     }
 
     // Extract pattern alert if present
-    const patternAlertMatch = response.match(/I notice a pattern emerging:\s*(.+?)(?=\n|$)/i);
+    const text = response || '';
+    const patternAlertMatch = text.match(/I notice a pattern emerging:\s*(.+?)(?=\n|$)/i);
     if (patternAlertMatch && patternAlertMatch[1]) {
       patternAlert = patternAlertMatch[1].trim();
     }
 
     return {
-      questions: response,
+      questions: text,
       patternAlert
     };
   } catch (error) {

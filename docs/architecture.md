@@ -23,13 +23,13 @@ This document visualizes the metacognitive architecture of Vibe Check and explai
 ┌────────────────────────────────────────────────────────────────────────┐
 │                      Metacognitive Layer (Vibe Check)                   │
 │                                                                         │
-│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────────┐  │
-│  │   vibe_check    │◀──▶│   vibe_distill  │◀──▶│     vibe_learn      │  │
-│  │                 │    │                 │    │                     │  │
-│  │ Pattern Interrupt│    │  Meta-Thinking  │    │ Self-Improving      │  │
-│  │    Mechanism    │    │   Anchor Point  │    │   Feedback Loop     │  │
-│  └────────┬────────┘    └────────┬────────┘    └─────────┬───────────┘  │
-│           │                      │                       │               │
+│  ┌─────────────────┐    ┌─────────────────────┐  │
+│  │   vibe_check    │◀──▶│     vibe_learn      │  │
+│  │                 │    │                     │  │
+│  │ Pattern Interrupt│    │ Self-Improving      │  │
+│  │    Mechanism    │    │   Feedback Loop     │  │
+│  └────────┬────────┘    └─────────┬───────────┘  │
+│           │                       │               │
 └───────────┼──────────────────────┼───────────────────────┼───────────────┘
             │                      │                       │                
             ▼                      ▼                       ▼                
@@ -53,18 +53,7 @@ The `vibe_check` tool serves as the primary pattern interrupt mechanism. It work
 
 The output creates a moment of pause and reflection, forcing the agent to reconsider its approach before continuing. This is critical because LLM agents lack natural mechanisms for self-doubt and course correction.
 
-### 2. vibe_distill (Anchor Point)
-
-The `vibe_distill` tool provides a recalibration mechanism through:
-
-1. Taking a complex, potentially overengineered plan
-2. Extracting the essential elements and core requirements
-3. Removing unnecessary complexity and scope creep
-4. Creating a simplified "anchor" that the agent can return to
-
-This serves as both a corrective mechanism and a reference point for future planning, helping to prevent drift in complex workflows.
-
-### 3. vibe_learn (Feedback Loop)
+### 2. vibe_learn (Feedback Loop)
 
 The `vibe_learn` tool creates a self-improving feedback loop by:
 
@@ -79,7 +68,7 @@ Over time, this creates a more sophisticated pattern recognition system that can
 
 The three components can be used independently but are designed to work together in an integrated metacognitive layer:
 
-1. **Planning Phase**: `vibe_check` identifies potential issues in the initial plan, potentially triggering `vibe_distill` if overengineering is detected.
+1. **Planning Phase**: `vibe_check` identifies potential issues in the initial plan and encourages simplification if overengineering is detected.
 
 2. **Implementation Phase**: `vibe_check` with higher confidence provides more focused feedback on specific implementation decisions, referencing patterns from `vibe_learn`.
 
