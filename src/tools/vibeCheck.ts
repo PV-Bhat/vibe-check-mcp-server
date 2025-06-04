@@ -1,4 +1,4 @@
-import { getMistakes } from '../utils/storage.js';
+import { getLearningEntries, getLearningContextText } from '../utils/storage.js';
 import { getMetacognitiveQuestions } from '../utils/gemini.js';
 
 // Vibe Check tool handler
@@ -41,7 +41,8 @@ export async function vibeCheckTool(input: VibeCheckInput): Promise<VibeCheckOut
     }
     
     // Get past mistakes to inform questioning
-    const mistakeHistory = getMistakes();
+    const mistakeHistory = getLearningEntries();
+    const learningContextText = getLearningContextText(10);
     
     // Get metacognitive questions from Gemini with dynamic parameters
     const response = await getMetacognitiveQuestions({
@@ -51,6 +52,7 @@ export async function vibeCheckTool(input: VibeCheckInput): Promise<VibeCheckOut
       availableTools: input.availableTools,
       focusAreas: input.focusAreas,
       mistakeHistory,
+      learningContextText,
       
       // Include new dynamic parameters
       previousAdvice: input.previousAdvice,
