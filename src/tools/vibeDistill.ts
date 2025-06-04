@@ -106,6 +106,22 @@ function createSimpleDistillation(plan: string, userRequest: string): string {
       .map(s => `- ${s.trim()}`)
       .join('\n');
   }
-  
+
+  // Include the original user request to maintain alignment context
+  const requestLines = userRequest.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (requestLines.length > 0) {
+    distilled += "\n\n## User Request\n";
+    distilled += requestLines.map(l => `- ${l}`).join('\n');
+  }
+
+  // Highlight any significant words from the request that are missing in the plan
+  const normalizedPlan = plan.toLowerCase();
+  const keywords = Array.from(new Set((userRequest.toLowerCase().match(/\b\w{4,}\b/g) || [])));
+  const missing = keywords.filter(word => !normalizedPlan.includes(word));
+  if (missing.length > 0) {
+    distilled += "\n\n## Potential Missing Elements\n";
+    distilled += missing.slice(0, 5).map(w => `- ${w}`).join('\n');
+  }
+
   return distilled;
 }
