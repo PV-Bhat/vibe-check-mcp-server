@@ -69,6 +69,15 @@ Start the server:
 npm start
 ```
 
+### Docker
+
+To run the server in a container:
+
+```bash
+docker build -t vibe-check-mcp .
+docker run -e GEMINI_API_KEY=your_gemini_api_key -p 3000:3000 vibe-check-mcp
+```
+
 ### Integrating with Claude Desktop
 
 Add to `claude_desktop_config.json`:
