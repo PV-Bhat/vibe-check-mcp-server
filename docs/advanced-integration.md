@@ -52,26 +52,6 @@ const followupFeedback = await vibe_check({
 });
 ```
 
-## Strategic Recalibration Points
-
-Use vibe_distill as a meta-thinking anchor at key points in complex workflows to prevent drift and maintain alignment. This creates essential recalibration opportunities for the agent.
-
-```javascript
-// Initial planning
-const plan = "...detailed complex plan...";
-
-// When complexity increases, create a recalibration anchor
-if (measureComplexity(plan) > THRESHOLD) {
-  const distilledPlan = await vibe_distill({
-    plan: plan,
-    userRequest: "..."
-  });
-  
-  // Use the distilled plan as a new anchor point
-  updatedPlan = distilledPlan;
-}
-```
-
 ## Self-Improving Feedback Loop
 
 Use vibe_learn consistently to build a pattern library specific to your agent's tendencies. This creates a self-improving system that gets better at identifying and preventing errors over time.
@@ -81,7 +61,8 @@ Use vibe_learn consistently to build a pattern library specific to your agent's 
 vibe_learn({
   mistake: "Relied on unnecessary complexity for simple data transformation",
   category: "Complex Solution Bias",
-  solution: "Used built-in array methods instead of custom solution"
+  solution: "Used built-in array methods instead of custom solution",
+  type: "mistake"
 });
 
 // Later, the pattern library will improve vibe_check's pattern recognition
@@ -127,17 +108,10 @@ const planFeedback = await vibe_check({
 // Consider feedback and potentially adjust plan
 const updatedPlan = adjustPlanBasedOnFeedback(initialPlan, planFeedback);
 
-// If plan seems complex, create a recalibration anchor point
+// If plan seems overly complex, manually simplify before continuing
+let finalPlan = updatedPlan;
 if (planComplexity(updatedPlan) > COMPLEXITY_THRESHOLD) {
-  const simplifiedPlan = await vibe_distill({
-    plan: updatedPlan,
-    userRequest: "[COMPLETE USER REQUEST]"
-  });
-  
-  // Use the simplified plan as a new anchor point
-  finalPlan = simplifiedPlan;
-} else {
-  finalPlan = updatedPlan;
+  finalPlan = simplifyPlan(updatedPlan);
 }
 
 // During implementation, create pattern interrupts before major actions
@@ -154,7 +128,8 @@ if (mistakeIdentified) {
   await vibe_learn({
     mistake: "Specific mistake description",
     category: "Complex Solution Bias", // or appropriate category
-    solution: "How it was corrected"
+    solution: "How it was corrected",
+    type: "mistake"
   });
 }
 ```

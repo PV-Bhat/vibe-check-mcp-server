@@ -15,12 +15,11 @@ import {
 
 // Import tool implementations
 import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from './tools/vibeCheck.js';
-import { vibeDistillTool, VibeDistillInput, VibeDistillOutput } from './tools/vibeDistill.js';
 import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from './tools/vibeLearn.js';
 
 // Import Gemini integration
 import { initializeGemini } from './utils/gemini.js';
-import { STANDARD_CATEGORIES } from './utils/storage.js';
+import { STANDARD_CATEGORIES, LearningType } from './utils/storage.js';
 
 // Validate API key at startup
 const apiKey = process.env.GEMINI_API_KEY;
@@ -116,28 +115,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         }
       },
       {
-        name: "vibe_distill",
-        description: "Plan simplification tool that reduces complexity and extracts essential elements to prevent over-engineering",
-        inputSchema: {
-          type: "object",
-          properties: {
-            plan: {
-              type: "string",
-              description: "The plan to distill"
-            },
-            userRequest: {
-              type: "string",
-              description: "Original user request"
-            },
-            sessionId: {
-              type: "string",
-              description: "Optional session ID for state management"
-            }
-          },
-          required: ["plan", "userRequest"] // userRequest now required
-        }
-      },
-      {
         name: "vibe_learn",
         description: "Pattern recognition system that tracks common errors and solutions to prevent recurring issues",
         inputSchema: {
@@ -145,23 +122,28 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             mistake: {
               type: "string",
-              description: "One-sentence description of the mistake"
+              description: "One-sentence description of the learning entry"
             },
             category: {
               type: "string",
-              description: `Category of mistake (standard categories: ${STANDARD_CATEGORIES.join(', ')})`,
+              description: `Category (standard categories: ${STANDARD_CATEGORIES.join(', ')})`,
               enum: STANDARD_CATEGORIES
             },
             solution: {
               type: "string",
-              description: "How it was corrected (one sentence)"
+              description: "How it was corrected (if applicable)"
+            },
+            type: {
+              type: "string",
+              enum: ["mistake", "preference", "success"],
+              description: "Type of learning entry"
             },
             sessionId: {
               type: "string",
               description: "Optional session ID for state management"
             }
           },
-          required: ["mistake", "category", "solution"]
+          required: ["mistake", "category"]
         }
       }
     ]
@@ -217,55 +199,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
     
-    case "vibe_distill": {
-      // Validate required parameters
-      if (!args || typeof args.plan !== 'string') {
-        console.error("Invalid vibe_distill request: missing plan");
-        throw new McpError(
-          ErrorCode.InvalidParams,
-          'Invalid input: plan is required and must be a string'
-        );
-      }
-      
-      // Validate required userRequest
-      if (!args.userRequest || typeof args.userRequest !== 'string' || args.userRequest.trim() === '') {
-        console.error("Invalid vibe_distill request: missing userRequest");
-        throw new McpError(
-          ErrorCode.InvalidParams,
-          'FULL user request is required for proper distillation and alignment'
-        );
-      }
-      
-      // Create a properly typed input
-      const input: VibeDistillInput = {
-        plan: args.plan,
-        userRequest: args.userRequest,
-        sessionId: typeof args.sessionId === 'string' ? args.sessionId : undefined
-      };
-      
-      console.error("Executing vibe_distill tool...");
-      const result = await vibeDistillTool(input);
-      console.error("vibe_distill execution complete");
-      
-      return {
-        content: [
-          {
-            type: "text",
-            text: result.distilledPlan
-          }
-        ]
-      };
-    }
     
     case "vibe_learn": {
-      if (!args || 
-          typeof args.mistake !== 'string' || 
-          typeof args.category !== 'string' || 
-          typeof args.solution !== 'string') {
+      if (!args || typeof args.mistake !== 'string' || typeof args.category !== 'string') {
         console.error("Invalid vibe_learn request: missing required parameters");
         throw new McpError(
           ErrorCode.InvalidParams,
-          'Invalid input: mistake, category, and solution are required and must be strings'
+          'Invalid input: mistake and category are required and must be strings'
         );
       }
       
@@ -273,7 +213,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const input: VibeLearnInput = {
         mistake: args.mistake,
         category: args.category,
-        solution: args.solution,
+        solution: typeof args.solution === 'string' ? args.solution : undefined,
+        type: ['mistake', 'preference', 'success'].includes(args.type as string)
+          ? (args.type as LearningType)
+          : undefined,
         sessionId: typeof args.sessionId === 'string' ? args.sessionId : undefined
       };
       
@@ -325,6 +268,8 @@ function formatVibeLearnOutput(result: VibeLearnOutput): string {
   
   if (result.added) {
     output += `✅ Pattern logged successfully (category tally: ${result.currentTally})`;
+  } else if (result.alreadyKnown) {
+    output += 'ℹ️ Pattern already recorded';
   } else {
     output += '❌ Failed to log pattern';
   }

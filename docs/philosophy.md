@@ -33,16 +33,7 @@ In alignment terms, this addresses:
 - **Process oversight**: Providing external validation of reasoning processes
 - **Hidden assumption exposure**: Surfacing implicit assumptions for examination
 
-### 2. Essence Extraction (vibe_distill)
-
-The `vibe_distill` function addresses the crucial metacognitive skill of distinguishing essential requirements from implementation details. By compressing complex plans into their core elements, this function creates a "reference anchor" that prevents drift in extended reasoning chains.
-
-In alignment terms, this addresses:
-- **Value distillation**: Clarifying the core values and objectives that should guide decision-making
-- **Complexity management**: Preventing solution complexity from obscuring fundamental goals
-- **Objective stability**: Maintaining consistent objectives across iterative reasoning processes
-
-### 3. Learning from Experience (vibe_learn)
+### 2. Learning from Experience (vibe_learn)
 
 The `vibe_learn` function implements a critical metacognitive capability: learning from past mistakes to improve future performance. By tracking patterns of errors and their solutions, the system builds a continuously improving model of potential failure modes.
 
