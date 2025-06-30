@@ -1,1 +1,1 @@
-#Deleted.
+// Deleted
