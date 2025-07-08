@@ -1,6 +1,6 @@
 # 🧠 Vibe Check MCP
 
-![Logo](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vibelogo.png)
+![Logo](https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vibelogov2.png)
 
 [![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
