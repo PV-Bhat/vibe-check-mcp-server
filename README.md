@@ -163,6 +163,11 @@ As an autonomous agent you will:
 
 Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+## Featured on:
+
+[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
+
+
 ## License
 
 [MIT](LICENSE)
