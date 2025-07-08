@@ -2,7 +2,7 @@
 
 <img src="https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vibelogov2.png" alt="Logo" width="300"/>
 
-# The Most Widely-Deployed Feedback Layer in the MCP Ecosystem
+## The Most Widely-Deployed Feedback Layer in the MCP Ecosystem
 
 > Used in 1,000+ real workflows.  
 > Featured across 10+ orchestration platforms.  
