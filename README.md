@@ -57,6 +57,11 @@ npm install
 npm run build
 ```
 
+This project targets Node **20+**. If you see a TypeScript error about a
+duplicate `require` declaration when building with Node 20.19.3, ensure your
+dependencies are up to date (`npm install`) or use the Docker setup below which
+handles the build automatically.
+
 Create a `.env` file with your API key:
 
 ```bash
@@ -71,7 +76,33 @@ npm start
 
 ### Docker
 
-To run the server in a container:
+The repository includes a helper script for one-command setup. It builds the
+image, saves your `GEMINI_API_KEY` and configures the container to start
+automatically whenever you log in:
+
+```bash
+bash scripts/docker-setup.sh
+```
+
+This script:
+
+- Creates `~/vibe-check-mcp` for persistent data
+- Builds the Docker image and sets up `docker-compose.yml`
+- Prompts for your API key and writes `~/vibe-check-mcp/.env`
+- Installs a systemd service (Linux) or LaunchAgent (macOS) so the container
+  starts at login
+- Generates `vibe-check-tcp-wrapper.sh` which proxies Cursor IDE to the server
+
+After running it, open Cursor IDE → **Settings** → **MCP** and add a new server
+of type **Command** pointing to:
+
+```bash
+~/vibe-check-mcp/vibe-check-tcp-wrapper.sh
+```
+
+See [Automatic Docker Setup](./docs/docker-automation.md) for full details.
+
+If you prefer to run the commands manually:
 
 ```bash
 docker build -t vibe-check-mcp .
@@ -118,6 +149,7 @@ As an autonomous agent you will:
 - [Agent Prompting Strategies](./docs/agent-prompting.md)
 - [Advanced Integration](./docs/advanced-integration.md)
 - [Technical Reference](./docs/technical-reference.md)
+- [Automatic Docker Setup](./docs/docker-automation.md)
 - [Philosophy](./docs/philosophy.md)
 - [Case Studies](./docs/case-studies.md)
 
