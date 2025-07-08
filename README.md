@@ -2,9 +2,10 @@
 
 <img src="https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vibelogov2.png" alt="Logo" width="300"/>
 
-[![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Version](https://img.shields.io/badge/version-1.1-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
+[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
 
 ## What is Vibe Check?
 
@@ -163,10 +164,18 @@ As an autonomous agent you will:
 
 Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-## Featured on:
+# Find Vibe Check MCP on:
 
-[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
-
+https://mseep.ai/app/pv-bhat-vibe-check-mcp-server
+https://mcpservers.org/servers/PV-Bhat/vibe-check-mcp-server
+https://mcp.so/server/vibe-check-mcp-server/PV-Bhat
+https://creati.ai/mcp/vibe-check-mcp-server/
+https://www.pulsemcp.com/servers/pv-bhat-vibe-check
+https://playbooks.com/mcp/pv-bhat-vibe-check
+https://mcphub.tools/detail/PV-Bhat/vibe-check-mcp-server
+https://mcpdirectory.ai/mcpserver/2419/
+https://www.magicslides.app/mcps/pv-bhat-vibe-check
+https://aiagentslist.com/mcp-servers/vibe-check-mcp-server
 
 ## License
 
