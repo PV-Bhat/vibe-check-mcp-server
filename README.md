@@ -164,18 +164,19 @@ As an autonomous agent you will:
 
 Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-# Find Vibe Check MCP on:
+## 🔗 Find **VibeCheck MCP** on:
 
-https://mseep.ai/app/pv-bhat-vibe-check-mcp-server
-https://mcpservers.org/servers/PV-Bhat/vibe-check-mcp-server
-https://mcp.so/server/vibe-check-mcp-server/PV-Bhat
-https://creati.ai/mcp/vibe-check-mcp-server/
-https://www.pulsemcp.com/servers/pv-bhat-vibe-check
-https://playbooks.com/mcp/pv-bhat-vibe-check
-https://mcphub.tools/detail/PV-Bhat/vibe-check-mcp-server
-https://mcpdirectory.ai/mcpserver/2419/
-https://www.magicslides.app/mcps/pv-bhat-vibe-check
-https://aiagentslist.com/mcp-servers/vibe-check-mcp-server
+* 🌐 [MSEEP](https://mseep.ai/app/pv-bhat-vibe-check-mcp-server)
+* 📡 [MCP Servers](https://mcpservers.org/servers/PV-Bhat/vibe-check-mcp-server)
+* 🧠 [MCP.so](https://mcp.so/server/vibe-check-mcp-server/PV-Bhat)
+* 🛠️ [Creati.ai](https://creati.ai/mcp/vibe-check-mcp-server/)
+* 💡 [Pulse MCP](https://www.pulsemcp.com/servers/pv-bhat-vibe-check)
+* 📘 [Playbooks.com](https://playbooks.com/mcp/pv-bhat-vibe-check)
+* 🧰 [MCPHub.tools](https://mcphub.tools/detail/PV-Bhat/vibe-check-mcp-server)
+* 📇 [MCP Directory](https://mcpdirectory.ai/mcpserver/2419/)
+* 🧙 [MagicSlides](https://www.magicslides.app/mcps/pv-bhat-vibe-check)
+* 🗃️ [AIAgentsList](https://aiagentslist.com/mcp-servers/vibe-check-mcp-server)
+
 
 ## License
 
