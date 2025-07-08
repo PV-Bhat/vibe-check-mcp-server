@@ -153,6 +153,12 @@ As an autonomous agent you will:
 - [Philosophy](./docs/philosophy.md)
 - [Case Studies](./docs/case-studies.md)
 
+## To-do List
+
+- [ ] Add in integration for OpenRouter Keys
+- [ ] Repomix access to pass repositories to VC
+- [ ] Agents.md addendum to improve plug-and-play integration
+
 ## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
