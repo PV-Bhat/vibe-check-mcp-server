@@ -21,16 +21,19 @@ export function initializeGemini(key: string): void {
 
 // Input interface for metacognitive questioning
 interface QuestionInput {
-  plan?: string;
-  userRequest?: string;
-  thinkingLog?: string;
-  availableTools?: string[];
-  focusAreas?: string[];
+  goal: string;
+  plan: string;
+  modelOverride?: {
+    provider?: string;
+    model?: string;
+  };
+  userPrompt?: string;
+  progress?: string;
+  uncertainties?: string[];
+  taskContext?: string;
+  sessionId?: string;
   mistakeHistory?: Record<string, any>; // historical learning entries grouped by category
   learningContextText?: string;
-  previousAdvice?: string;
-  phase?: 'planning' | 'implementation' | 'review';
-  confidence?: number;
 }
 
 interface QuestionOutput {
@@ -97,43 +100,7 @@ Refer to specific examples or preferences from the LEARNING CONTEXT if they are 
 `;
 
     // Build the context section with phase awareness
-    let contextSection = 'CONTEXT:\n';
-    
-    // Add phase information if provided
-    if (input.phase) {
-      contextSection += `\n[Current Phase]: ${input.phase}\n`;
-    } else {
-      // Try to infer phase from context
-      if (input.thinkingLog && input.thinkingLog.includes('implement') || 
-          (input.plan && input.plan.includes('implement'))) {
-        contextSection += `\n[Inferred Phase]: implementation\n`;
-      } else if (input.thinkingLog && input.thinkingLog.includes('review') || 
-                (input.plan && input.plan.includes('review'))) {
-        contextSection += `\n[Inferred Phase]: review\n`;
-      } else {
-        contextSection += `\n[Inferred Phase]: planning\n`;
-      }
-    }
-    
-    // Add confidence level if provided
-    if (input.confidence !== undefined) {
-      contextSection += `\n[Agent Confidence Level]: ${input.confidence * 100}%\n`;
-    }
-    
-    // Add previous advice if provided
-    if (input.previousAdvice) {
-      contextSection += `\n[Previous Advice]: ${input.previousAdvice}\n`;
-    }
-    
-    if (input.userRequest) {
-      contextSection += `\n[User Request]: ${input.userRequest}\n`;
-    } else {
-      contextSection += `\n[WARNING]: No user request provided. This is essential for alignment checking.\n`;
-    }
-    
-    if (input.plan) {
-      contextSection += `\n[Current Plan/Thinking]: ${input.plan}\n`;
-    }
+    let contextSection = 'CONTEXT:\n';    if (input.goal) {      contextSection += `\n[Goal]: ${input.goal}\n`;    }    if (input.plan) {      contextSection += `\n[Plan]: ${input.plan}\n`;    }    if (input.userPrompt) {      contextSection += `\n[User Prompt]: ${input.userPrompt}\n`;    }    if (input.progress) {      contextSection += `\n[Progress]: ${input.progress}\n`;    }    if (input.uncertainties && input.uncertainties.length > 0) {      contextSection += `\n[Uncertainties]:\n${input.uncertainties.map(u => `- ${u}`).join('\n')}\n`;    }    if (input.taskContext) {      contextSection += `\n[Task Context]: ${input.taskContext}\n`;    }
     
     // Format mistake history if available
     if (input.mistakeHistory && Object.keys(input.mistakeHistory).length > 0) {

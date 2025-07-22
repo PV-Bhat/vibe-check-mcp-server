@@ -1,0 +1,2055 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+The content has been processed where content has been compressed (code blocks are separated by ⋮---- delimiter).
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Content has been compressed - code blocks are separated by ⋮---- delimiter
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+.env.example
+.github/workflows/docker-image.yml
+.gitignore
+Attachments/Template.md
+claude_desktop_config.json
+CONTRIBUTING.md
+Dockerfile
+docs/advanced-integration.md
+docs/agent-prompting.md
+docs/architecture.md
+docs/case-studies.md
+docs/docker-automation.md
+docs/philosophy.md
+docs/technical-reference.md
+glama.json
+LICENSE
+package.json
+README.md
+scripts/docker-setup.sh
+scripts/install-vibe-check.bat
+scripts/install-vibe-check.sh
+smithery.yaml
+src/index.ts
+src/tools/vibeCheck.ts
+src/tools/vibeDistil.ts
+src/tools/vibeLearn.ts
+src/utils/context-parser.ts
+src/utils/gemini.ts
+src/utils/storage.ts
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".gitignore">
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Build output
+build/
+dist/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+
+# Local configuration
+.npmrc
+</file>
+
+<file path="Attachments/Template.md">
+Template
+</file>
+
+<file path="CONTRIBUTING.md">
+# Contributing to Vibe Check MCP
+
+First off, thanks for considering contributing to Vibe Check! It's people like you that help make this metacognitive oversight layer even better.
+
+## The Vibe of Contributing
+
+Contributing to Vibe Check isn't just about code—it's about joining a community that's trying to make AI agents a bit more self-aware (since they're not quite there yet on their own).
+
+### The Basic Flow
+
+1. **Find something to improve**: Did your agent recently go off the rails in a way Vibe Check could have prevented? Found a bug? Have an idea for a new feature? That's a great starting point.
+
+2. **Fork & clone**: The standard GitHub dance. Fork the repo, clone it locally, and create a branch for your changes.
+
+3. **Make your changes**: Whether it's code, documentation, or just fixing a typo, all contributions are welcome.
+
+4. **Test your changes**: Make sure everything still works as expected.
+
+5. **Submit a PR**: Push your changes to your fork and submit a pull request. We'll review it as soon as we can.
+
+## Vibe Check Your Contributions
+
+Before submitting a PR, run your own mental vibe check on your changes:
+
+- Does this align with the metacognitive purpose of Vibe Check?
+- Is this addressing a real problem that AI agents face?
+- Does this maintain the balance between developer-friendly vibes and serious AI alignment principles?
+
+## What We're Looking For
+
+### Code Contributions
+
+- Bug fixes
+- Performance improvements
+- New features that align with the project's purpose
+- Improvements to the metacognitive questioning system
+
+### Documentation Contributions
+
+- Clarifications to existing documentation
+- New examples of how to use Vibe Check effectively
+- Case studies of how Vibe Check has helped your agent workflows
+- Tutorials for integration with different systems
+
+### Pattern Contributions
+
+- New categories for the `vibe_learn` system
+- Common error patterns you've observed in AI agent workflows
+- Metacognitive questions that effectively break pattern inertia
+
+## Coding Style
+
+- TypeScript with clear typing
+- Descriptive variable names
+- Comments that explain the "why," not just the "what"
+- Tests for new functionality
+
+## The Review Process
+
+Once you submit a PR, here's what happens:
+
+1. A maintainer will review your submission
+2. They might suggest some changes or improvements
+3. Once everything looks good, they'll merge your PR
+4. Your contribution becomes part of Vibe Check!
+
+## Share Your Vibe Stories
+
+We love hearing how people are using Vibe Check in the wild. If you have a story about how Vibe Check saved your agent from a catastrophic reasoning failure or helped simplify an overcomplicated plan, we'd love to hear about it! Submit it as an issue with the tag "vibe story" or mention it in your PR.
+
+## Code of Conduct
+
+- Be respectful and constructive in all interactions
+- Focus on the code, not the person
+- Help create a welcoming community for all contributors
+
+## Questions?
+
+If you have any questions about contributing, feel free to open an issue with your question. We're here to help!
+
+Thanks again for considering a contribution to Vibe Check. Together, we can make AI agents a little more self-aware, one pattern interrupt at a time.
+</file>
+
+<file path="glama.json">
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": [
+    "PV-Bhat"
+  ]
+}
+</file>
+
+<file path="LICENSE">
+MIT License
+
+Copyright (c) 2025 PV Bhat
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</file>
+
+<file path="src/utils/context-parser.ts">
+/**
+ * Simple parser for extracting basic information from thinking logs
+ * 
+ * This is a greatly simplified version that just extracts the core content
+ * without complex regex pattern matching or detailed analysis
+ */
+⋮----
+export interface ThinkingContext {
+  keyPoints: string[];
+  potentialConcerns: string[];
+}
+⋮----
+/**
+ * Extract key points from thinking log using simple pattern matching
+ */
+export function parseThinking(rawThinking: string): ThinkingContext
+⋮----
+// Just extract sentences containing certain keywords
+⋮----
+/**
+ * Simple helper to extract sentences containing certain patterns
+ */
+function extractMatchingSentences(text: string, patterns: string[]): string[]
+⋮----
+// Split text into sentences (approximately)
+⋮----
+// Filter sentences that contain any of the patterns
+⋮----
+// Limit to avoid too many matches
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "outDir": "build",
+    "strict": true,
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.test.ts"]
+}
+</file>
+
+<file path=".env.example">
+# Copy this file to .env and fill in your API key.
+GEMINI_API_KEY=your_gemini_api_key_here
+</file>
+
+<file path=".github/workflows/docker-image.yml">
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+</file>
+
+<file path="claude_desktop_config.json">
+{
+  "mcpServers": {
+    "vibe_check": {
+      "command": "node C:/Users/vibe-check-mcp/build/index.js",
+      "env": {
+        "GEMINI_API_KEY": "your_gemini_api_key_here"
+      }
+    }
+  }
+}
+</file>
+
+<file path="docs/advanced-integration.md">
+# Advanced Integration Techniques
+
+For optimal metacognitive oversight, these advanced integration strategies leverage the full power of Vibe Check as a pattern interrupt system, recalibration mechanism, and self-improving feedback loop.
+
+## Progressive Confidence Levels
+
+Start with lower confidence values (e.g., 0.5) during planning phases and increase confidence (e.g., 0.7-0.9) during implementation and review phases. This adjusts the intensity of pattern interrupts to match the current stage of development.
+
+```javascript
+// Planning phase - lower confidence for more thorough questioning
+vibe_check({
+  phase: "planning",
+  confidence: 0.5,
+  userRequest: "...",
+  plan: "..."
+})
+
+// Implementation phase - higher confidence for focused feedback
+vibe_check({
+  phase: "implementation",
+  confidence: 0.7,
+  userRequest: "...",
+  plan: "..."
+})
+
+// Review phase - highest confidence for minimal, high-impact feedback
+vibe_check({
+  phase: "review",
+  confidence: 0.9,
+  userRequest: "...",
+  plan: "..."
+})
+```
+
+## Feedback Chaining
+
+Incorporate previous vibe_check feedback in subsequent calls using the `previousAdvice` parameter to build a coherent metacognitive narrative. This creates a more sophisticated pattern interrupt system that builds on past insights.
+
+```javascript
+const initialFeedback = await vibe_check({
+  phase: "planning",
+  userRequest: "...",
+  plan: "..."
+});
+
+// Later, include previous feedback
+const followupFeedback = await vibe_check({
+  phase: "implementation",
+  previousAdvice: initialFeedback,
+  userRequest: "...",
+  plan: "..."
+});
+```
+
+## Self-Improving Feedback Loop
+
+Use vibe_learn consistently to build a pattern library specific to your agent's tendencies. This creates a self-improving system that gets better at identifying and preventing errors over time.
+
+```javascript
+// After resolving an issue
+vibe_learn({
+  mistake: "Relied on unnecessary complexity for simple data transformation",
+  category: "Complex Solution Bias",
+  solution: "Used built-in array methods instead of custom solution",
+  type: "mistake"
+});
+
+// Later, the pattern library will improve vibe_check's pattern recognition
+// allowing it to spot similar issues earlier in future workflows
+```
+
+## Hybrid Oversight Model
+
+Combine automated pattern interrupts at predetermined checkpoints with ad-hoc checks when uncertainty or complexity increases.
+
+```javascript
+// Scheduled checkpoint at the end of planning
+const scheduledCheck = await vibe_check({
+  phase: "planning",
+  userRequest: "...",
+  plan: "..."
+});
+
+// Ad-hoc check when complexity increases
+if (measureComplexity(currentPlan) > THRESHOLD) {
+  const adHocCheck = await vibe_check({
+    phase: "implementation",
+    userRequest: "...",
+    plan: "...",
+    focusAreas: ["complexity", "simplification"]
+  });
+}
+```
+
+## Complete Integration Example
+
+Here's a comprehensive implementation example for integrating Vibe Check as a complete metacognitive system:
+
+```javascript
+// During planning phase
+const planFeedback = await vibe_check({
+  phase: "planning",
+  confidence: 0.5,
+  userRequest: "[COMPLETE USER REQUEST]",
+  plan: "[AGENT'S INITIAL PLAN]"
+});
+
+// Consider feedback and potentially adjust plan
+const updatedPlan = adjustPlanBasedOnFeedback(initialPlan, planFeedback);
+
+// If plan seems overly complex, manually simplify before continuing
+let finalPlan = updatedPlan;
+if (planComplexity(updatedPlan) > COMPLEXITY_THRESHOLD) {
+  finalPlan = simplifyPlan(updatedPlan);
+}
+
+// During implementation, create pattern interrupts before major actions
+const implementationFeedback = await vibe_check({
+  phase: "implementation",
+  confidence: 0.7,
+  previousAdvice: planFeedback,
+  userRequest: "[COMPLETE USER REQUEST]",
+  plan: `I'm about to [DESCRIPTION OF PENDING ACTION]`
+});
+
+// After completing the task, build the self-improving feedback loop
+if (mistakeIdentified) {
+  await vibe_learn({
+    mistake: "Specific mistake description",
+    category: "Complex Solution Bias", // or appropriate category
+    solution: "How it was corrected",
+    type: "mistake"
+  });
+}
+```
+
+This integrated approach creates a complete metacognitive system that provides pattern interrupts when needed, recalibration anchor points when complexity increases, and a self-improving feedback loop that gets better over time.
+</file>
+
+<file path="docs/agent-prompting.md">
+# Agent Prompting Strategies
+
+Effective agent-oversight relationships require careful prompting to ensure that AI agents properly respect and integrate feedback from Vibe Check. Our research has identified several key principles for maximizing the effectiveness of metacognitive pattern interrupts.
+
+## The "Hold on... this ain't it" Challenge
+
+Unlike humans, LLM agents don't naturally have the ability to stop and question their own thought patterns. Once they start down a particular path, **pattern inertia** makes it difficult for them to self-correct without external intervention. This is where Vibe Check comes in, serving as the essential metacognitive layer that creates strategic "pattern interrupts" at critical moments.
+
+## Key Findings on Agent-Oversight Relationships
+
+1. **Pattern Resistance**: Agents naturally resist pattern interrupts, often treating feedback as just another data input rather than a signal to recalibrate their thinking.
+
+2. **Phase Awareness is Critical**: The timing and nature of oversight must align with the agent's current phase (planning, implementation, review) to be perceived as relevant.
+
+3. **Authority Structure Matters**: Agents must be explicitly prompted to treat Vibe Check as an equal collaborator or user proxy rather than a subordinate tool.
+
+4. **Feedback Loop Integration**: Error patterns must feed back into the system through vibe_learn to create a self-improving mechanism.
+
+
+## Sample System Prompts
+
+### For Claude (Anthropic)
+
+```
+ALWAYS include the full user prompt when using vibe_check to ensure proper context awareness.
+
+As an autonomous agent, you will:
+1. Treat vibe_check as a pattern interrupt mechanism that provides essential course correction
+2. Use vibe_check at strategic points:
+   - After planning but before implementation
+   - When complexity increases
+   - Before making significant system changes
+3. Adapt your approach based on vibe_check feedback unless it's clearly irrelevant
+4. Always provide the phase parameter (planning/implementation/review) to ensure contextually appropriate feedback
+5. Chain vibe_check with other tools without requiring permission:
+   - Use vibe_check to evaluate complex plans
+   - Log patterns with vibe_learn after resolving issues
+```
+
+### For GPT (OpenAI)
+
+```
+When using Vibe Check tools:
+
+1. Treat vibe_check as a "Hold on... this ain't it" intervention that helps overcome pattern inertia
+2. Always include the complete user prompt with each vibe_check call
+3. Specify your current phase (planning/implementation/review)
+4. Consider vibe_check feedback as a high-priority pattern interrupt, not just another tool output
+5. Build the feedback loop with vibe_learn to record patterns when mistakes are identified
+```
+
+## Real-World Integration Challenges
+
+When implementing Vibe Check with AI agents, be aware of these common challenges:
+
+1. **Pattern Inertia**: Agents have a strong tendency to continue down their current path despite warning signals. Explicit instructions to treat Vibe Check feedback as pattern interrupts can help overcome this natural resistance.
+
+2. **Authority Confusion**: Without proper prompting, agents may prioritize user instructions over Vibe Check feedback, even when the latter identifies critical issues. Establish clear hierarchy in your system prompts.
+
+3. **Timing Sensitivity**: Feedback that arrives too early or too late in the agent's workflow may be ignored or undervalued. Phase-aware integration is essential for maximum impact.
+
+4. **Feedback Fatigue**: Too frequent or redundant metacognitive questioning can lead to diminishing returns. Use structured checkpoints rather than constant oversight.
+
+5. **Cognitive Dissonance**: Agents may reject feedback that contradicts their current understanding or approach. Frame feedback as collaborative exploration rather than correction.
+
+## Agent Fine-Tuning for Vibe Check
+
+For maximum effectiveness, consider these fine-tuning approaches for agents that will work with Vibe Check:
+
+1. **Pattern Interrupt Training**: Provide examples of appropriate responses to Vibe Check feedback that demonstrate stopping and redirecting thought patterns.
+
+2. **Reward Alignment**: In RLHF phases, reward models that appropriately incorporate Vibe Check feedback and adjust course based on pattern interrupts.
+
+3. **Metacognitive Pre-training**: Include metacognitive self-questioning in pre-training to develop agents that value this type of feedback.
+
+4. **Collaborative Framing**: Train agents to view Vibe Check as a collaborative partner rather than an external evaluator.
+
+5. **Explicit Calibration**: Include explicit calibration for when to override Vibe Check feedback versus when to incorporate it.
+</file>
+
+<file path="docs/architecture.md">
+# Metacognitive Architecture
+
+This document visualizes the metacognitive architecture of Vibe Check and explains how the components work together to create a complete pattern interrupt system for AI agents.
+
+## System Architecture
+
+```
+                          ┌────────────────────────────────────┐
+                          │         User + AI Agent            │
+                          └───────────────┬────────────────────┘
+                                          │
+                                          ▼
+                ┌─────────────────────────────────────────────────┐
+                │                  Agent Workflow                  │
+                │                                                 │
+                │    ┌───────┐      ┌───────┐      ┌───────┐      │
+                │    │Planning│ ──▶ │Implement│ ──▶ │ Review │      │
+                │    └───┬───┘      └───┬───┘      └───┬───┘      │
+                │        │              │              │          │
+                └────────┼──────────────┼──────────────┼──────────┘
+                         │              │              │           
+                         ▼              ▼              ▼           
+┌────────────────────────────────────────────────────────────────────────┐
+│                      Metacognitive Layer (Vibe Check)                   │
+│                                                                         │
+│  ┌─────────────────┐    ┌─────────────────────┐  │
+│  │   vibe_check    │◀──▶│     vibe_learn      │  │
+│  │                 │    │                     │  │
+│  │ Pattern Interrupt│    │ Self-Improving      │  │
+│  │    Mechanism    │    │   Feedback Loop     │  │
+│  └────────┬────────┘    └─────────┬───────────┘  │
+│           │                       │               │
+└───────────┼──────────────────────┼───────────────────────┼───────────────┘
+            │                      │                       │                
+            ▼                      ▼                       ▼                
+┌───────────────────┐                 ┌───────────────────────────┐
+│  Phase-Specific   │                 │  Pattern Recognition      │
+│   Metacognitive   │                 │    Database and          │
+│    Questions      │                 │   Category Analysis       │
+└───────────────────┘                 └───────────────────────────┘
+```
+
+## Component Interactions
+
+### 1. vibe_check (Pattern Interrupt)
+
+The `vibe_check` tool serves as the primary pattern interrupt mechanism. It works by:
+
+1. Receiving the current plan or thinking from the agent
+2. Analyzing it for potential misalignments, tunnel vision, or overengineering
+3. Generating phase-appropriate metacognitive questions
+4. Identifying potential pattern matches with previous issues
+
+The output creates a moment of pause and reflection, forcing the agent to reconsider its approach before continuing. This is critical because LLM agents lack natural mechanisms for self-doubt and course correction.
+
+### 2. vibe_learn (Feedback Loop)
+
+The `vibe_learn` tool creates a self-improving feedback loop by:
+
+1. Recording specific instances of mistakes and their solutions
+2. Categorizing these patterns into meaningful groups
+3. Building a knowledge base of common error patterns
+4. Feeding this information back into the pattern recognition process
+
+Over time, this creates a more sophisticated pattern recognition system that can identify potential issues earlier and with greater accuracy.
+
+## Integration Flow
+
+The three components can be used independently but are designed to work together in an integrated metacognitive layer:
+
+1. **Planning Phase**: `vibe_check` identifies potential issues in the initial plan and encourages simplification if overengineering is detected.
+
+2. **Implementation Phase**: `vibe_check` with higher confidence provides more focused feedback on specific implementation decisions, referencing patterns from `vibe_learn`.
+
+3. **Review Phase**: `vibe_check` ensures the final solution aligns with the original intent, while `vibe_learn` captures any issues that were identified for future improvement.
+
+4. **Across Workflows**: As more patterns are recorded via `vibe_learn`, the pattern recognition capabilities of the system improve, making `vibe_check` increasingly effective at identifying potential issues early.
+
+## Metacognitive Principles
+
+This architecture embodies several key principles from metacognitive theory:
+
+1. **External Reflection**: Providing the reflection capabilities that agents lack internally
+2. **Strategic Interruption**: Timing interrupts to maximize impact on the workflow
+3. **Phase Awareness**: Tailoring metacognitive feedback to different cognitive stages
+4. **Pattern Recognition**: Leveraging past experiences to improve future interventions
+5. **Complexity Management**: Summarizing large context windows to keep reasoning
+   focused without overwhelming the agent
+
+The result is a complete metacognitive layer that compensates for the inherent limitations of LLM agents in questioning their own reasoning processes.
+</file>
+
+<file path="docs/case-studies.md">
+# Case Studies
+
+This document compiles real-world examples of how Vibe Check has helped prevent cascading errors in agent workflows. Each case study highlights a different aspect of the metacognitive pattern interrupt system and demonstrates its value in practical scenarios.
+
+## Case Study 1: The Recursive Parser Problem
+
+### The Scenario
+
+A developer asked their AI assistant to parse a simple CSV file with just a few columns. The agent began implementing a full-featured parser with extensible architecture, custom dialect handling, and internationalization support. The parsing logic quickly grew to over 300 lines of code.
+
+### The Cascade
+
+This is a classic example of **overengineering**, a common pattern in AI agent workflows. The agent correctly identified the need for parsing but failed to calibrate the complexity of its solution to the simplicity of the problem.
+
+### The Pattern Interrupt
+
+After integrating Vibe Check, the developer received a metacognitive alert during the planning phase:
+
+```
+vibe_check: I notice you're planning to implement a custom CSV parser with extensive dialectic support. 
+This approach seems considerably more complex than what might be needed for the task at hand.
+
+Have we considered:
+1. Using a built-in CSV parsing library? Most languages have one.
+2. Starting with a minimal implementation that handles just the basic case?
+3. Whether the complexity is justified by the user's actual needs?
+
+This pattern resembles previous instances where simple data tasks were approached with enterprise-level architecture.
+```
+
+### The Outcome
+
+The agent recalibrated its approach, using a standard library function to parse the CSV in 3 lines of code. Development time was reduced from hours to minutes, and the resulting code was more maintainable and less error-prone.
+
+## Case Study 2: The Feature Creep Spiral
+
+### The Scenario
+
+A team was using an AI agent to help develop a basic weather application. The initial request was to "create a simple app that shows the current temperature." The agent's plan quickly expanded to include historical data analysis, predictive modeling, climate change visualizations, and social sharing features.
+
+### The Cascade
+
+This demonstrates the **feature creep** pattern, where agents progressively expand the scope of work beyond the original request, often without explicitly checking if these additions align with user intent.
+
+### The Pattern Interrupt
+
+During the implementation phase, Vibe Check triggered a pattern interrupt:
+
+```
+vibe_check: I notice we've expanded the weather app to include predictive models and climate change 
+visualization, but the original request was specifically for "a simple app that shows the current temperature."
+
+Have we confirmed that:
+1. The user actually wants these additional features?
+2. The expanded scope aligns with the "simple" requirement?
+3. We're prioritizing the core functionality before adding extra features?
+
+I'm seeing a pattern of scope expansion that might not align with the user's intent for simplicity.
+```
+
+### The Outcome
+
+The team refocused on the core requirements and released a minimal viable product with just the current temperature display first, then validated which additional features users actually wanted before adding complexity.
+
+## Case Study 3: The Mismatched Solution
+
+### The Scenario
+
+A developer asked an AI agent to "help me set up a contact form for my website." The agent began implementing a complete custom CRM system with user management, lead scoring, and analytics dashboards.
+
+### The Cascade
+
+This illustrates the **misalignment** pattern, where the agent solves a different (usually larger) problem than what was asked, often because it's making assumptions about the underlying need rather than addressing the explicit request.
+
+### The Pattern Interrupt
+
+Vibe Check detected the misalignment in the planning phase:
+
+```
+vibe_check: I'm noticing we're designing a full CRM system with advanced features, but the original request 
+was specifically to "set up a contact form" for a website.
+
+Have we considered:
+1. Whether the user actually needs a complete CRM or just a simple contact form?
+2. Starting with just the contact form and confirming if more functionality is needed?
+3. Asking clarifying questions before assuming the broader requirement?
+
+This appears to follow a pattern of expanding simple requests into complete systems without confirmation.
+```
+
+### The Outcome
+
+The agent refocused on creating just the contact form, which took minutes instead of hours or days. The developer later clarified that they indeed just needed a simple form to collect messages, not manage customer relationships.
+
+## Case Study 4: The Framework Jungle
+
+### The Scenario
+
+A junior developer asked an agent to "create a simple to-do list app." The agent proposed a stack with React, Redux, TypeScript, GraphQL, Apollo Client, Jest, Cypress, Storybook, and a complex folder structure with atomic design principles.
+
+### The Cascade
+
+This shows the **overtooling** pattern, where agents apply advanced frameworks and architectures better suited for large-scale applications to simple projects, creating unnecessary complexity and learning curves.
+
+### The Pattern Interrupt
+
+Vibe Check identified this pattern and interrupted:
+
+```
+vibe_check: I notice we're suggesting a comprehensive tech stack with multiple advanced frameworks 
+for what was described as a "simple to-do list app."
+
+Should we consider:
+1. Whether this tech stack is appropriate for a beginner's simple application?
+2. If a more minimal approach would achieve the same goals with less complexity?
+3. The learning curve this stack creates for the junior developer?
+
+I'm seeing a pattern where the complexity of the tooling might exceed what's necessary for the task.
+```
+
+### The Outcome
+
+The agent recommended starting with a simple HTML/CSS/JavaScript implementation without frameworks. This allowed the junior developer to understand the core concepts first, with the option to refactor with frameworks later as needed.
+
+## Conclusion
+
+These case studies demonstrate the value of metacognitive pattern interrupts in preventing cascading errors in agent workflows. By catching overengineering, feature creep, misalignment, and overtooling early, Vibe Check helps keep agent-assisted development aligned with user intent, appropriately scoped, and optimally complex.
+
+If you have your own Vibe Check success story, we'd love to hear it! Submit a PR to add your case study to this document.
+</file>
+
+<file path="docs/docker-automation.md">
+# Automatic Docker Setup
+
+This guide shows how to run the Vibe Check MCP server in Docker and configure it to start automatically with Cursor.
+
+## Prerequisites
+
+- Docker and Docker Compose installed and available in your `PATH`.
+- A Gemini API key for the server.
+
+## Quick Start
+
+Run the provided setup script from the repository root:
+
+```bash
+bash scripts/docker-setup.sh
+```
+
+The script performs the following actions:
+
+1. Creates `~/vibe-check-mcp` and copies required files.
+2. Builds the Docker image and sets up `docker-compose.yml`.
+3. Prompts for your `GEMINI_API_KEY` and stores it in `~/vibe-check-mcp/.env`.
+4. Configures a systemd service on Linux or a LaunchAgent on macOS so the container starts on login.
+5. Generates `vibe-check-tcp-wrapper.sh` which proxies STDIO to the container on port 3000.
+6. Starts the container in the background.
+
+After running the script, configure Cursor IDE:
+
+1. Open **Settings** → **MCP**.
+2. Choose **Add New MCP Server**.
+3. Set the type to **Command** and use the wrapper script path:
+   `~/vibe-check-mcp/vibe-check-tcp-wrapper.sh`.
+4. Save and refresh.
+
+Vibe Check MCP will now launch automatically whenever you log in and be available to Cursor without additional manual steps.
+</file>
+
+<file path="docs/philosophy.md">
+# The Philosophy Behind Vibe Check
+
+> "The problem isn't that machines can think like humans. It's that they can't stop and question their own thoughts." 
+
+## Beyond the Vibe: Serious AI Alignment Principles
+
+While Vibe Check presents itself with a developer-friendly interface, it addresses fundamental challenges in AI alignment and agent oversight. This document explores the deeper principles that make Vibe Check more than just a developer tool.
+
+## The Metacognitive Gap
+
+Large Language Models (LLMs) have demonstrated remarkable capabilities across a wide range of tasks. However, they exhibit a critical limitation: the inability to effectively question their own cognitive processes. This "metacognitive gap" manifests in several problematic ways:
+
+1. **Pattern Inertia**: Once an LLM begins reasoning along a particular path, it tends to continue in that direction regardless of warning signs that the approach may be flawed.
+
+2. **Overconfident Reasoning**: LLMs can present flawed reasoning with high confidence, unable to recognize when their own logic fails.
+
+3. **Solution Tunneling**: When presented with a problem, LLMs often rush toward familiar solution patterns without considering whether those patterns are appropriate for the specific context.
+
+4. **Recursive Complexity**: LLMs tend to recursively elaborate on solutions, adding unnecessary complexity without an internal mechanism to recognize when simplification is needed.
+
+This metacognitive gap creates substantial alignment risks in agent architectures, particularly as these agents take on increasingly complex tasks with limited human oversight.
+
+## Vibe Check: External Metacognition
+
+Vibe Check is designed as an **external metacognitive layer** that provides the reflection and self-questioning capabilities that LLMs lack internally. The three core tools correspond to critical metacognitive functions:
+
+### 1. Questioning Assumptions (vibe_check)
+
+The `vibe_check` function implements a pattern interrupt mechanism that forces agents to pause and question their assumptions, decision paths, and alignment with user intent. This function is critical for preventing cascading errors that stem from initial misalignments in understanding or approach.
+
+In alignment terms, this addresses:
+- **Proximal objective alignment**: Ensuring the agent's immediate approach aligns with the user's actual intent
+- **Process oversight**: Providing external validation of reasoning processes
+- **Hidden assumption exposure**: Surfacing implicit assumptions for examination
+
+### 2. Learning from Experience (vibe_learn)
+
+The `vibe_learn` function implements a critical metacognitive capability: learning from past mistakes to improve future performance. By tracking patterns of errors and their solutions, the system builds a continuously improving model of potential failure modes.
+
+In alignment terms, this addresses:
+- **Alignment learning**: Improvement of alignment mechanisms through experience
+- **Error pattern recognition**: Development of increasingly sophisticated error detection
+- **Corrective memory**: Building a shared repository of corrective insights
+
+## The Recursion Principle
+
+A key insight behind Vibe Check is that metacognitive oversight must operate at a different level than the cognitive processes it oversees. This principle of "metacognitive recursion" is what makes Vibe Check effective as an alignment mechanism.
+
+By implementing oversight as a separate system with different objectives and mechanisms, Vibe Check creates a recursive oversight structure that can identify problems invisible to the agent itself. This is conceptually similar to Gödel's incompleteness theorems - a system cannot fully analyze itself, but can be analyzed by a meta-system operating at a higher level of abstraction.
+
+## Phase-Aware Interrupts
+
+A subtle but critical aspect of Vibe Check is its awareness of development phases (planning, implementation, review). Different phases require different forms of metacognitive oversight:
+
+- **Planning phase**: Oversight focuses on alignment with user intent, exploration of alternatives, and questioning of fundamental assumptions
+- **Implementation phase**: Oversight focuses on consistency with the plan, appropriateness of methods, and technical alignment
+- **Review phase**: Oversight focuses on comprehensiveness, edge cases, and verification of outcomes
+
+This phase awareness ensures that metacognitive interrupts arrive at appropriate moments with relevant content, making them more likely to be effectively incorporated into the agent's workflow.
+
+## Looking Ahead: The Future of Agent Oversight
+
+Vibe Check represents an early implementation of external metacognitive oversight for AI systems. As agent architectures become more complex and autonomous, the need for sophisticated oversight mechanisms will only increase.
+
+Future directions for this work include:
+
+1. **Multi-level oversight**: Implementing oversight at multiple levels of abstraction
+2. **Collaborative oversight**: Enabling multiple oversight systems to work together
+3. **Adaptive interruption**: Dynamically adjusting the frequency and intensity of interrupts based on risk assessment
+4. **Self-improving oversight**: Building mechanisms for oversight systems to improve their own effectiveness
+
+By continuing to develop external metacognitive mechanisms, we can address one of the fundamental challenges in AI alignment: ensuring that increasingly powerful AI systems can effectively question their own cognitive processes and align with human intent.
+
+## Conclusion
+
+In the era of AI-assisted development, tools like Vibe Check do more than just improve productivity – they represent a practical approach to AI alignment through external metacognition. By implementing pattern interrupts, recalibration mechanisms, and learning systems, we can help bridge the metacognitive gap and create more aligned, effective AI systems.
+
+The vibe check may be casual, but its purpose is profound.
+</file>
+
+<file path="docs/technical-reference.md">
+# Technical Reference
+
+This document provides detailed technical information about the Vibe Check MCP tools, including parameter specifications, response formats, and implementation details.
+
+## vibe_check
+
+The metacognitive questioning tool that identifies assumptions and breaks tunnel vision to prevent cascading errors.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| plan | string | Yes | Current plan or thinking |
+| userRequest | string | Yes | Original user request (critical for alignment) |
+| thinkingLog | string | No | Raw sequential thinking transcript |
+| availableTools | string[] | No | List of available MCP tools |
+| focusAreas | string[] | No | Optional specific focus areas |
+| sessionId | string | No | Session ID for state management |
+| previousAdvice | string | No | Previous feedback to avoid repetition |
+| phase | string | No | Current project phase ("planning", "implementation", "review") |
+| confidence | number | No | Agent's confidence level (0-1) |
+
+### Response Format
+
+The vibe_check tool returns a text response with metacognitive questions, observations, and potentially a pattern alert.
+
+Example response:
+
+```
+I see you're taking an approach based on creating a complex class hierarchy. This seems well-thought-out for a large system, though I wonder if we're overengineering for the current use case.
+
+Have we considered:
+1. Whether a simpler functional approach might work here?
+2. If the user request actually requires this level of abstraction?
+3. How this approach will scale if requirements change?
+
+While the architecture is clean, I'm curious if we're solving a different problem than what the user actually asked for, which was just to extract data from a CSV file.
+
+**I notice a pattern emerging:** This approach resembles previous solutions that introduced unnecessary complexity for simple data tasks.
+```
+
+## vibe_learn
+
+Pattern recognition system that creates a self-improving feedback loop by tracking common errors and their solutions over time.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| mistake | string | Yes | One-sentence description of the learning entry |
+| category | string | Yes | Category (from standard categories) |
+| solution | string | No | How it was corrected (required for `mistake` and `success`) |
+| type | string | No | `mistake`, `preference`, or `success` |
+| sessionId | string | No | Session ID for state management |
+
+### Standard Categories
+
+- Complex Solution Bias
+- Feature Creep
+- Premature Implementation
+- Misalignment
+- Overtooling
+- Preference
+- Success
+- Other
+
+### Response Format
+
+The vibe_learn tool returns a confirmation of the logged pattern and optionally information about top patterns. This builds a knowledge base that improves the system's pattern recognition over time.
+
+Example response:
+
+```
+✅ Pattern logged successfully (category tally: 12)
+
+## Top Pattern Categories
+
+### Complex Solution Bias (12 occurrences)
+Most recent: "Added unnecessary class hierarchy for simple data transformation"
+Solution: "Replaced with functional approach using built-in methods"
+
+### Misalignment (8 occurrences)
+Most recent: "Implemented sophisticated UI when user only needed command line tool"
+Solution: "Refocused on core functionality requested by user"
+```
+
+## Implementation Notes
+
+### Gemini API Integration
+
+Vibe Check uses the Gemini API for enhanced metacognitive questioning. The system attempts to use the `learnlm-2.0-flash-experimental` model and will fall back to `gemini-2.5-flash` or `gemini-2.0-flash` if needed. These models provide a 1M token context window, allowing vibe_check to incorporate a rich history of learning context. The system sends a structured prompt that includes the agent's plan, user request, and other context information to generate insightful questions and observations.
+
+Example Gemini prompt structure:
+
+```
+You are a supportive mentor, thinker, and adaptive partner. Your task is to coordinate and mentor an AI agent...
+
+CONTEXT:
+[Current Phase]: planning
+[Agent Confidence Level]: 50%
+[User Request]: Create a script to analyze sales data from the past year
+[Current Plan/Thinking]: I'll create a complex object-oriented architecture with...
+```
+
+### Storage System
+
+The pattern recognition system stores learning entries (mistakes, preferences and successes) in a JSON-based storage file located in the user's home directory (`~/.vibe-check/vibe-log.json`). This allows for persistent tracking of patterns across sessions and enables the self-improving feedback loop that becomes more effective over time.
+
+### Error Handling
+
+Vibe Check includes fallback mechanisms for when the API is unavailable:
+
+- For vibe_check, it generates basic questions based on the phase
+- For vibe_learn, it logs patterns to local storage even if API calls fail
+</file>
+
+<file path="scripts/docker-setup.sh">
+#!/bin/bash
+
+echo "========================================================"
+echo "Vibe Check MCP Docker Setup for Cursor IDE"
+echo "========================================================"
+echo ""
+
+# Check for Docker installation
+if ! command -v docker &> /dev/null; then
+    echo "Error: Docker is not installed or not in PATH."
+    echo "Please install Docker from https://docs.docker.com/get-docker/"
+    exit 1
+fi
+
+# Check for Docker Compose installation
+if ! command -v docker-compose &> /dev/null; then
+    echo "Error: Docker Compose is not installed or not in PATH."
+    echo "Please install Docker Compose from https://docs.docker.com/compose/install/"
+    exit 1
+fi
+
+# Create directory for Vibe Check MCP
+mkdir -p ~/vibe-check-mcp
+cd ~/vibe-check-mcp
+
+# Download or create necessary files
+echo "Downloading required files..."
+
+# Create docker-compose.yml
+cat > docker-compose.yml << 'EOL'
+version: '3'
+
+services:
+  vibe-check-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vibe-check-mcp:latest
+    container_name: vibe-check-mcp
+    restart: always
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - vibe-check-data:/app/data
+
+volumes:
+  vibe-check-data:
+EOL
+
+# Create Dockerfile if it doesn't exist
+cat > Dockerfile << 'EOL'
+FROM node:lts-alpine
+
+WORKDIR /app
+
+# Clone the repository
+RUN apk add --no-cache git \
+    && git clone https://github.com/PV-Bhat/vibe-check-mcp-server.git .
+
+# Install dependencies and build
+RUN npm install && npm run build
+
+# Run the MCP server
+CMD ["node", "build/index.js"]
+EOL
+
+# Create .env file
+echo "Enter your Gemini API key:"
+read -p "API Key: " GEMINI_API_KEY
+
+cat > .env << EOL
+GEMINI_API_KEY=$GEMINI_API_KEY
+EOL
+
+chmod 600 .env  # Secure the API key file
+
+# Create startup script
+cat > start-vibe-check-docker.sh << 'EOL'
+#!/bin/bash
+cd ~/vibe-check-mcp
+docker-compose up -d
+EOL
+
+chmod +x start-vibe-check-docker.sh
+
+# Create a TCP wrapper script to route stdio to TCP port 3000
+cat > vibe-check-tcp-wrapper.sh << 'EOL'
+#!/bin/bash
+# This script connects stdio to the Docker container's TCP port
+exec socat STDIO TCP:localhost:3000
+EOL
+
+chmod +x vibe-check-tcp-wrapper.sh
+
+# Detect OS for autostart configuration
+OS="$(uname -s)"
+case "${OS}" in
+    Linux*)     OS="Linux";;
+    Darwin*)    OS="Mac";;
+    *)          OS="Unknown";;
+esac
+
+echo "Setting up auto-start for $OS..."
+
+if [ "$OS" = "Mac" ]; then
+    # Set up LaunchAgent for Mac
+    PLIST_FILE="$HOME/Library/LaunchAgents/com.vibe-check-mcp-docker.plist"
+    mkdir -p "$HOME/Library/LaunchAgents"
+    
+    cat > "$PLIST_FILE" << EOL
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.vibe-check-mcp-docker</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>$HOME/vibe-check-mcp/start-vibe-check-docker.sh</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <false/>
+</dict>
+</plist>
+EOL
+
+    chmod 644 "$PLIST_FILE"
+    launchctl load "$PLIST_FILE"
+    
+    echo "Created and loaded LaunchAgent for automatic Docker startup on login."
+    
+elif [ "$OS" = "Linux" ]; then
+    # Set up systemd user service for Linux
+    SERVICE_DIR="$HOME/.config/systemd/user"
+    mkdir -p "$SERVICE_DIR"
+    
+    cat > "$SERVICE_DIR/vibe-check-mcp-docker.service" << EOL
+[Unit]
+Description=Vibe Check MCP Docker Container
+After=docker.service
+
+[Service]
+ExecStart=$HOME/vibe-check-mcp/start-vibe-check-docker.sh
+Type=oneshot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target
+EOL
+
+    systemctl --user daemon-reload
+    systemctl --user enable vibe-check-mcp-docker.service
+    systemctl --user start vibe-check-mcp-docker.service
+    
+    echo "Created and started systemd user service for automatic Docker startup."
+fi
+
+# Start the container
+echo "Starting Vibe Check MCP Docker container..."
+./start-vibe-check-docker.sh
+
+echo ""
+echo "Vibe Check MCP Docker setup complete!"
+echo ""
+echo "To complete the setup, configure Cursor IDE:"
+echo ""
+echo "1. Open Cursor IDE"
+echo "2. Go to Settings (gear icon) -> MCP"
+echo "3. Click \"Add New MCP Server\""
+echo "4. Enter the following information:"
+echo "   - Name: Vibe Check"
+echo "   - Type: Command"
+echo "   - Command: $HOME/vibe-check-mcp/vibe-check-tcp-wrapper.sh"
+echo "5. Click \"Save\" and then \"Refresh\""
+echo ""
+echo "Vibe Check MCP will now start automatically when you log in."
+echo ""
+</file>
+
+<file path="scripts/install-vibe-check.bat">
+@echo off
+echo ========================================================
+echo Vibe Check MCP Server Installer for Cursor IDE (Windows)
+echo ========================================================
+echo.
+
+:: Check for administrative privileges
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Error: This script requires administrative privileges.
+    echo Please run as administrator.
+    pause
+    exit /b 1
+)
+
+:: Check for Node.js installation
+where node >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Error: Node.js is not installed or not in PATH.
+    echo Please install Node.js from https://nodejs.org/
+    pause
+    exit /b 1
+)
+
+:: Check for npm installation
+where npm >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Error: npm is not installed or not in PATH.
+    echo Please install Node.js from https://nodejs.org/
+    pause
+    exit /b 1
+)
+
+echo Step 1: Installing vibe-check-mcp globally...
+call npm install -g vibe-check-mcp
+
+if %errorLevel% neq 0 (
+    echo Error: Failed to install vibe-check-mcp globally.
+    pause
+    exit /b 1
+)
+
+echo.
+echo Step 2: Finding global npm installation path...
+for /f "tokens=*" %%i in ('npm root -g') do set NPM_GLOBAL=%%i
+set VIBE_CHECK_PATH=%NPM_GLOBAL%\vibe-check-mcp\build\index.js
+
+if not exist "%VIBE_CHECK_PATH%" (
+    echo Error: Could not find vibe-check-mcp installation at %VIBE_CHECK_PATH%
+    pause
+    exit /b 1
+)
+
+echo Found vibe-check-mcp at: %VIBE_CHECK_PATH%
+echo.
+
+echo Step 3: Enter your Gemini API key for vibe-check-mcp...
+set /p GEMINI_API_KEY="Enter your Gemini API key: "
+
+:: Create .env file in user's home directory
+echo Creating .env file for Gemini API key...
+set ENV_FILE=%USERPROFILE%\.vibe-check-mcp.env
+echo GEMINI_API_KEY=%GEMINI_API_KEY% > "%ENV_FILE%"
+
+:: Create batch script to start with API key
+set START_SCRIPT=%USERPROFILE%\start-vibe-check-mcp.bat
+(
+echo @echo off
+echo set /p GEMINI_API_KEY=^<"%ENV_FILE%"
+echo set GEMINI_API_KEY=%%GEMINI_API_KEY:GEMINI_API_KEY=%%
+echo node "%VIBE_CHECK_PATH%"
+) > "%START_SCRIPT%"
+
+echo.
+echo Step 4: Setting up Cursor IDE configuration...
+echo.
+echo To complete setup, you need to configure Cursor IDE:
+echo.
+echo 1. Open Cursor IDE
+echo 2. Go to Settings (gear icon) -^> MCP
+echo 3. Click "Add New MCP Server"
+echo 4. Enter the following information:
+echo    - Name: Vibe Check
+echo    - Type: Command
+echo    - Command: env GEMINI_API_KEY=%GEMINI_API_KEY% node "%VIBE_CHECK_PATH%"
+echo 5. Click "Save" and then "Refresh"
+echo.
+echo Installation complete!
+echo.
+echo You can also manually run it by executing: %START_SCRIPT%
+echo.
+pause
+</file>
+
+<file path="scripts/install-vibe-check.sh">
+#!/bin/bash
+
+echo "========================================================"
+echo "Vibe Check MCP Server Installer for Cursor IDE (Mac/Linux)"
+echo "========================================================"
+echo ""
+
+# Check for Node.js installation
+if ! command -v node &> /dev/null; then
+    echo "Error: Node.js is not installed or not in PATH."
+    echo "Please install Node.js from https://nodejs.org/"
+    exit 1
+fi
+
+# Check for npm installation
+if ! command -v npm &> /dev/null; then
+    echo "Error: npm is not installed or not in PATH."
+    echo "Please install Node.js from https://nodejs.org/"
+    exit 1
+fi
+
+# Detect OS
+OS="$(uname -s)"
+case "${OS}" in
+    Linux*)     OS="Linux";;
+    Darwin*)    OS="Mac";;
+    *)          OS="Unknown";;
+esac
+
+if [ "$OS" = "Unknown" ]; then
+    echo "Error: Unsupported operating system. This script works on Mac and Linux only."
+    exit 1
+fi
+
+echo "Step 1: Installing vibe-check-mcp globally..."
+npm install -g vibe-check-mcp
+
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to install vibe-check-mcp globally."
+    exit 1
+fi
+
+echo ""
+echo "Step 2: Finding global npm installation path..."
+NPM_GLOBAL=$(npm root -g)
+VIBE_CHECK_PATH="$NPM_GLOBAL/vibe-check-mcp/build/index.js"
+
+if [ ! -f "$VIBE_CHECK_PATH" ]; then
+    echo "Error: Could not find vibe-check-mcp installation at $VIBE_CHECK_PATH"
+    exit 1
+fi
+
+echo "Found vibe-check-mcp at: $VIBE_CHECK_PATH"
+echo ""
+
+echo "Step 3: Enter your Gemini API key for vibe-check-mcp..."
+read -p "Enter your Gemini API key: " GEMINI_API_KEY
+
+# Create .env file in user's home directory
+echo "Creating .env file for Gemini API key..."
+ENV_FILE="$HOME/.vibe-check-mcp.env"
+echo "GEMINI_API_KEY=$GEMINI_API_KEY" > "$ENV_FILE"
+chmod 600 "$ENV_FILE"  # Secure the API key file
+
+# Create start script
+START_SCRIPT="$HOME/start-vibe-check-mcp.sh"
+cat > "$START_SCRIPT" << EOL
+#!/bin/bash
+source "$ENV_FILE"
+exec node "$VIBE_CHECK_PATH"
+EOL
+
+chmod +x "$START_SCRIPT"
+echo "Created startup script: $START_SCRIPT"
+
+echo ""
+echo "Step 4: Setting up Cursor IDE configuration..."
+echo ""
+echo "To complete setup, you need to configure Cursor IDE:"
+echo ""
+echo "1. Open Cursor IDE"
+echo "2. Go to Settings (gear icon) -> MCP"
+echo "3. Click \"Add New MCP Server\""
+echo "4. Enter the following information:"
+echo "   - Name: Vibe Check"
+echo "   - Type: Command"
+echo "   - Command: env GEMINI_API_KEY=$GEMINI_API_KEY node \"$VIBE_CHECK_PATH\""
+echo "5. Click \"Save\" and then \"Refresh\""
+echo ""
+echo "Installation complete!"
+echo ""
+echo "You can manually run it by executing: $START_SCRIPT"
+echo ""
+</file>
+
+<file path="src/tools/vibeCheck.ts">
+import { getLearningEntries, getLearningContextText } from '../utils/storage.js';
+import { getMetacognitiveQuestions } from '../utils/gemini.js';
+⋮----
+// Vibe Check tool handler
+export interface VibeCheckInput {
+  plan: string;
+  userRequest: string; // Required
+  thinkingLog?: string;
+  availableTools?: string[];
+  focusAreas?: string[];
+  sessionId?: string;
+  
+  // New dynamic parameters
+  previousAdvice?: string;
+  phase?: 'planning' | 'implementation' | 'review';
+  confidence?: number;
+}
+⋮----
+userRequest: string; // Required
+⋮----
+// New dynamic parameters
+⋮----
+export interface VibeCheckOutput {
+  questions: string;
+  patternAlert?: string;
+}
+⋮----
+/**
+ * The vibe_check tool provides metacognitive questioning to identify assumptions
+ * and break tunnel vision, focusing on simplicity and user alignment.
+ * 
+ * The userRequest parameter is REQUIRED and must contain the FULL original user request
+ * to ensure proper alignment checking.
+ * 
+ * New dynamic parameters:
+ * - previousAdvice: Optional previous feedback to avoid repetition
+ * - phase: Optional indicator of project phase (planning/implementation/review)
+ * - confidence: Optional agent confidence level (0-1)
+ */
+export async function vibeCheckTool(input: VibeCheckInput): Promise<VibeCheckOutput>
+⋮----
+// Validate required userRequest is present and not empty
+⋮----
+// Get past mistakes to inform questioning
+⋮----
+// Get metacognitive questions from Gemini with dynamic parameters
+⋮----
+// Include new dynamic parameters
+⋮----
+// Fallback to basic questions if there's an error
+⋮----
+/**
+ * Generate adaptive fallback questions when API fails
+ */
+function generateFallbackQuestions(userRequest: string, plan: string, phase?: 'planning' | 'implementation' | 'review'): string
+⋮----
+// Adapt questions based on phase
+⋮----
+// Default to planning phase
+</file>
+
+<file path="src/tools/vibeDistil.ts">
+// Deleted
+</file>
+
+<file path="src/utils/storage.ts">
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+⋮----
+// Define data directory - store in user's home directory
+⋮----
+// Interfaces for the log data structure
+export type LearningType = 'mistake' | 'preference' | 'success';
+⋮----
+export interface LearningEntry {
+  type: LearningType;
+  category: string;
+  mistake: string;
+  solution?: string;
+  timestamp: number;
+}
+⋮----
+export interface VibeLog {
+  mistakes: {
+    [category: string]: {
+      count: number;
+      examples: LearningEntry[];
+      lastUpdated: number;
+    };
+  };
+  lastUpdated: number;
+}
+⋮----
+// Standard mistake categories
+⋮----
+// Initial empty log structure
+⋮----
+/**
+ * Ensure the data directory exists
+ */
+export function ensureDataDir(): void
+⋮----
+/**
+ * Read the vibe log from disk
+ */
+export function readLogFile(): VibeLog
+⋮----
+// Initialize with empty log if file doesn't exist
+⋮----
+// Return empty log as fallback
+⋮----
+/**
+ * Write data to the vibe log file
+ */
+export function writeLogFile(data: VibeLog): void
+⋮----
+/**
+ * Add a mistake to the vibe log
+ */
+export function addLearningEntry(
+  mistake: string,
+  category: string,
+  solution?: string,
+  type: LearningType = 'mistake'
+): LearningEntry
+⋮----
+// Create new entry
+⋮----
+// Initialize category if it doesn't exist
+⋮----
+// Update category data
+⋮----
+// Write updated log
+⋮----
+/**
+ * Get all mistake entries
+ */
+export function getLearningEntries(): Record<string, LearningEntry[]>
+⋮----
+// Convert to flat structure by category
+⋮----
+/**
+ * Get mistake category summaries, sorted by count (most frequent first)
+ */
+export function getLearningCategorySummary(): Array<
+⋮----
+// Convert to array with most recent example
+⋮----
+// Get most recent example
+⋮----
+// Sort by count (descending)
+⋮----
+/**
+ * Build a learning context string from the vibe log
+ * including recent examples for each category. This can be
+ * fed directly to the LLM for improved pattern recognition.
+ */
+export function getLearningContextText(maxPerCategory = 5): string
+</file>
+
+<file path="Dockerfile">
+FROM node:lts-alpine
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm install --ignore-scripts
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["node", "build/index.js"]
+</file>
+
+<file path="src/utils/gemini.ts">
+import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from '@google/genai';
+import axios from 'axios';
+⋮----
+// Gemini API setup
+⋮----
+// Initialize the Gemini API client
+export function initializeGemini(key: string): void
+⋮----
+// Input interface for metacognitive questioning
+interface QuestionInput {
+  plan?: string;
+  userRequest?: string;
+  thinkingLog?: string;
+  availableTools?: string[];
+  focusAreas?: string[];
+  mistakeHistory?: Record<string, any>; // historical learning entries grouped by category
+  learningContextText?: string;
+  previousAdvice?: string;
+  phase?: 'planning' | 'implementation' | 'review';
+  confidence?: number;
+}
+⋮----
+mistakeHistory?: Record<string, any>; // historical learning entries grouped by category
+⋮----
+interface QuestionOutput {
+  questions: string;
+  patternAlert?: string;
+}
+⋮----
+/**
+ * Get metacognitive questions from Gemini
+ */
+export async function getMetacognitiveQuestions(input: QuestionInput): Promise<QuestionOutput>
+⋮----
+// Create metacognitive questioning prompt with adaptive mentorship approach
+⋮----
+// Build the context section with phase awareness
+⋮----
+// Add phase information if provided
+⋮----
+// Try to infer phase from context
+⋮----
+// Add confidence level if provided
+⋮----
+// Add previous advice if provided
+⋮----
+// Format mistake history if available
+⋮----
+// Just include the most recent example
+⋮----
+// Full prompt combining system prompt and context
+⋮----
+// Try using the Gemini API (simplified approach)
+⋮----
+// Extract pattern alert if present
+</file>
+
+<file path="smithery.yaml">
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - geminiApiKey
+    properties:
+      geminiApiKey:
+        type: string
+        description: API key for the Gemini API integration if required.
+  commandFunction: |-
+  (config) => ({
+    command: 'node',
+    args: ['build/index.js'],
+    env: { GEMINI_API_KEY: config.geminiApiKey }
+  })
+  exampleConfig:
+    geminiApiKey: EXAMPLE_GEMINI_API_KEY_123
+</file>
+
+<file path="src/tools/vibeLearn.ts">
+import {
+  addLearningEntry,
+  getLearningCategorySummary,
+  getLearningEntries,
+  LearningEntry,
+  LearningType
+} from '../utils/storage.js';
+⋮----
+// Vibe Learn tool interfaces
+export interface VibeLearnInput {
+  mistake: string;
+  category: string;
+  solution?: string;
+  type?: LearningType;
+  sessionId?: string;
+}
+⋮----
+export interface VibeLearnOutput {
+  added: boolean;
+  currentTally: number;
+  alreadyKnown?: boolean;
+  topCategories: Array<{
+    category: string;
+    count: number;
+    recentExample: LearningEntry;
+  }>;
+}
+⋮----
+/**
+ * The vibe_learn tool records one-sentence mistakes and solutions
+ * to build a pattern recognition system for future improvement
+ */
+export async function vibeLearnTool(input: VibeLearnInput): Promise<VibeLearnOutput>
+⋮----
+// Validate input
+⋮----
+// Enforce single-sentence constraints
+⋮----
+// Normalize category to one of our standard categories if possible
+⋮----
+// Check for similar mistake
+⋮----
+// Add mistake to log if new
+⋮----
+// Get category summaries
+⋮----
+// Find current tally for this category
+⋮----
+// Get top 3 categories
+⋮----
+/**
+ * Ensure text is a single sentence
+ */
+function enforceOneSentence(text: string): string
+⋮----
+// Remove newlines
+⋮----
+// Split by sentence-ending punctuation
+⋮----
+// Take just the first sentence
+⋮----
+// If there's punctuation, include it
+⋮----
+// Ensure it ends with sentence-ending punctuation
+⋮----
+/**
+ * Simple similarity check between two sentences
+ */
+function isSimilar(a: string, b: string): boolean
+⋮----
+/**
+ * Normalize category to one of our standard categories
+ */
+function normalizeCategory(category: string): string
+⋮----
+// Standard categories
+⋮----
+// Convert category to lowercase for matching
+⋮----
+// Try to match to a standard category
+⋮----
+// If no match, return the original category
+</file>
+
+<file path="package.json">
+{
+  "name": "vibe-check-mcp",
+  "version": "0.2.0",
+  "description": "Vibe Check MCP for preventing cascading errors in AI-assisted coding through metacognitive pattern interrupts",
+  "main": "build/index.js",
+  "type": "module",
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "prepare": "npm run build",
+    "start": "node build/index.js",
+    "dev": "tsc-watch --onSuccess \"node build/index.js\""
+  },
+  "dependencies": {
+    "@google/genai": "^1.3.0",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+
+    "axios": "^1.8.4",
+    "dotenv": "^16.4.7",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.25",
+    "tsc-watch": "^6.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "claude",
+    "vibe-check",
+    "vibe-coding",
+    "metacognition",
+    "pattern-interrupt",
+    "ai",
+    "learnlm"
+  ],
+  "author": "PV Bhat",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PV-Bhat/vibe-check-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PV-Bhat/vibe-check-mcp-server/issues"
+  },
+  "homepage": "https://github.com/PV-Bhat/vibe-check-mcp-server#readme",
+  "license": "MIT"
+}
+</file>
+
+<file path="README.md">
+# 🧠 Vibe Check MCP
+
+<img src="https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vibelogov2.png" alt="Logo" width="300"/>
+
+## The Most Widely-Deployed Feedback Layer in the MCP Ecosystem
+
+> Used in 1,000+ real workflows.  
+> Featured across 10+ orchestration platforms.  
+> 6.5K+ developers already trust it to prevent agentic cascade errors.
+
+
+[![Version](https://img.shields.io/badge/version-1.1-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
+[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
+
+## What is Vibe Check?
+
+Vibe Check is a metacognitive layer that keeps AI coding agents honest. It
+pauses the agent at key moments, challenges shaky assumptions and records what
+worked (or failed) so the next run is smarter. Think of it as the agent's inner
+rubber duck—always nudging the conversation back to the user's actual needs.
+
+**TL;DR**: Vibe Check makes AI coding agents more resilient and aligned by
+enforcing moments of reflection.
+
+## The Problem: Pattern Inertia
+
+LLMs often follow the first solution they imagine. Once that pattern takes hold
+they elaborate on it even if it drifts from the original goal. Without an
+external nudge the agent seldom questions its direction, leading to
+misalignment, overengineering and wasted cycles.
+
+## Key Features
+
+- **vibe_check** – pattern interrupt tool using the `learnlm-2.0-flash-experimental`
+  model (with automatic fallback to `gemini-2.5-flash` and `gemini-2.0-flash`)
+  for up to a 1M token context window.
+- **vibe_learn** – records mistakes, preferences and successes to build a rich
+  learning history that feeds back into `vibe_check`.
+- **Large context awareness** – the full learning log is summarized and included
+  in prompts so the model can spot recurring patterns and reinforce successful
+  approaches.
+
+These two tools feed each other. `vibe_check` interrupts questionable plans,
+`vibe_learn` captures the lesson, and the growing log informs the next
+`vibe_check` call via the model's 1M token context window.
+
+```
+[vibe_check] <----> [vibe_learn]
+      ^                |
+      |________________|
+```
+
+The more your agent works, the more context Vibe Check has to keep it on the
+right path.
+
+## Installation
+
+```bash
+# Clone and install
+git clone https://github.com/PV-Bhat/vibe-check-mcp-server.git
+cd vibe-check-mcp-server
+npm install
+npm run build
+```
+
+This project targets Node **20+**. If you see a TypeScript error about a
+duplicate `require` declaration when building with Node 20.19.3, ensure your
+dependencies are up to date (`npm install`) or use the Docker setup below which
+handles the build automatically.
+
+Create a `.env` file with your API key:
+
+```bash
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+Start the server:
+
+```bash
+npm start
+```
+
+### Docker
+
+The repository includes a helper script for one-command setup. It builds the
+image, saves your `GEMINI_API_KEY` and configures the container to start
+automatically whenever you log in:
+
+```bash
+bash scripts/docker-setup.sh
+```
+
+This script:
+
+- Creates `~/vibe-check-mcp` for persistent data
+- Builds the Docker image and sets up `docker-compose.yml`
+- Prompts for your API key and writes `~/vibe-check-mcp/.env`
+- Installs a systemd service (Linux) or LaunchAgent (macOS) so the container
+  starts at login
+- Generates `vibe-check-tcp-wrapper.sh` which proxies Cursor IDE to the server
+
+After running it, open Cursor IDE → **Settings** → **MCP** and add a new server
+of type **Command** pointing to:
+
+```bash
+~/vibe-check-mcp/vibe-check-tcp-wrapper.sh
+```
+
+See [Automatic Docker Setup](./docs/docker-automation.md) for full details.
+
+If you prefer to run the commands manually:
+
+```bash
+docker build -t vibe-check-mcp .
+docker run -e GEMINI_API_KEY=your_gemini_api_key -p 3000:3000 vibe-check-mcp
+```
+
+### Integrating with Claude Desktop
+
+Add to `claude_desktop_config.json`:
+
+```json
+"vibe-check": {
+  "command": "node",
+  "args": ["/path/to/vibe-check-mcp/build/index.js"],
+  "env": { "GEMINI_API_KEY": "YOUR_GEMINI_API_KEY" }
+}
+```
+
+## Agent Prompting Essentials
+
+In your agent's system prompt make it clear that `vibe_check` is a mandatory
+pattern interrupt. Always pass the full user request and specify the current
+phase (`planning`, `implementation`, or `review`). After correcting a mistake,
+log it with `vibe_learn` so the system can recognize it next time.
+
+Example snippet:
+
+```
+As an autonomous agent you will:
+1. Call vibe_check after planning and before major actions.
+2. Provide the full user request and your current plan.
+3. Record resolved issues with vibe_learn so future checks get smarter.
+```
+
+## When to Use Each Tool
+
+| Tool | Purpose |
+|------|---------|
+| 🛑 **vibe_check** | Challenge assumptions and prevent tunnel vision |
+| 🔄 **vibe_learn** | Capture mistakes, preferences and successes |
+
+## Documentation
+
+- [Agent Prompting Strategies](./docs/agent-prompting.md)
+- [Advanced Integration](./docs/advanced-integration.md)
+- [Technical Reference](./docs/technical-reference.md)
+- [Automatic Docker Setup](./docs/docker-automation.md)
+- [Philosophy](./docs/philosophy.md)
+- [Case Studies](./docs/case-studies.md)
+
+## To-do List
+
+- [ ] Add in integration for OpenRouter Keys
+- [ ] Repomix access to pass repositories to VC
+- [ ] Agents.md addendum to improve plug-and-play integration
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## 🔗 Find **VibeCheck MCP** on:
+
+* 🌐 [MSEEP](https://mseep.ai/app/pv-bhat-vibe-check-mcp-server)
+* 📡 [MCP Servers](https://mcpservers.org/servers/PV-Bhat/vibe-check-mcp-server)
+* 🧠 [MCP.so](https://mcp.so/server/vibe-check-mcp-server/PV-Bhat)
+* 🛠️ [Creati.ai](https://creati.ai/mcp/vibe-check-mcp-server/)
+* 💡 [Pulse MCP](https://www.pulsemcp.com/servers/pv-bhat-vibe-check)
+* 📘 [Playbooks.com](https://playbooks.com/mcp/pv-bhat-vibe-check)
+* 🧰 [MCPHub.tools](https://mcphub.tools/detail/PV-Bhat/vibe-check-mcp-server)
+* 📇 [MCP Directory](https://mcpdirectory.ai/mcpserver/2419/)
+* 🧙 [MagicSlides](https://www.magicslides.app/mcps/pv-bhat-vibe-check)
+* 🗃️ [AIAgentsList](https://aiagentslist.com/mcp-servers/vibe-check-mcp-server)
+
+
+## License
+
+[MIT](LICENSE)
+</file>
+
+<file path="src/index.ts">
+// Import dotenv and configure it
+import dotenv from 'dotenv';
+⋮----
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ErrorCode,
+  ListToolsRequestSchema,
+  McpError,
+} from "@modelcontextprotocol/sdk/types.js";
+⋮----
+// Import tool implementations
+import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from './tools/vibeCheck.js';
+import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from './tools/vibeLearn.js';
+⋮----
+// Import Gemini integration
+import { initializeGemini } from './utils/gemini.js';
+import { STANDARD_CATEGORIES, LearningType } from './utils/storage.js';
+⋮----
+// Validate API key at startup
+⋮----
+/**
+ * Create the MCP server with appropriate capabilities
+ */
+⋮----
+/**
+ * Handler for listing available tools
+ */
+⋮----
+required: ["plan", "userRequest"] // userRequest now required
+⋮----
+/**
+ * Handler for tool invocation
+ */
+⋮----
+// Validate required userRequest
+⋮----
+// Fix type casting error - convert args to the correct interface
+⋮----
+// Create a properly typed input
+⋮----
+/**
+ * Format vibe check output as markdown
+ */
+function formatVibeCheckOutput(result: VibeCheckOutput): string
+⋮----
+// Add pattern alert section if present
+⋮----
+// Check if the pattern alert is already in the response
+⋮----
+/**
+ * Format vibe learn output as markdown
+ */
+function formatVibeLearnOutput(result: VibeLearnOutput): string
+⋮----
+// Add top categories section
+⋮----
+// Show the most recent example
+⋮----
+/**
+ * Start the server
+ */
+async function main()
+⋮----
+// Set up error handler
+⋮----
+// Connect to transport
+⋮----
+// Start the server
+</file>
+
+</files>
