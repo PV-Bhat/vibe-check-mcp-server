@@ -6,3 +6,5 @@
 - Multi-provider support for Gemini, OpenAI and OpenRouter
 - Optional learning log can be disabled
 - Repository cleanup and CI via GitHub Actions
+- Vitest test suite with coverage
+- Fixed Smithery tool scanning via lazy API key validation

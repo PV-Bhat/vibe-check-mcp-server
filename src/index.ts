@@ -156,6 +156,18 @@ async function main() {
           );
         }
 
+        // Determine provider for lazy auth validation
+        const provider = (args as any)?.modelOverride?.provider || process.env.DEFAULT_LLM_PROVIDER || 'gemini';
+        if (provider === 'gemini' && !process.env.GEMINI_API_KEY) {
+          throw new McpError(ErrorCode.InvalidParams, 'Missing GEMINI_API_KEY');
+        }
+        if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
+          throw new McpError(ErrorCode.InvalidParams, 'Missing OPENAI_API_KEY');
+        }
+        if (provider === 'openrouter' && !process.env.OPENROUTER_API_KEY) {
+          throw new McpError(ErrorCode.InvalidParams, 'Missing OPENROUTER_API_KEY');
+        }
+
         // Fix type casting error - convert args to the correct interface
         const input: VibeCheckInput = {
           goal: args.goal,
@@ -260,46 +272,15 @@ async function main() {
     return output;
   }
 
-  let buffer = '';
-  process.stdin.on('data', async (data) => {
-    buffer += data.toString();
-    try {
-      const request = JSON.parse(buffer);
-      console.error('Received request:', request);
-
-      if (request.method === 'tools/call' && request.params.name === 'vibe_check') {
-        const result = await vibeCheckTool(request.params.arguments);
-        const response = {
-          jsonrpc: '2.0',
-          id: request.id,
-          result: {
-            content: [
-              {
-                type: 'text',
-                text: formatVibeCheckOutput(result),
-              },
-            ],
-          },
-        };
-        process.stdout.write(JSON.stringify(response));
-      }
-      buffer = ''; // Clear buffer after successful parse
-    } catch (e) {
-      // Incomplete JSON, wait for more data
-    }
-  });
-
   // Set up error handler
   server.onerror = (error) => {
     console.error("[Vibe Check Error]", error);
   };
 
   try {
-    // Connect to transport
     console.error('Connecting to transport...');
-    // const transport = new StdioServerTransport();
-    // await server.connect(transport);
-
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
     console.error('Vibe Check MCP server running');
   } catch (error) {
     console.error("Error connecting to transport:", error);

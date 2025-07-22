@@ -2,11 +2,13 @@
 
 <img src="https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vibelogov2.png" alt="Logo" width="300"/>
 
-## The Most Widely-Deployed Feedback Layer in the MCP Ecosystem
+## Widely Adopted Across the MCP Ecosystem
 
-> Used in 1,000+ real workflows.
-> Featured across 10+ orchestration platforms.
-> 6.5K+ developers already trust it to prevent agentic cascade errors.
+> 10k+ downloads on PulseMCP
+> 1k+ monthly tool calls on Smithery
+> Available on 12+ orchestration platforms
+> Verified security score 4.3 on MseeP
+> GitHub ★102 • 15 forks • 1 open issue
 
 
 [![Version](https://img.shields.io/badge/version-2.1-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
@@ -37,6 +39,7 @@ misalignment, overengineering and wasted cycles.
 - **vibe_learn** – Optional logging tool that builds a history of mistakes and fixes for later review.
 - **History continuity** – Previous vibe_check responses are fed back in by default for a sense of memory.
 - **Multi-LLM flexibility** – Works with Gemini, OpenAI or OpenRouter via simple overrides.
+- **Test coverage** – Vitest suite verifies core logic and guards against regressions.
 
 ## What's New in v2.1
 
@@ -45,6 +48,7 @@ misalignment, overengineering and wasted cycles.
 - Supports Gemini, OpenAI and OpenRouter with easy overrides
 - vibe_learn is now optional and can be disabled entirely
 - Project restructured for stability and online deployment
+- Added Vitest CI with coverage reports
 
 
 
