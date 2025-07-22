@@ -297,8 +297,8 @@ async function main() {
   try {
     // Connect to transport
     console.error('Connecting to transport...');
-    // const transport = new StdioServerTransport();
-    // await server.connect(transport);
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
 
     console.error('Vibe Check MCP server running');
   } catch (error) {
