@@ -4,9 +4,10 @@ startCommand:
   type: stdio
   configSchema:
     # JSON Schema defining the configuration options for the MCP.
+    # Keys are optional so smithery can list tools without validation. They
+    # are validated lazily when the tools are called.
     type: object
-    required:
-      - geminiApiKey
+    required: []
     properties:
       geminiApiKey:
         type: string
@@ -27,7 +28,13 @@ startCommand:
   (config) => ({
     command: 'node',
     args: ['build/index.js'],
-    env: { GEMINI_API_KEY: config.geminiApiKey }
+    env: {
+      ...(config.geminiApiKey && { GEMINI_API_KEY: config.geminiApiKey }),
+      ...(config.openaiApiKey && { OPENAI_API_KEY: config.openaiApiKey }),
+      ...(config.openrouterApiKey && { OPENROUTER_API_KEY: config.openrouterApiKey }),
+      ...(config.defaultProvider && { DEFAULT_LLM_PROVIDER: config.defaultProvider }),
+      ...(config.defaultModel && { DEFAULT_MODEL: config.defaultModel })
+    }
   })
   exampleConfig:
     geminiApiKey: EXAMPLE_GEMINI_API_KEY_123

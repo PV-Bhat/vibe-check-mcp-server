@@ -4,9 +4,11 @@
 
 ## The Most Widely-Deployed Feedback Layer in the MCP Ecosystem
 
-> Used in 1,000+ real workflows.
-> Featured across 10+ orchestration platforms.
-> 6.5K+ developers already trust it to prevent agentic cascade errors.
+> 10k+ downloads on PulseMCP and counting.
+> Over 1k monthly tool calls via Smithery.
+> Listed on 12+ orchestration platforms.
+> Security rating 4.3 on MSEEP.ai.
+> GitHub: 102★ / 15 forks / 1 open issue.
 
 
 [![Version](https://img.shields.io/badge/version-2.1-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
@@ -33,18 +35,19 @@ misalignment, overengineering and wasted cycles.
 
 ## Key Features
 
-- **vibe_check** – Lightweight meta-mentor step that questions plans and keeps the agent oriented to the original goal.
-- **vibe_learn** – Optional logging tool that builds a history of mistakes and fixes for later review.
-- **History continuity** – Previous vibe_check responses are fed back in by default for a sense of memory.
-- **Multi-LLM flexibility** – Works with Gemini, OpenAI or OpenRouter via simple overrides.
+- **vibe_check** – Adaptive meta-mentor step that questions plans and highlights unstated assumptions.
+- **vibe_learn** – Optional log of mistakes and solutions to gradually improve over time.
+- **History continuity** – Prior feedback is automatically provided for a sense of memory.
+- **Multi-LLM flexibility** – Choose Gemini, OpenAI or OpenRouter by overriding two fields.
 
 ## What's New in v2.1
 
-- Refined meta-mentor prompt for kinder, methodology-focused feedback
-- History continuity is on by default for richer conversations
-- Supports Gemini, OpenAI and OpenRouter with easy overrides
-- vibe_learn is now optional and can be disabled entirely
-- Project restructured for stability and online deployment
+- Meta-mentor prompt rewritten for methodology-focused guidance.
+- History continuity enabled by default for richer conversations.
+- Multi-provider support (Gemini, OpenAI, OpenRouter) with simple overrides.
+- `vibe_learn` made optional for privacy-conscious deployments.
+- Repository restructured with Vitest unit tests and CI workflow.
+- Smithery tool listing fixed via lazy loading.
 
 
 
@@ -63,10 +66,17 @@ duplicate `require` declaration when building with Node 20.19.3, ensure your
 dependencies are up to date (`npm install`) or use the Docker setup below which
 handles the build automatically.
 
-Create a `.env` file with your API key:
+Create a `.env` file with the API keys you plan to use:
 
 ```bash
+# Gemini (default)
 GEMINI_API_KEY=your_gemini_api_key
+# Optional providers
+OPENAI_API_KEY=your_openai_api_key
+OPENROUTER_API_KEY=your_openrouter_api_key
+# Optional overrides
+DEFAULT_LLM_PROVIDER=gemini
+DEFAULT_MODEL=gemini-2.5-pro
 ```
 
 Start the server:
@@ -156,7 +166,7 @@ As an autonomous agent you will:
 
 ## To-do List
 
-- [ ] Add in integration for OpenRouter Keys
+- [ ] Additional examples for OpenRouter models
 - [ ] Repomix access to pass repositories to VC
 - [ ] Agents.md addendum to improve plug-and-play integration
 
