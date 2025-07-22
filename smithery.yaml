@@ -5,8 +5,7 @@ startCommand:
   configSchema:
     # JSON Schema defining the configuration options for the MCP.
     type: object
-    required:
-      - geminiApiKey
+    required: []
     properties:
       geminiApiKey:
         type: string
@@ -27,7 +26,13 @@ startCommand:
   (config) => ({
     command: 'node',
     args: ['build/index.js'],
-    env: { GEMINI_API_KEY: config.geminiApiKey }
+    env: {
+      GEMINI_API_KEY: config.geminiApiKey,
+      OPENAI_API_KEY: config.openaiApiKey,
+      OPENROUTER_API_KEY: config.openrouterApiKey,
+      DEFAULT_LLM_PROVIDER: config.defaultProvider,
+      DEFAULT_MODEL: config.defaultModel
+    }
   })
   exampleConfig:
     geminiApiKey: EXAMPLE_GEMINI_API_KEY_123
