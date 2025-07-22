@@ -43,7 +43,7 @@ interface QuestionOutput {
 }
 
 // Main dispatcher function to generate responses from the selected LLM provider
-async function generateResponse(input: QuestionInput): Promise<QuestionOutput> {
+export async function generateResponse(input: QuestionInput): Promise<QuestionOutput> {
   const provider = input.modelOverride?.provider || process.env.DEFAULT_LLM_PROVIDER || 'gemini';
   const model = input.modelOverride?.model || process.env.DEFAULT_MODEL;
 
@@ -116,3 +116,11 @@ export async function getMetacognitiveQuestions(input: QuestionInput): Promise<Q
     };
   }
 }
+
+// Testing helpers
+export const __testing = {
+  setGenAI(client: any) { genAI = client; },
+  setOpenAIClient(client: any) { openaiClient = client; },
+  getGenAI() { return genAI; },
+  getOpenAIClient() { return openaiClient; }
+};

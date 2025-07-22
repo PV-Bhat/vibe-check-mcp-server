@@ -25,3 +25,15 @@ Due to a bug in the `@modelcontextprotocol/sdk` client, the standard `test-clien
     node build/index.js < request2.json
     ```
     The server will process the requests and print the responses to standard output. The second call's output should demonstrate that the history from the first call was considered.
+
+## Unit Tests with Vitest
+
+Vitest is used for unit and integration tests. Run all tests with:
+```bash
+npm test
+```
+Generate a coverage report (outputs to `coverage/`):
+```bash
+npm run test:coverage
+```
+All tests should pass with at least 80% line coverage.
