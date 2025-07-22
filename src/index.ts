@@ -65,53 +65,52 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
+            goal: {
+              type: "string",
+              description: "The agent's current goal"
+            },
             plan: {
               type: "string",
-              description: "Current plan or thinking"
+              description: "The agent's detailed plan"
             },
-            userRequest: {
+            modelOverride: {
+              type: "object",
+              properties: {
+                provider: {
+                  type: "string",
+                  enum: ["gemini", "openai", "openrouter"]
+                },
+                model: {
+                  type: "string"
+                }
+              },
+              required: []
+            },
+            userPrompt: {
               type: "string",
-              description: "Original user request - critical for alignment checking"
+              description: "The original user prompt"
             },
-            thinkingLog: {
+            progress: {
               type: "string",
-              description: "Raw sequential thinking transcript"
+              description: "The agent's progress so far"
             },
-            availableTools: {
+            uncertainties: {
               type: "array",
               items: {
                 type: "string"
               },
-              description: "List of available MCP tools"
+              description: "The agent's uncertainties"
             },
-            focusAreas: {
-              type: "array",
-              items: {
-                type: "string"
-              },
-              description: "Optional specific focus areas"
+            taskContext: {
+              type: "string",
+              description: "The context of the current task"
             },
             sessionId: {
               type: "string",
               description: "Optional session ID for state management"
-            },
-            previousAdvice: {
-              type: "string",
-              description: "Previous feedback to avoid repetition and ensure progression"
-            },
-            phase: {
-              type: "string",
-              enum: ["planning", "implementation", "review"],
-              description: "Current project phase for context-appropriate feedback"
-            },
-            confidence: {
-              type: "number",
-              minimum: 0,
-              maximum: 1,
-              description: "Agent's confidence level (0-1)"
             }
           },
-          required: ["plan", "userRequest"] // userRequest now required
+          required: ["goal", "plan"]
         }
       },
       {
@@ -162,40 +161,38 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   
   switch (name) {
     case "vibe_check": {
-      // Validate required userRequest
-      if (!args || !args.userRequest || typeof args.userRequest !== 'string' || args.userRequest.trim() === '') {
-        console.error("Invalid vibe_check request: missing userRequest");
+      // Validate required goal and plan
+      if (!args || typeof args.goal !== 'string' || typeof args.plan !== 'string') {
+        console.error("Invalid vibe_check request: missing goal or plan");
         throw new McpError(
           ErrorCode.InvalidParams,
-          'FULL user request is required for alignment checking and to prevent bias'
+          'goal and plan are required for alignment checking and to prevent bias'
         );
       }
-      
+
       // Fix type casting error - convert args to the correct interface
       const input: VibeCheckInput = {
-        plan: typeof args.plan === 'string' ? args.plan : '',
-        userRequest: args.userRequest,
-        thinkingLog: typeof args.thinkingLog === 'string' ? args.thinkingLog : undefined,
-        availableTools: Array.isArray(args.availableTools) ? args.availableTools : undefined,
-        focusAreas: Array.isArray(args.focusAreas) ? args.focusAreas : undefined,
+        goal: args.goal,
+        plan: args.plan,
+        modelOverride: args.modelOverride as any,
+        userPrompt: typeof args.userPrompt === 'string' ? args.userPrompt : undefined,
+        progress: typeof args.progress === 'string' ? args.progress : undefined,
+        uncertainties: Array.isArray(args.uncertainties) ? args.uncertainties : undefined,
+        taskContext: typeof args.taskContext === 'string' ? args.taskContext : undefined,
         sessionId: typeof args.sessionId === 'string' ? args.sessionId : undefined,
-        previousAdvice: typeof args.previousAdvice === 'string' ? args.previousAdvice : undefined,
-        phase: ['planning', 'implementation', 'review'].includes(args.phase as string) ? 
-          args.phase as 'planning' | 'implementation' | 'review' : undefined,
-        confidence: typeof args.confidence === 'number' ? args.confidence : undefined
       };
-      
+
       console.error("Executing vibe_check tool...");
       const result = await vibeCheckTool(input);
       console.error("vibe_check execution complete");
-      
+
       return {
         content: [
           {
             type: "text",
-            text: formatVibeCheckOutput(result)
-          }
-        ]
+            text: formatVibeCheckOutput(result),
+          },
+        ],
       };
     }
     
@@ -296,18 +293,47 @@ function formatVibeLearnOutput(result: VibeLearnOutput): string {
  */
 async function main() {
   console.error('Starting Vibe Check MCP server...');
-  
+
+  let buffer = '';
+  process.stdin.on('data', async (data) => {
+    buffer += data.toString();
+    try {
+      const request = JSON.parse(buffer);
+      console.error('Received request:', request);
+
+      if (request.method === 'tools/call' && request.params.name === 'vibe_check') {
+        const result = await vibeCheckTool(request.params.arguments);
+        const response = {
+          jsonrpc: '2.0',
+          id: request.id,
+          result: {
+            content: [
+              {
+                type: 'text',
+                text: formatVibeCheckOutput(result),
+              },
+            ],
+          },
+        };
+        process.stdout.write(JSON.stringify(response));
+      }
+      buffer = ''; // Clear buffer after successful parse
+    } catch (e) {
+      // Incomplete JSON, wait for more data
+    }
+  });
+
   // Set up error handler
   server.onerror = (error) => {
     console.error("[Vibe Check Error]", error);
   };
-  
+
   try {
     // Connect to transport
     console.error('Connecting to transport...');
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
-    
+    // const transport = new StdioServerTransport();
+    // await server.connect(transport);
+
     console.error('Vibe Check MCP server running');
   } catch (error) {
     console.error("Error connecting to transport:", error);

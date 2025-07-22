@@ -3,17 +3,17 @@ import { getMetacognitiveQuestions } from '../utils/gemini.js';
 
 // Vibe Check tool handler
 export interface VibeCheckInput {
+  goal: string;
   plan: string;
-  userRequest: string; // Required
-  thinkingLog?: string;
-  availableTools?: string[];
-  focusAreas?: string[];
+  modelOverride?: {
+    provider?: string;
+    model?: string;
+  };
+  userPrompt?: string;
+  progress?: string;
+  uncertainties?: string[];
+  taskContext?: string;
   sessionId?: string;
-  
-  // New dynamic parameters
-  previousAdvice?: string;
-  phase?: 'planning' | 'implementation' | 'review';
-  confidence?: number;
 }
 
 export interface VibeCheckOutput {
@@ -34,42 +34,36 @@ export interface VibeCheckOutput {
  * - confidence: Optional agent confidence level (0-1)
  */
 export async function vibeCheckTool(input: VibeCheckInput): Promise<VibeCheckOutput> {
+  console.log('vibeCheckTool called with input:', input);
   try {
-    // Validate required userRequest is present and not empty
-    if (!input.userRequest || input.userRequest.trim() === '') {
-      throw new Error('FULL user request is required to prevent bias and ensure alignment');
-    }
-    
     // Get past mistakes to inform questioning
     const mistakeHistory = getLearningEntries();
     const learningContextText = getLearningContextText(10);
-    
+
     // Get metacognitive questions from Gemini with dynamic parameters
     const response = await getMetacognitiveQuestions({
+      goal: input.goal,
       plan: input.plan,
-      userRequest: input.userRequest,
-      thinkingLog: input.thinkingLog,
-      availableTools: input.availableTools,
-      focusAreas: input.focusAreas,
+      modelOverride: input.modelOverride,
+      userPrompt: input.userPrompt,
+      progress: input.progress,
+      uncertainties: input.uncertainties,
+      taskContext: input.taskContext,
+      sessionId: input.sessionId,
       mistakeHistory,
       learningContextText,
-      
-      // Include new dynamic parameters
-      previousAdvice: input.previousAdvice,
-      phase: input.phase,
-      confidence: input.confidence
     });
-    
+
     return {
       questions: response.questions,
-      patternAlert: response.patternAlert
+      patternAlert: response.patternAlert,
     };
   } catch (error) {
     console.error('Error in vibe_check tool:', error);
-    
+
     // Fallback to basic questions if there's an error
     return {
-      questions: generateFallbackQuestions(input.userRequest || "", input.plan || "", input.phase)
+      questions: generateFallbackQuestions(input.userPrompt || "", input.plan || ""),
     };
   }
 }
@@ -77,26 +71,7 @@ export async function vibeCheckTool(input: VibeCheckInput): Promise<VibeCheckOut
 /**
  * Generate adaptive fallback questions when API fails
  */
-function generateFallbackQuestions(userRequest: string, plan: string, phase?: 'planning' | 'implementation' | 'review'): string {
-  // Adapt questions based on phase
-  if (phase === 'implementation') {
-    return `
-I see you're working on implementing your approach. Let me offer some thoughts that might help:
-
-1. The approach you're taking seems reasonable from what I can see, but I wonder if there are any simplifications possible?
-2. How does this implementation align with the user's original request: "${userRequest.substring(0, 100)}..."?
-3. Are there any parts of the implementation that might create maintenance challenges later?
-`;
-  } else if (phase === 'review') {
-    return `
-I see you're in the review phase. You've put a lot of thought into this, which is great:
-
-1. Does the solution fully address what the user originally asked for?
-2. Have you considered how the user will interact with or maintain this solution?
-3. Is there anything that could be simplified further without losing functionality?
-`;
-  } else {
-    // Default to planning phase
+function generateFallbackQuestions(userRequest: string, plan: string): string {
     return `
 I can see you're thinking through your approach, which shows thoughtfulness:
 
@@ -105,5 +80,4 @@ I can see you're thinking through your approach, which shows thoughtfulness:
 3. What unstated assumptions might be limiting the thinking here?
 4. How does this align with the user's original intent?
 `;
-  }
 }
