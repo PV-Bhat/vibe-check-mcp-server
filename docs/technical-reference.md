@@ -35,13 +35,11 @@ Have we considered:
 3. How this approach will scale if requirements change?
 
 While the architecture is clean, I'm curious if we're solving a different problem than what the user actually asked for, which was just to extract data from a CSV file.
-
-**I notice a pattern emerging:** This approach resembles previous solutions that introduced unnecessary complexity for simple data tasks.
 ```
 
 ## vibe_learn
 
-Pattern recognition system that creates a self-improving feedback loop by tracking common errors and their solutions over time.
+Pattern recognition system that creates a self-improving feedback loop by tracking common errors and their solutions over time. The use of this tool is optional and can be enabled or disabled via configuration.
 
 ### Parameters
 

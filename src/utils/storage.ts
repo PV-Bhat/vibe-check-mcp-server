@@ -28,7 +28,10 @@ export interface VibeLog {
   lastUpdated: number;
 }
 
-// Standard mistake categories
+/**
+ * DEPRECATED: This functionality is now optional and will be removed in a future version.
+ * Standard mistake categories
+ */
 export const STANDARD_CATEGORIES = [
   'Complex Solution Bias',
   'Feature Creep',

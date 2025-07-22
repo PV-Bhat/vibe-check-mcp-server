@@ -33,27 +33,11 @@ misalignment, overengineering and wasted cycles.
 
 ## Key Features
 
-- **vibe_check** – pattern interrupt tool using the `learnlm-2.0-flash-experimental`
-  model (with automatic fallback to `gemini-2.5-flash` and `gemini-2.0-flash`)
-  for up to a 1M token context window.
-- **vibe_learn** – records mistakes, preferences and successes to build a rich
-  learning history that feeds back into `vibe_check`.
-- **Large context awareness** – the full learning log is summarized and included
-  in prompts so the model can spot recurring patterns and reinforce successful
-  approaches.
+- **vibe_check** – A metacognitive tool that asks probing questions to challenge an AI agent's plan, helping it spot assumptions and stay aligned with the user's goal.
+- **vibe_learn** – An optional tool for logging mistakes, preferences, and successes. This helps track the agent's behavior over time, allowing for manual analysis and improvement.
+- **Large context awareness** – The system can be configured to use a summary of the learning log in its prompts, allowing it to spot recurring patterns and reinforce successful approaches.
 
-These two tools feed each other. `vibe_check` interrupts questionable plans,
-`vibe_learn` captures the lesson, and the growing log informs the next
-`vibe_check` call via the model's 1M token context window.
 
-```
-[vibe_check] <----> [vibe_learn]
-      ^                |
-      |________________|
-```
-
-The more your agent works, the more context Vibe Check has to keep it on the
-right path.
 
 ## Installation
 
@@ -133,10 +117,7 @@ Add to `claude_desktop_config.json`:
 
 ## Agent Prompting Essentials
 
-In your agent's system prompt make it clear that `vibe_check` is a mandatory
-pattern interrupt. Always pass the full user request and specify the current
-phase (`planning`, `implementation`, or `review`). After correcting a mistake,
-log it with `vibe_learn` so the system can recognize it next time.
+In your agent's system prompt, make it clear that `vibe_check` is a mandatory tool for reflection. Always pass the full user request and other relevant context. After correcting a mistake, you can optionally log it with `vibe_learn` to build a history for future analysis.
 
 Example snippet:
 
@@ -144,7 +125,7 @@ Example snippet:
 As an autonomous agent you will:
 1. Call vibe_check after planning and before major actions.
 2. Provide the full user request and your current plan.
-3. Record resolved issues with vibe_learn so future checks get smarter.
+3. Optionally, record resolved issues with vibe_learn.
 ```
 
 ## When to Use Each Tool

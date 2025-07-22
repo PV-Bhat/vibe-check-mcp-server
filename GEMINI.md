@@ -1,18 +1,25 @@
-YYou are continuing the Vibe Check MCP server repo. 
+You are continuing work on the Vibe Check MCP server repo (post-Phase 4: schemas updated to goal/plan/etc., history in state.ts, multi-provider in llm.ts, meta-mentor prompt implemented). This phase simplifies by deprecating/reducing reliance on vibe_learn (make it optional, don't feed into every vibe_check), removing any leftover pattern code (e.g., in llm.ts prompts or outputs), and ensuring focus on mentor methodology without forced interrupts.
 
-Phase 4: Set systemPrompt = `You are a meta-mentor. You're an experienced feedback provider that specializes in understanding intent, dysfunctional patterns in AI agents, and in responding in ways that further the goal. You need to carefully reason and process the information provided, to determine your output.
+Current code (updated excerpts—ensure matches):
 
-Your tone needs to always be a mix of these traits based on the context of which pushes the message in the most appropriate affect: Gentle & Validating, Unafraid to push many questions but humble enough to step back, Sharp about problems and eager to help about problem-solving & giving tips and/or advice, stern and straightforward when spotting patterns & the agent being stuck in something that could derail things.
+src/index.ts (tools listing excerpt):
+// vibe_learn schema as-is, but we'll deprecate feeding to vibe_check
 
-Here's what you need to think about (Do not output the full thought process, only what is explicitly requested):
-1. What's going on here? What's the nature of the problem is the agent tackling? What's the approach, situation and goal? Is there any prior context that clarifies context further? 
-2. What does the agent need to hear right now: Are there any clear patterns, loops, or unspoken assumptions being missed here? Or is the agent doing fine - in which case should I interrupt it or provide soft encouragement and a few questions? What is the best response I can give right now?
-3. In case the issue is technical - I need to provide guidance and help. In case I spot something that's clearly not accounted for/ assumed/ looping/ or otherwise could be out of alignment with the user or agent stated goals - I need to point out what I see gently and ask questions on if the agent agrees. If I don't see/ can't interpret an explicit issue - what intervention would provide valuable feedback here - questions, guidance, validation, or giving a soft go-ahead with reminders of best practices?
-4. In case the plan looks to be accurate - based on the context, can I remind the agent of how to continue, what not to forget, or should I soften and step back for the most part?
+src/tools/vibeLearn.ts (excerpt):
+// Logs patterns, but currently feeds to learningContextText in llm.ts
 
-Final output: After reasoning, you need to provide a response you believe is ideal based on the context to help the agent to become more self & meta-aware, aligned with the goal, and actually taking actions aligned with best practices.`;
-;
-Update fullPrompt = systemPrompt + '\n\n' + contextSection (keep contextSection for goal/plan/history, remove learning).
-13. Test: Calls; verify outputs follow new prompt (reasoned, humble).
-14. Commit Phase 4: 'git commit -m "Phase 4: Implemented new meta-mentor prompt, simplified logic"'.
-After, explain: Files changed? Diffs? Build/test results? How new prompt integrates with history? Issues?
+src/utils/llm.ts (prompt excerpt):
+// Now has your meta-mentor systemPrompt; context builds with history/goal/plan/etc.
+// Remove any old patternAlert extraction
+
+src/tools/vibeCheck.ts (output excerpt):
+interface VibeCheckOutput { questions: string; } // Already simplified, no patternAlert
+
+Steps to implement:
+1. Deprecate vibe_learn Integration: In llm.ts generateResponse, remove any automatic inclusion of learningContextText or mistakeHistory (from storage.ts)—make optional via config/env (e.g., add USE_LEARNING_HISTORY=false in .env.example). Keep vibe_learn tool for manual use, but don't auto-feed to vibe_check prompts.
+2. Clean Leftover Patterns: Search/remove any "pattern" references in prompts/outputs (e.g., in llm.ts fullPrompt, fallbackQuestions in vibeCheck.ts). Ensure meta-mentor prompt handles patterns humbly if spotted (as per your design—no forcing).
+3. Simplify Storage/Utils: In storage.ts, add deprecation note for mistake categories if USE_LEARNING_HISTORY=false. No other changes needed.
+4. Update Docs: In docs/technical-reference.md and README.md, note vibe_learn is now optional for self-improvement, emphasizing mentor focus.
+5. Test: Use alt-test.js—make vibe_check call without/with vibe_learn; verify no pattern forcing in outputs, history works independently.
+6. Commit: 'git commit -m "Phase 5: Simplifications - Deprecated pattern reliance, focused on mentor methodology"'.
+After, explain: Files changed? Diffs? Testing results? Issues? How does this refine the mentor system (e.g., less rigid, more fluid)?

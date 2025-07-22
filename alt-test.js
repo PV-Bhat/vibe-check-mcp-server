@@ -11,7 +11,11 @@ function createVibeCheckRequest(id, goal, plan, userPrompt, progress, sessionId)
                 plan: plan,
                 userPrompt: userPrompt,
                 progress: progress,
-                sessionId: sessionId
+                sessionId: sessionId,
+                modelOverride: {
+                    provider: 'openrouter',
+                    model: 'tngtech/deepseek-r1t2-chimera:free'
+                }
             }
         },
         id: id

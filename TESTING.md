@@ -1,6 +1,6 @@
 # Testing Guide
 
-Due to a bug in the `@modelcontextprotocol/sdk` client, the standard `test-client.js` script will not work. To test the server, you must use the `alt-test.js` script to generate a JSON request and pipe it to the server's standard input.
+Due to a bug in the `@modelcontextprotocol/sdk` client, the standard `test-client.js` script will not work. To test the server, you must use the `alt-test.js` script to generate JSON request files and pipe them to the server's standard input.
 
 ## Running Tests
 
@@ -8,17 +8,20 @@ Due to a bug in the `@modelcontextprotocol/sdk` client, the standard `test-clien
     ```bash
     npm run build
     ```
-2.  **Generate the request:**
-    The `alt-test.js` script generates a `request.json` file. You can modify this file to test different tool calls and arguments.
+2.  **Generate the requests:**
+    The `alt-test.js` script generates `request1.json` and `request2.json` files. These are designed to test the history functionality by using the same `sessionId`. You can modify `alt-test.js` to change the tool call arguments.
     ```bash
     node alt-test.js
     ```
-3.  **Run the server with the request:**
+3.  **Run the server with the requests:**
+    Pipe the contents of each file to a separate server instance.
+
+    **First call (to establish history):**
     ```bash
-    node build/index.js < request.json
+    node build/index.js < request1.json
     ```
-    The server will process the request and print the response to standard output.
-
-## Testing History
-
-To test the history feature, run the test twice with the same `sessionId` in the `request.json` file. The second response should include a `History Context` section.
+    **Second call (to verify history):**
+    ```bash
+    node build/index.js < request2.json
+    ```
+    The server will process the requests and print the responses to standard output. The second call's output should demonstrate that the history from the first call was considered.
