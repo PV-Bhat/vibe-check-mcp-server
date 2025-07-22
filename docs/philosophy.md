@@ -4,7 +4,7 @@
 
 ## Beyond the Vibe: Serious AI Alignment Principles
 
-While Vibe Check presents itself with a developer-friendly interface, it addresses fundamental challenges in AI alignment and agent oversight. This document explores the deeper principles that make Vibe Check more than just a developer tool.
+While Vibe Check presents itself with a developer-friendly interface, it addresses fundamental challenges in AI alignment and agent oversight. The new meta-mentor approach mixes gentle tone with concrete methodology debugging to keep agents focused without heavy-handed rules.
 
 ## The Metacognitive Gap
 

@@ -10,15 +10,14 @@ The metacognitive questioning tool that identifies assumptions and breaks tunnel
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
+| goal | string | Yes | High level objective for the current step |
 | plan | string | Yes | Current plan or thinking |
-| userRequest | string | Yes | Original user request (critical for alignment) |
-| thinkingLog | string | No | Raw sequential thinking transcript |
-| availableTools | string[] | No | List of available MCP tools |
-| focusAreas | string[] | No | Optional specific focus areas |
-| sessionId | string | No | Session ID for state management |
-| previousAdvice | string | No | Previous feedback to avoid repetition |
-| phase | string | No | Current project phase ("planning", "implementation", "review") |
-| confidence | number | No | Agent's confidence level (0-1) |
+| userPrompt | string | No | Original user request (critical for alignment) |
+| progress | string | No | Description of progress so far |
+| uncertainties | string[] | No | Explicit uncertainties to focus on |
+| taskContext | string | No | Any additional task context |
+| modelOverride | object | No | `{ provider, model }` to override default LLM |
+| sessionId | string | No | Session ID for history continuity |
 
 ### Response Format
 
@@ -99,6 +98,11 @@ CONTEXT:
 [User Request]: Create a script to analyze sales data from the past year
 [Current Plan/Thinking]: I'll create a complex object-oriented architecture with...
 ```
+
+Other providers such as OpenAI and OpenRouter can be selected by passing
+`modelOverride: { provider: 'openai', model: 'gpt-4o' }` or the appropriate
+OpenRouter model. LLM clients are lazily initialized the first time they are
+used so that listing tools does not require API keys.
 
 ### Storage System
 

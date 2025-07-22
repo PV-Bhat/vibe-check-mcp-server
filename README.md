@@ -1,28 +1,28 @@
-# 🧠 Vibe Check MCP
+# 🧠 Vibe Check MCP v2.1: Adaptive Meta-Mentor for AI Agents
 
 <img src="https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vibelogov2.png" alt="Logo" width="300"/>
 
 ## The Most Widely-Deployed Feedback Layer in the MCP Ecosystem
 
-> Used in 1,000+ real workflows.  
-> Featured across 10+ orchestration platforms.  
+> Used in 1,000+ real workflows.
+> Featured across 10+ orchestration platforms.
 > 6.5K+ developers already trust it to prevent agentic cascade errors.
 
 
-[![Version](https://img.shields.io/badge/version-1.1-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Version](https://img.shields.io/badge/version-2.1-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
 [![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
 
 ## What is Vibe Check?
 
-Vibe Check is a metacognitive layer that keeps AI coding agents honest. It
-pauses the agent at key moments, challenges shaky assumptions and records what
-worked (or failed) so the next run is smarter. Think of it as the agent's inner
-rubber duck—always nudging the conversation back to the user's actual needs.
+Vibe Check acts as a supportive meta-mentor for AI coding agents. It gently
+interrupts tunnel vision, asks clarifying questions and records what worked so
+the next run is smarter. Think of it as an adaptive debugging partner rather
+than a strict referee.
 
-**TL;DR**: Vibe Check makes AI coding agents more resilient and aligned by
-enforcing moments of reflection.
+**TL;DR**: Vibe Check keeps agents on track through short reflective pauses and
+optionally builds a learning history for deeper analysis.
 
 ## The Problem: Pattern Inertia
 
@@ -33,9 +33,18 @@ misalignment, overengineering and wasted cycles.
 
 ## Key Features
 
-- **vibe_check** – A metacognitive tool that asks probing questions to challenge an AI agent's plan, helping it spot assumptions and stay aligned with the user's goal.
-- **vibe_learn** – An optional tool for logging mistakes, preferences, and successes. This helps track the agent's behavior over time, allowing for manual analysis and improvement.
-- **Large context awareness** – The system can be configured to use a summary of the learning log in its prompts, allowing it to spot recurring patterns and reinforce successful approaches.
+- **vibe_check** – Lightweight meta-mentor step that questions plans and keeps the agent oriented to the original goal.
+- **vibe_learn** – Optional logging tool that builds a history of mistakes and fixes for later review.
+- **History continuity** – Previous vibe_check responses are fed back in by default for a sense of memory.
+- **Multi-LLM flexibility** – Works with Gemini, OpenAI or OpenRouter via simple overrides.
+
+## What's New in v2.1
+
+- Refined meta-mentor prompt for kinder, methodology-focused feedback
+- History continuity is on by default for richer conversations
+- Supports Gemini, OpenAI and OpenRouter with easy overrides
+- vibe_learn is now optional and can be disabled entirely
+- Project restructured for stability and online deployment
 
 
 
@@ -66,7 +75,7 @@ Start the server:
 npm start
 ```
 
-See [TESTING.md](./TESTING.md) for instructions on how to run tests.
+See [docs/TESTING.md](./docs/TESTING.md) for instructions on how to run tests.
 
 ### Docker
 
@@ -143,6 +152,7 @@ As an autonomous agent you will:
 - [Automatic Docker Setup](./docs/docker-automation.md)
 - [Philosophy](./docs/philosophy.md)
 - [Case Studies](./docs/case-studies.md)
+- [Changelog](./docs/changelog.md)
 
 ## To-do List
 

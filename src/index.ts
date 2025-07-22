@@ -18,7 +18,6 @@ import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from './tools/vibeChec
 import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from './tools/vibeLearn.js';
 
 // Import Gemini integration
-import { initializeLLMs } from './utils/llm.js';
 import { STANDARD_CATEGORIES, LearningType } from './utils/storage.js';
 
 import { loadHistory } from './utils/state.js';
@@ -31,13 +30,12 @@ import { loadHistory } from './utils/state.js';
  */
 async function main() {
   await loadHistory();
-  initializeLLMs();
   console.error('Starting Vibe Check MCP server...');
 
   const server = new Server(
     {
       name: "vibe-check",
-      version: "0.2.0",
+      version: "2.1.0",
     },
     {
       capabilities: {
