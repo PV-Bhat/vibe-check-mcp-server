@@ -1,15 +1,13 @@
-# 🧠 Vibe Check MCP v2.1: Adaptive Meta-Mentor for AI Agents
+# 🧠 Vibe Check MCP v2.1
 
-<img src="https://github.com/PV-Bhat/vibe-check-mcp-server/blob/main/Attachments/vibelogov2.png" alt="Logo" width="300"/>
+<img width="500" height="300" alt="vibecheckv2 1" src="https://github.com/user-attachments/assets/98c55b95-8f3c-4106-b917-20ceaf292f63" />
 
 ## The Most Widely-Deployed Feedback Layer in the MCP Ecosystem
 
-> 10k+ downloads on PulseMCP and counting.
+> ~10k+ downloads on PulseMCP and counting.
 > Over 1k monthly tool calls via Smithery.
 > Listed on 12+ orchestration platforms.
 > Security rating 4.3 on MSEEP.ai.
-> GitHub: 102★ / 15 forks / 1 open issue.
-
 
 [![Version](https://img.shields.io/badge/version-2.1-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -18,13 +16,12 @@
 
 ## What is Vibe Check?
 
-Vibe Check acts as a supportive meta-mentor for AI coding agents. It gently
-interrupts tunnel vision, asks clarifying questions and records what worked so
-the next run is smarter. Think of it as an adaptive debugging partner rather
-than a strict referee.
+Vibe Check acts as a supportive meta-mentor for AI coding agents. It
+interrupts tunnel vision, asks clarifying questions, improves workflow efficiency and records what worked so
+the next run is smarter. Think of it as an adaptive debugging partner that acts as a built-in oversight layer.
 
-**TL;DR**: Vibe Check keeps agents on track through short reflective pauses and
-optionally builds a learning history for deeper analysis.
+**TL;DR**: Vibe Check keeps agents on track through short reflective pauses, preventing agents getting stuck in 
+loops of thinking (RLI) and improving overall workflow efficiency.
 
 ## The Problem: Pattern Inertia
 
