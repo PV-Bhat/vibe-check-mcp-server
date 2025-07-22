@@ -18,26 +18,12 @@ import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from './tools/vibeChec
 import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from './tools/vibeLearn.js';
 
 // Import Gemini integration
-import { initializeGemini } from './utils/gemini.js';
+import { initializeLLMs } from './utils/llm.js';
 import { STANDARD_CATEGORIES, LearningType } from './utils/storage.js';
 
 import { loadHistory } from './utils/state.js';
 
-// Validate API key at startup
-const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) {
-  console.error("ERROR: GEMINI_API_KEY environment variable is missing. Server cannot start without a valid API key.");
-  process.exit(1);
-} else {
-  console.error("GEMINI_API_KEY found. Initializing API...");
-  try {
-    initializeGemini(apiKey);
-    console.error('Gemini API initialized successfully');
-  } catch (error) {
-    console.error('Failed to initialize Gemini API:', error);
-    process.exit(1);
-  }
-}
+
 
 
 /**
@@ -45,6 +31,7 @@ if (!apiKey) {
  */
 async function main() {
   await loadHistory();
+  initializeLLMs();
   console.error('Starting Vibe Check MCP server...');
 
   const server = new Server(
@@ -243,14 +230,6 @@ async function main() {
 
   function formatVibeCheckOutput(result: VibeCheckOutput): string {
     let output = result.questions;
-    
-    // Add pattern alert section if present
-    if (result.patternAlert) {
-      // Check if the pattern alert is already in the response
-      if (!output.includes("Pattern Alert:") && !output.includes("pattern emerging:")) {
-        output += `\n\n**I notice a pattern emerging:** ${result.patternAlert}`;
-      }
-    }
     
     return output;
   }

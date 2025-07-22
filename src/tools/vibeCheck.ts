@@ -1,5 +1,4 @@
-import { getLearningEntries, getLearningContextText } from '../utils/storage.js';
-import { getMetacognitiveQuestions } from '../utils/gemini.js';
+import { getMetacognitiveQuestions } from '../utils/llm.js';
 import { addToHistory, getHistorySummary } from '../utils/state.js';
 
 // Vibe Check tool handler
@@ -19,7 +18,6 @@ export interface VibeCheckInput {
 
 export interface VibeCheckOutput {
   questions: string;
-  patternAlert?: string;
 }
 
 /**
@@ -40,10 +38,6 @@ export async function vibeCheckTool(input: VibeCheckInput): Promise<VibeCheckOut
     // Get history summary
     const historySummary = getHistorySummary(input.sessionId);
 
-    // Get past mistakes to inform questioning
-    const mistakeHistory = getLearningEntries();
-    const learningContextText = getLearningContextText(10);
-
     // Get metacognitive questions from Gemini with dynamic parameters
     const response = await getMetacognitiveQuestions({
       goal: input.goal,
@@ -54,8 +48,6 @@ export async function vibeCheckTool(input: VibeCheckInput): Promise<VibeCheckOut
       uncertainties: input.uncertainties,
       taskContext: input.taskContext,
       sessionId: input.sessionId,
-      mistakeHistory,
-      learningContextText,
       historySummary,
     });
 
@@ -64,7 +56,6 @@ export async function vibeCheckTool(input: VibeCheckInput): Promise<VibeCheckOut
 
     return {
       questions: response.questions,
-      patternAlert: response.patternAlert,
     };
   } catch (error) {
     console.error('Error in vibe_check tool:', error);

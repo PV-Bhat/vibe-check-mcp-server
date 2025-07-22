@@ -11,6 +11,18 @@ startCommand:
       geminiApiKey:
         type: string
         description: API key for the Gemini API integration if required.
+      openaiApiKey:
+        type: string
+        description: API key for the OpenAI API integration if required.
+      openrouterApiKey:
+        type: string
+        description: API key for the OpenRouter API integration if required.
+      defaultProvider:
+        type: string
+        description: Default LLM provider to use.
+      defaultModel:
+        type: string
+        description: Default LLM model to use.
   commandFunction: |-
   (config) => ({
     command: 'node',
@@ -19,3 +31,7 @@ startCommand:
   })
   exampleConfig:
     geminiApiKey: EXAMPLE_GEMINI_API_KEY_123
+    openaiApiKey: EXAMPLE_OPENAI_API_KEY
+    openrouterApiKey: EXAMPLE_OPENROUTER_API_KEY
+    defaultProvider: gemini
+    defaultModel: gemini-2.5-pro
