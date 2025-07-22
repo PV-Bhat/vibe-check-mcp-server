@@ -11,7 +11,9 @@
     "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
     "prepare": "npm run build",
     "start": "node build/index.js",
-    "dev": "tsc-watch --onSuccess \"node build/index.js\""
+    "dev": "tsc-watch --onSuccess \"node build/index.js\"",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@google/generative-ai": "^0.17.1",
@@ -23,8 +25,10 @@
   },
   "devDependencies": {
     "@types/node": "^20.17.25",
+    "@vitest/coverage-v8": "^3.2.4",
     "tsc-watch": "^6.0.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=18.0.0"
