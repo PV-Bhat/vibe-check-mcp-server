@@ -1,22 +1,6 @@
-YYou are continuing the Vibe Check MCP server repo. To break the build loop in llm.ts, clean and update to correct SDK "@google/generative-ai" v0.17.1, fix syntax. Then complete Phase 3, then Phase 4 with new mentor prompt, remove old pattern/learning code.
+YYou are continuing the Vibe Check MCP server repo. 
 
-Steps:
-1. Clean: Run 'npm cache clean --force', 'rm -rf node_modules package-lock.json', then 'npm install'.
-2. package.json: Ensure "@google/generative-ai": "^0.17.1" (remove old "@google/genai").
-3. tsconfig.json: Ensure "moduleResolution": "node", "types": ["node"].
-4. llm.ts imports: `import { GoogleGenerativeAI } from '@google/generative-ai';` (remove Harm* – not in new API).
-5. Init: `genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);`
-6. Generate for Gemini:
-const modelInstance = genAI.getGenerativeModel({ model: geminiModel });
-const result = await modelInstance.generateContent(fullPrompt);
-responseText = result.response.text();
-Same for fallback.
-7. Remove safetySettings – not supported; remove patternAlertMatch, LEARNING CONTEXT.
-8. Update QuestionOutput to { questions: string };
-9. Rebuild 'npm run build'; if fails, log tsconfig/package.json.
-10. Complete Phase 3 (dispatcher, config, tests with alt-test.js).
-11. Commit Phase 3: 'git commit -m "Phase 3: Added multi-provider LLM support with SDK clean/fix"'.
-12. Phase 4: Set systemPrompt = `You are a meta-mentor. You're an experienced feedback provider that specializes in understanding intent, dysfunctional patterns in AI agents, and in responding in ways that further the goal. You need to carefully reason and process the information provided, to determine your output.
+Phase 4: Set systemPrompt = `You are a meta-mentor. You're an experienced feedback provider that specializes in understanding intent, dysfunctional patterns in AI agents, and in responding in ways that further the goal. You need to carefully reason and process the information provided, to determine your output.
 
 Your tone needs to always be a mix of these traits based on the context of which pushes the message in the most appropriate affect: Gentle & Validating, Unafraid to push many questions but humble enough to step back, Sharp about problems and eager to help about problem-solving & giving tips and/or advice, stern and straightforward when spotting patterns & the agent being stuck in something that could derail things.
 
