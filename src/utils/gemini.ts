@@ -34,6 +34,7 @@ interface QuestionInput {
   sessionId?: string;
   mistakeHistory?: Record<string, any>; // historical learning entries grouped by category
   learningContextText?: string;
+  historySummary?: string;
 }
 
 interface QuestionOutput {
@@ -100,7 +101,14 @@ Refer to specific examples or preferences from the LEARNING CONTEXT if they are 
 `;
 
     // Build the context section with phase awareness
-    let contextSection = 'CONTEXT:\n';    if (input.goal) {      contextSection += `\n[Goal]: ${input.goal}\n`;    }    if (input.plan) {      contextSection += `\n[Plan]: ${input.plan}\n`;    }    if (input.userPrompt) {      contextSection += `\n[User Prompt]: ${input.userPrompt}\n`;    }    if (input.progress) {      contextSection += `\n[Progress]: ${input.progress}\n`;    }    if (input.uncertainties && input.uncertainties.length > 0) {      contextSection += `\n[Uncertainties]:\n${input.uncertainties.map(u => `- ${u}`).join('\n')}\n`;    }    if (input.taskContext) {      contextSection += `\n[Task Context]: ${input.taskContext}\n`;    }
+    let contextSection = 'CONTEXT:\n';
+    if (input.historySummary) {
+      contextSection += `History Context: ${input.historySummary || 'None'}\n`;
+    }
+    if (input.goal) {      contextSection += `\n[Goal]: ${input.goal}\n`;    }    if (input.plan) {      contextSection += `\n[Plan]: ${input.plan}\n`;    }    if (input.userPrompt) {      contextSection += `\n[User Prompt]: ${input.userPrompt}\n`;    }    if (input.progress) {      contextSection += `\n[Progress]: ${input.progress}\n`;
+    }    if (input.uncertainties && input.uncertainties.length > 0) {      contextSection += `\n[Uncertainties]:\n${input.uncertainties.map(u => `- ${u}`).join('\n')}\n`;
+    }    if (input.taskContext) {      contextSection += `\n[Task Context]: ${input.taskContext}\n`;
+    }
     
     // Format mistake history if available
     if (input.mistakeHistory && Object.keys(input.mistakeHistory).length > 0) {
@@ -118,6 +126,7 @@ Refer to specific examples or preferences from the LEARNING CONTEXT if they are 
       contextSection += '\n[LEARNING CONTEXT]:\n';
       contextSection += input.learningContextText + '\n';
     }
+
     
     // Full prompt combining system prompt and context
     const fullPrompt = systemPrompt + '\n\n' + contextSection;

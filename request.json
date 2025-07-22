@@ -1,1 +1,1 @@
-{"jsonrpc":"2.0","method":"tools/call","params":{"name":"vibe_check","arguments":{"goal":"Test goal","plan":"Test plan","progress":"Test progress"}},"id":1}
+{"jsonrpc":"2.0","method":"tools/call","params":{"name":"vibe_check","arguments":{"goal":"Test session history functionality","plan":"2. Make a second call to verify history is included.","userPrompt":"Please test the history feature.","progress":"Just made the second call.","sessionId":"history-test-session-1"}},"id":2}

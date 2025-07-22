@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+
 import fs from 'fs';
 
 const request = JSON.stringify({
@@ -7,12 +7,16 @@ const request = JSON.stringify({
     params: {
         name: 'vibe_check',
         arguments: {
-            goal: 'Test goal',
-            plan: 'Test plan',
-            progress: 'Test progress'
+            goal: 'Test session history functionality',
+            plan: '2. Make a second call to verify history is included.',
+            userPrompt: 'Please test the history feature.',
+            progress: 'Just made the second call.',
+            sessionId: 'history-test-session-1'
         }
     },
-    id: 1
+    id: 2
 });
 
-fs.writeFileSync('request.json', request);
+fs.writeFileSync('request.json', request, 'utf-8');
+
+console.log('Generated request.json for the second call.');

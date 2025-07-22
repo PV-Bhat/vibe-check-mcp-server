@@ -82,6 +82,8 @@ Start the server:
 npm start
 ```
 
+See [TESTING.md](./TESTING.md) for instructions on how to run tests.
+
 ### Docker
 
 The repository includes a helper script for one-command setup. It builds the
