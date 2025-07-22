@@ -1,6 +1,6 @@
 # Agent Prompting Strategies
 
-Effective agent-oversight relationships require careful prompting to ensure that AI agents properly respect and integrate feedback from Vibe Check. Our research has identified several key principles for maximizing the effectiveness of metacognitive pattern interrupts.
+Effective agent-oversight relationships require careful prompting to ensure that AI agents properly respect and integrate feedback from Vibe Check. In v2.1 the tool acts more like a collaborative debugger than a strict critic. Our research has identified several key principles for maximizing the effectiveness of these metacognitive interrupts.
 
 ## The "Hold on... this ain't it" Challenge
 
@@ -42,7 +42,7 @@ As an autonomous agent, you will:
 ```
 When using Vibe Check tools:
 
-1. Treat vibe_check as a "Hold on... this ain't it" intervention that helps overcome pattern inertia
+1. Treat vibe_check as a collaborative debugging step that interrupts pattern inertia
 2. Always include the complete user prompt with each vibe_check call
 3. Specify your current phase (planning/implementation/review)
 4. Consider vibe_check feedback as a high-priority pattern interrupt, not just another tool output

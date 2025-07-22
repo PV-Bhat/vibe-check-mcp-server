@@ -4,7 +4,7 @@ import axios from 'axios';
 import { getLearningContextText } from './storage.js';
 
 // API Clients
-let genAI: GoogleGenerativeAI;
+let genAI: GoogleGenerativeAI | null = null;
 let openaiClient: OpenAI | null = null;
 
 // OpenRouter Constants
@@ -12,11 +12,19 @@ const openrouterBaseUrl = 'https://openrouter.ai/api/v1';
 
 // Initialize all configured LLM clients
 export function initializeLLMs() {
-  if (process.env.GEMINI_API_KEY) {
+  ensureGemini();
+  ensureOpenAI();
+}
+
+function ensureGemini() {
+  if (!genAI && process.env.GEMINI_API_KEY) {
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     console.error('Gemini API client initialized');
   }
-  if (process.env.OPENAI_API_KEY) {
+}
+
+function ensureOpenAI() {
+  if (!openaiClient && process.env.OPENAI_API_KEY) {
     openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     console.error('OpenAI API client initialized');
   }
@@ -61,7 +69,8 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
   let responseText = '';
 
   if (provider === 'gemini') {
-    if (!genAI) throw new Error('Gemini API key missing or client not initialized.');
+    ensureGemini();
+    if (!genAI) throw new Error('Gemini API key missing.');
     const geminiModel = model || 'gemini-2.5-pro';
     const fallbackModel = 'gemini-2.5-flash';
     try {
@@ -78,7 +87,8 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
       responseText = result.response.text();
     }
   } else if (provider === 'openai') {
-    if (!openaiClient) throw new Error('OpenAI API key missing or client not initialized.');
+    ensureOpenAI();
+    if (!openaiClient) throw new Error('OpenAI API key missing.');
     const openaiModel = model || 'o4-mini';
     console.error(`Using OpenAI model: ${openaiModel}`);
     const response = await openaiClient.chat.completions.create({
