@@ -1,6 +1,6 @@
 # Agent Prompting Strategies
 
-Effective agent-oversight relationships require careful prompting to ensure that AI agents properly respect and integrate feedback from Vibe Check. In v2.1 the tool acts more like a collaborative debugger than a strict critic. Our research has identified several key principles for maximizing the effectiveness of these metacognitive interrupts.
+Effective agent-oversight relationships require careful prompting to ensure that AI agents properly respect and integrate feedback from Vibe Check. In v2.2 the tool acts more like a collaborative debugger than a strict critic. Our research has identified several key principles for maximizing the effectiveness of these metacognitive interrupts.
 
 ## The "Hold on... this ain't it" Challenge
 

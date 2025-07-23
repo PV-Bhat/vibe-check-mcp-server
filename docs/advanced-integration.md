@@ -1,6 +1,6 @@
 # Advanced Integration Techniques
 
-For optimal metacognitive oversight, these advanced integration strategies leverage the full power of Vibe Check as a pattern interrupt system, recalibration mechanism, and self-improving feedback loop. Starting with v2.1, previous vibe_check output is automatically summarized and fed back into subsequent calls, so a `sessionId` is recommended for continuity.
+For optimal metacognitive oversight, these advanced integration strategies leverage the full power of Vibe Check as a pattern interrupt system, recalibration mechanism, and self-improving feedback loop. Starting with v2.2, previous vibe_check output is automatically summarized and fed back into subsequent calls, so a `sessionId` is recommended for continuity.
 
 ## Progressive Confidence Levels
 
