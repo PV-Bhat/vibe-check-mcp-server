@@ -1,6 +1,6 @@
 {
   "name": "vibe-check-mcp",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Vibe Check MCP for preventing cascading errors in AI-assisted coding through metacognitive pattern interrupts",
   "main": "build/index.js",
   "type": "module",
