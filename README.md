@@ -14,7 +14,8 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![CI](https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen)](https://github.com/PV-Bhat/vibe-check-mcp-server)
-[![Discord](https://img.shields.io/discord/1234567890?label=discord)](https://example.com/discord)
+[![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
+[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
 
 ## Table of Contents
