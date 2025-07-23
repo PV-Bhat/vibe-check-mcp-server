@@ -17,3 +17,5 @@ jobs:
       - run: npm run test:coverage
       - name: Report Vitest Coverage
         uses: davelosert/vitest-coverage-report-action@v2
+      - name: Security Scan
+        run: npm run security-check
