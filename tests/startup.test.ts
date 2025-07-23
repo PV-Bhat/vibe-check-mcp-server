@@ -13,7 +13,7 @@ describe('Server Startup and Response Time', () => {
     
     const projectRoot = path.resolve(__dirname, '..');
     const indexPath = path.join(projectRoot, 'build', 'index.js');
-    const requestPath = path.join(projectRoot, 'request1.json');
+    const requestPath = path.join(projectRoot, 'request.json');
 
     const requestJson = fs.readFileSync(requestPath, 'utf-8');
 
