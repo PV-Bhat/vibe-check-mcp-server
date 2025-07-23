@@ -38,7 +38,12 @@ startCommand:
   type: stdio
   configSchema:
     type: object
-    required: []  # Empty for lazy loading and tool scanning compatibility
+    required:
+      - geminiApiKey
+      - openaiApiKey
+      - openrouterApiKey
+      - defaultProvider
+      - defaultModel
     properties:
       geminiApiKey:
         type: string
