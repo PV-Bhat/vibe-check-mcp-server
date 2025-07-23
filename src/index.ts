@@ -260,34 +260,7 @@ async function main() {
     return output;
   }
 
-  let buffer = '';
-  process.stdin.on('data', async (data) => {
-    buffer += data.toString();
-    try {
-      const request = JSON.parse(buffer);
-      console.error('Received request:', request);
-
-      if (request.method === 'tools/call' && request.params.name === 'vibe_check') {
-        const result = await vibeCheckTool(request.params.arguments);
-        const response = {
-          jsonrpc: '2.0',
-          id: request.id,
-          result: {
-            content: [
-              {
-                type: 'text',
-                text: formatVibeCheckOutput(result),
-              },
-            ],
-          },
-        };
-        process.stdout.write(JSON.stringify(response));
-      }
-      buffer = ''; // Clear buffer after successful parse
-    } catch (e) {
-      // Incomplete JSON, wait for more data
-    }
-  });
+  
 
   // Set up error handler
   server.onerror = (error) => {

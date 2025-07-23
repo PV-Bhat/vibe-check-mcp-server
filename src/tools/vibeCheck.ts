@@ -33,7 +33,7 @@ export interface VibeCheckOutput {
  * - confidence: Optional agent confidence level (0-1)
  */
 export async function vibeCheckTool(input: VibeCheckInput): Promise<VibeCheckOutput> {
-  console.log('vibeCheckTool called with input:', input);
+  console.error('vibeCheckTool called with input:', input);
   try {
     // Get history summary
     const historySummary = getHistorySummary(input.sessionId);
