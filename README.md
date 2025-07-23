@@ -163,9 +163,9 @@ As an autonomous agent you will:
 
 ## To-do List
 
-- [ ] Additional examples for OpenRouter models
-- [ ] Repomix access to pass repositories to VC
-- [ ] Agents.md addendum to improve plug-and-play integration
+- [x] Additional examples for OpenRouter models
+- [x] Repomix access to pass repositories to VC
+- [x] Agents.md addendum to improve plug-and-play integration
 
 ## Contributing
 

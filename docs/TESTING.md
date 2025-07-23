@@ -1,6 +1,6 @@
 # Testing Guide
 
-Due to a bug in the `@modelcontextprotocol/sdk` client, the standard `test-client.js` script will not work. To test the server, you must use the `alt-test.js` script to generate JSON request files and pipe them to the server's standard input.
+Due to a bug in the `@modelcontextprotocol/sdk` client, the standard `test-client.js` script will not work. Use the alternative test scripts to generate JSON requests and pipe them to the server's standard input.
 
 ## Running Tests
 
@@ -9,22 +9,28 @@ Due to a bug in the `@modelcontextprotocol/sdk` client, the standard `test-clien
     npm run build
     ```
 2.  **Generate the requests:**
-    The `alt-test.js` script generates `request1.json` and `request2.json` files. These are designed to test the history functionality by using the same `sessionId`. You can modify `alt-test.js` to change the tool call arguments.
+    Three helper scripts create example requests for each provider.
+    - `alt-test.js` (OpenRouter) writes `request1.json` and `request2.json` for history testing.
+    - `alt-test-openai.js` generates `request.json` targeting the OpenAI provider.
+    - `alt-test-gemini.js` generates `request.json` using the default Gemini provider.
     ```bash
-    node alt-test.js
+    node alt-test.js            # OpenRouter history test
+    node alt-test-openai.js     # OpenAI example
+    node alt-test-gemini.js     # Gemini example
     ```
 3.  **Run the server with the requests:**
-    Pipe the contents of each file to a separate server instance.
+    Pipe the contents of each generated file to the server.
 
-    **First call (to establish history):**
+    **History test (OpenRouter):**
     ```bash
     node build/index.js < request1.json
-    ```
-    **Second call (to verify history):**
-    ```bash
     node build/index.js < request2.json
     ```
-    The server will process the requests and print the responses to standard output. The second call's output should demonstrate that the history from the first call was considered.
+    **Single provider examples:**
+    ```bash
+    node build/index.js < request.json   # created by alt-test-openai.js or alt-test-gemini.js
+    ```
+    The server will process the requests and print the responses to standard output. The second OpenRouter call should show that the previous history was considered.
 
 ## Unit Tests with Vitest
 
