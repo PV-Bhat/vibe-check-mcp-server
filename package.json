@@ -13,7 +13,8 @@
     "start": "node build/index.js",
     "dev": "tsc-watch --onSuccess \"node build/index.js\"",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "security-check": "node scripts/security-check.cjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.17.1",

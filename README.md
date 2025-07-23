@@ -11,6 +11,7 @@
 
 [![Version](https://img.shields.io/badge/version-2.1-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![CI](https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml)
 [![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
 [![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
 
@@ -160,6 +161,12 @@ As an autonomous agent you will:
 - [Philosophy](./docs/philosophy.md)
 - [Case Studies](./docs/case-studies.md)
 - [Changelog](./docs/changelog.md)
+
+## Security
+
+This repository includes a CI-based security scan that runs on every pull request.
+It checks dependencies with `npm audit` and scans the source for risky patterns.
+See [SECURITY.md](./SECURITY.md) for details and how to report issues.
 
 ## To-do List
 
