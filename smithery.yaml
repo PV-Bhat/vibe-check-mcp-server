@@ -2,8 +2,8 @@
 
 # Metadata for discoverability and registry listing
 name: vibe-check-mcp
-version: 2.1.0
-description: The definitive Vibe Coder's sanity check MCP server: Prevent cascading errors in AI workflows by implementing strategic pattern interrupts.
+version: 2.2.0
+description: Metacognitive AI agent oversight tool implementing CPI-driven interrupts for alignment and safety.
 author: PV-Bhat
 repository: https://github.com/PV-Bhat/vibe-check-mcp-server
 license: MIT

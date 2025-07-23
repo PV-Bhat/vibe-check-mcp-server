@@ -21,16 +21,9 @@ export interface VibeCheckOutput {
 }
 
 /**
- * The vibe_check tool provides metacognitive questioning to identify assumptions
- * and break tunnel vision, focusing on simplicity and user alignment.
- * 
- * The userRequest parameter is REQUIRED and must contain the FULL original user request
- * to ensure proper alignment checking.
- * 
- * New dynamic parameters:
- * - previousAdvice: Optional previous feedback to avoid repetition
- * - phase: Optional indicator of project phase (planning/implementation/review)
- * - confidence: Optional agent confidence level (0-1)
+ * Adaptive CPI interrupt for AI agent alignment and reflection.
+ * Monitors progress and questions assumptions to mitigate Reasoning Lock-In.
+ * The userRequest parameter MUST contain the full original request for safety.
  */
 export async function vibeCheckTool(input: VibeCheckInput): Promise<VibeCheckOutput> {
   console.error('vibeCheckTool called with input:', input);

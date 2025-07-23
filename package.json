@@ -1,7 +1,7 @@
 {
   "name": "vibe-check-mcp",
   "version": "2.2.0",
-  "description": "Vibe Check MCP for preventing cascading errors in AI-assisted coding through metacognitive pattern interrupts",
+  "description": "Metacognitive AI agent oversight: adaptive CPI interrupts for alignment, reflection and safety",
   "main": "build/index.js",
   "type": "module",
   "files": [
@@ -35,13 +35,17 @@
   },
   "keywords": [
     "mcp",
-    "claude",
+    "mcp-server",
     "vibe-check",
     "vibe-coding",
     "metacognition",
-    "pattern-interrupt",
-    "ai",
-    "learnlm"
+    "ai-alignment",
+    "llm-agents",
+    "autonomous-agents",
+    "reflection",
+    "agent-oversight",
+    "ai-safety",
+    "prompt-engineering"
   ],
   "author": "PV Bhat",
   "repository": {

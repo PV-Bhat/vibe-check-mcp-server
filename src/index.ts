@@ -35,7 +35,7 @@ async function main() {
   const server = new Server(
     {
       name: "vibe-check",
-      version: "2.1.0",
+      version: "2.2.0",
     },
     {
       capabilities: {
