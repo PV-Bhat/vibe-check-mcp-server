@@ -201,5 +201,9 @@ Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) and join our
 * 🧙 [MagicSlides](https://www.magicslides.app/mcps/pv-bhat-vibe-check)
 * 🗃️ [AIAgentsList](https://aiagentslist.com/mcp-servers/vibe-check-mcp-server)
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=PV-Bhat/vibe-check-mcp-server&type=Date)](https://www.star-history.com/#PV-Bhat/vibe-check-mcp-server&Date)
+
 ## Credits & License
 VibeCheck MCP is released under the [MIT License](LICENSE). Built for reliable, enterprise-ready AI agents.
