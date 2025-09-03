@@ -1,4 +1,5 @@
 import { getLearningContextText } from './storage.js';
+import { constitutionMap } from '../tools/constitution.js';
 
 // API Clients - Use 'any' to support dynamic import
 let genAI: any = null;
@@ -62,7 +63,10 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
     learningContext = getLearningContextText();
   }
 
-  const contextSection = `CONTEXT:\nHistory Context: ${input.historySummary || 'None'}\n${learningContext ? `Learning Context:\n${learningContext}` : ''}\nGoal: ${input.goal}\nPlan: ${input.plan}\nProgress: ${input.progress || 'None'}\nUncertainties: ${input.uncertainties?.join(', ') || 'None'}\nTask Context: ${input.taskContext || 'None'}\nUser Prompt: ${input.userPrompt || 'None'}`;
+  const rules = input.sessionId ? (constitutionMap[input.sessionId] || []) : [];
+  const constitutionBlock = rules.length ? `\nConstitution:\n${rules.map(r => `- ${r}`).join('\n')}` : '';
+
+  const contextSection = `CONTEXT:\nHistory Context: ${input.historySummary || 'None'}\n${learningContext ? `Learning Context:\n${learningContext}` : ''}\nGoal: ${input.goal}\nPlan: ${input.plan}\nProgress: ${input.progress || 'None'}\nUncertainties: ${input.uncertainties?.join(', ') || 'None'}\nTask Context: ${input.taskContext || 'None'}\nUser Prompt: ${input.userPrompt || 'None'}${constitutionBlock}`;
   const fullPrompt = `${systemPrompt}\n\n${contextSection}`;
 
   let responseText = '';
