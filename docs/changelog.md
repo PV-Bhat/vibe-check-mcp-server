@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.5.0 — 2025-09-03
+- Transport: migrate STDIO → Streamable HTTP (`POST /mcp`, `GET /mcp` → 405).
+- Constitution tools: `update_constitution`, `reset_constitution`, `check_constitution` (session-scoped, in-memory, logged).
+- CPI surfaced: banner + concise metrics; links to ResearchGate, CPI GitHub, and Zenodo (MURST).
+
 ## v2.2.0 - 2025-07-22
 - CPI architecture enables adaptive interrupts to mitigate Reasoning Lock-In
 - History continuity across sessions
