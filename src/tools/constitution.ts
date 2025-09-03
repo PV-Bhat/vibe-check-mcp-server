@@ -33,11 +33,18 @@ export function getConstitution(sessionId: string): string[] {
 }
 
 // Cleanup stale sessions to prevent unbounded memory growth
-setInterval(() => {
+function cleanup() {
   const now = Date.now();
   for (const [sessionId, entry] of Object.entries(constitutionMap)) {
     if (now - entry.updated > SESSION_TTL_MS) {
       delete constitutionMap[sessionId];
     }
   }
-}, SESSION_TTL_MS).unref();
+}
+
+setInterval(cleanup, SESSION_TTL_MS).unref();
+
+export const __testing = {
+  _getMap: () => constitutionMap,
+  cleanup
+};
