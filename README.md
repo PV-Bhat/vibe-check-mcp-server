@@ -4,28 +4,25 @@
   <a href="https://www.researchgate.net/publication/394946231_Do_AI_Agents_Need_Mentors_Evaluating_Chain-Pattern_Interrupt_CPI_for_Oversight_and_Reliability?channel=doi&linkId=68ad6178ca495d76982ff192&showFulltext=true">
     <img src="https://img.shields.io/badge/Research-CPI%20%28MURST%29-blue?style=flat-square" alt="CPI (MURST) Research">
   </a><br/>
-  <b>Why CPI (Vibe Check) changed outcomes over 130+ runs →</b>
-  <i>Read the research behind runtime alignment, hazard gating, and preventing reasoning lock-in.</i>
- </p>
+  
+> **CPI × Vibe Check**  
+> Vibe Check uses CPI (Chain-Pattern Interrupt) for the runtime oversight. Across 153 runs in the study, **success increased from ~27% → 54%** and **harm dropped from ~83% → 42%** when CPI was applied.  
+</p>
 
-> **CPI × Vibe Check (MURST)**  
-> CPI (Chain-Pattern Interrupt) is the runtime oversight method that Vibe Check operationalizes. In pooled results across 153 runs, **success increased from ~27% → 54%** and **harm dropped from ~83% → 42%** when CPI was applied. Recommended “dosage”: **~10–20%** of steps receive an interrupt.  
-> **Read the paper →** ResearchGate (primary), plus Git & Zenodo in the Research section below.  
-
-<img width="500" height="300" alt="vibecheckv2 1" src="https://github.com/user-attachments/assets/98c55b95-8f3c-4106-b917-20ceaf292f63" />
+<img width="500" height="300" alt="vibecheckv2.5" src="https://github.com/user-attachments/assets/bcd06d7d-a184-43e9-8c43-22aca3074d32" />
 
 *Adaptive metacognitive oversight for autonomous AI agents – a research-backed MCP server keeping LLMs aligned, reflective and safe.*
 
 ## The Most Widely-Deployed Feedback Layer in the MCP Ecosystem
-> ~10k+ downloads on PulseMCP and counting.
+> ~17k+ downloads on PulseMCP and counting.
 > Over 1k monthly tool calls via Smithery.
-> Listed on 12+ orchestration platforms.
+> Listed on 12+ MCP platforms.
 > Security rating 4.3 on MSEEP.ai.
 
 [![Version](https://img.shields.io/badge/version-2.5.0-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![CI](https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Coverage](https://img.shields.io/badge/coverage-80+%25-brightgreen)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
 [![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
 [![DOI: 10.5281/zenodo.14851363](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.14851363-blue?style=flat-square)](https://doi.org/10.5281/zenodo.14851363)
