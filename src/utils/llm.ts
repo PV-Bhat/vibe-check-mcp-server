@@ -1,5 +1,5 @@
 import { getLearningContextText } from './storage.js';
-import { constitutionMap } from '../tools/constitution.js';
+import { getConstitution } from '../tools/constitution.js';
 
 // API Clients - Use 'any' to support dynamic import
 let genAI: any = null;
@@ -18,7 +18,7 @@ async function ensureGemini() {
   if (!genAI && process.env.GEMINI_API_KEY) {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    console.error('Gemini API client initialized dynamically');
+    console.log('Gemini API client initialized dynamically');
   }
 }
 
@@ -26,7 +26,7 @@ async function ensureOpenAI() {
   if (!openaiClient && process.env.OPENAI_API_KEY) {
     const { OpenAI } = await import('openai');
     openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    console.error('OpenAI API client initialized dynamically');
+    console.log('OpenAI API client initialized dynamically');
   }
 }
 
@@ -63,7 +63,7 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
     learningContext = getLearningContextText();
   }
 
-  const rules = input.sessionId ? (constitutionMap[input.sessionId] || []) : [];
+  const rules = input.sessionId ? getConstitution(input.sessionId) : [];
   const constitutionBlock = rules.length ? `\nConstitution:\n${rules.map(r => `- ${r}`).join('\n')}` : '';
 
   const contextSection = `CONTEXT:\nHistory Context: ${input.historySummary || 'None'}\n${learningContext ? `Learning Context:\n${learningContext}` : ''}\nGoal: ${input.goal}\nPlan: ${input.plan}\nProgress: ${input.progress || 'None'}\nUncertainties: ${input.uncertainties?.join(', ') || 'None'}\nTask Context: ${input.taskContext || 'None'}\nUser Prompt: ${input.userPrompt || 'None'}${constitutionBlock}`;
@@ -77,7 +77,7 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
     const geminiModel = model || 'gemini-2.5-pro';
     const fallbackModel = 'gemini-2.5-flash';
     try {
-      console.error(`Attempting to use Gemini model: ${geminiModel}`);
+      console.log(`Attempting to use Gemini model: ${geminiModel}`);
       // console.error('Full Prompt:', fullPrompt); // Keep this commented out for now
       const modelInstance = genAI.getGenerativeModel({ model: geminiModel });
       const result = await modelInstance.generateContent(fullPrompt);
@@ -93,7 +93,7 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
     await ensureOpenAI();
     if (!openaiClient) throw new Error('OpenAI API key missing.');
     const openaiModel = model || 'o4-mini';
-    console.error(`Using OpenAI model: ${openaiModel}`);
+    console.log(`Using OpenAI model: ${openaiModel}`);
     const response = await openaiClient.chat.completions.create({
       model: openaiModel,
       messages: [{ role: 'system', content: fullPrompt }],
@@ -102,7 +102,7 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
   } else if (provider === 'openrouter') {
     if (!process.env.OPENROUTER_API_KEY) throw new Error('OpenRouter API key missing.');
     if (!model) throw new Error('OpenRouter provider requires a model to be specified in the tool call.');
-    console.error(`Using OpenRouter model: ${model}`);
+    console.log(`Using OpenRouter model: ${model}`);
     const { default: axios } = await import('axios');
     const response = await axios.post(`${openrouterBaseUrl}/chat/completions`, {
       model: model,

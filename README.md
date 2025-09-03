@@ -135,12 +135,12 @@ Add to `claude_desktop_config.json`:
 
 ## Research & Philosophy
 
-**CPI (Chain-Pattern Interrupt)** is the research-backed oversight method behind Vibe Check. It injects brief, well-timed “pause points” at risk inflection moments to re-align the agent to the user’s true priority, preventing destructive cascades and **reasoning lock-in (RLI)**. In pooled evaluation across 153 runs, CPI **nearly doubles success (~27%→54%) and roughly halves harmful actions (~83%→42%)**. Optimal interrupt **dosage is ~10–20%** of steps. *Vibe Check MCP implements CPI as an external mentor layer at test time.* :contentReference[oaicite:5]{index=5} :contentReference[oaicite:6]{index=6} :contentReference[oaicite:7]{index=7}
+**CPI (Chain-Pattern Interrupt)** is the research-backed oversight method behind Vibe Check. It injects brief, well-timed “pause points” at risk inflection moments to re-align the agent to the user’s true priority, preventing destructive cascades and **reasoning lock-in (RLI)**. In pooled evaluation across 153 runs, CPI **nearly doubles success (~27%→54%) and roughly halves harmful actions (~83%→42%)**. Optimal interrupt **dosage is ~10–20%** of steps. *Vibe Check MCP implements CPI as an external mentor layer at test time.*
 
 **Links:**  
 - 📄 **CPI Paper (ResearchGate)** — primary canonical link *(banner above)*.  
-- 📘 **CPI Reference Implementation (GitHub)**: https://github.com/PV-Bhat/cpi :contentReference[oaicite:8]{index=8}  
-- 📚 **MURST Zenodo DOI (RSRC archival)**: https://doi.org/10.5281/zenodo.14851363 :contentReference[oaicite:9]{index=9}  
+- 📘 **CPI Reference Implementation (GitHub)**: https://github.com/PV-Bhat/cpi
+- 📚 **MURST Zenodo DOI (RSRC archival)**: https://doi.org/10.5281/zenodo.14851363
 
 ## Usage Examples
 ```ts

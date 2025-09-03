@@ -148,7 +148,7 @@ async function main() {
           throw new McpError(ErrorCode.InvalidParams, 'sessionId (string) and rule (string) are required');
         }
         updateConstitution(args.sessionId, args.rule);
-        console.error('[Constitution:update]', { sessionId: args.sessionId, count: getConstitution(args.sessionId).length });
+        console.log('[Constitution:update]', { sessionId: args.sessionId, count: getConstitution(args.sessionId).length });
         return { content: [{ type: 'text', text: '✅ Constitution updated' }] };
       }
 
@@ -157,7 +157,7 @@ async function main() {
           throw new McpError(ErrorCode.InvalidParams, 'sessionId (string) and rules (string[]) are required');
         }
         resetConstitution(args.sessionId, args.rules);
-        console.error('[Constitution:reset]', { sessionId: args.sessionId, count: getConstitution(args.sessionId).length });
+        console.log('[Constitution:reset]', { sessionId: args.sessionId, count: getConstitution(args.sessionId).length });
         return { content: [{ type: 'text', text: '✅ Constitution reset' }] };
       }
 
@@ -166,7 +166,7 @@ async function main() {
           throw new McpError(ErrorCode.InvalidParams, 'sessionId (string) is required');
         }
         const rules = getConstitution(args.sessionId);
-        console.error('[Constitution:check]', { sessionId: args.sessionId, count: rules.length });
+        console.log('[Constitution:check]', { sessionId: args.sessionId, count: rules.length });
         return { content: [{ type: 'json', json: { rules } }] };
       }
 
@@ -176,7 +176,8 @@ async function main() {
   });
 
   const app = express();
-  app.use(cors());
+  const allowedOrigin = process.env.CORS_ORIGIN || '*';
+  app.use(cors({ origin: allowedOrigin }));
   app.use(bodyParser.json());
 
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
@@ -186,7 +187,7 @@ async function main() {
     const started = Date.now();
     const { id, method } = req.body ?? {};
     const sessionId = req.body?.params?.sessionId || req.body?.params?.arguments?.sessionId;
-    console.error('[MCP] request', { id, method, sessionId });
+    console.log('[MCP] request', { id, method, sessionId });
     try {
       await transport.handleRequest(req, res, req.body);
     } catch (e: any) {
@@ -195,7 +196,7 @@ async function main() {
         res.status(500).json({ jsonrpc: '2.0', id: id ?? null, error: { code: -32603, message: 'Internal server error' } });
       }
     } finally {
-      console.error('[MCP] handled', { id, ms: Date.now() - started });
+      console.log('[MCP] handled', { id, ms: Date.now() - started });
     }
   });
 
@@ -204,7 +205,11 @@ async function main() {
   });
 
   const PORT = Number(process.env.MCP_HTTP_PORT || 3000);
-  app.listen(PORT, () => console.error(`[MCP] HTTP listening on :${PORT}`));
+  const listener = app.listen(PORT, () => {
+    const addr = listener.address();
+    const actualPort = typeof addr === 'object' && addr ? addr.port : PORT;
+    console.log(`[MCP] HTTP listening on :${actualPort}`);
+  });
 }
 
 function formatVibeCheckOutput(result: VibeCheckOutput): string {

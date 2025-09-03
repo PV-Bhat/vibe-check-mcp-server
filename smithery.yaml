@@ -43,7 +43,7 @@ startCommand:
 http:
   endpoint: "/mcp"
   cors:
-    origin: "*"
+    origin: "${CORS_ORIGIN:-*}"
 
 # Documentation links
 documentation:
