@@ -26,7 +26,7 @@ export interface VibeCheckOutput {
  * The userRequest parameter MUST contain the full original request for safety.
  */
 export async function vibeCheckTool(input: VibeCheckInput): Promise<VibeCheckOutput> {
-  console.error('vibeCheckTool called with input:', input);
+  console.log('[vibe_check] called', { hasSession: Boolean(input.sessionId) });
   try {
     // Get history summary
     const historySummary = getHistorySummary(input.sessionId);

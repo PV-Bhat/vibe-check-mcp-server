@@ -5,7 +5,6 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
-import bodyParser from 'body-parser';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { McpError, ErrorCode, ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
@@ -15,6 +14,8 @@ import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from './tools/vibeLear
 import { updateConstitution, resetConstitution, getConstitution } from './tools/constitution.js';
 import { STANDARD_CATEGORIES, LearningType } from './utils/storage.js';
 import { loadHistory } from './utils/state.js';
+
+const IS_DISCOVERY = process.env.MCP_DISCOVERY_MODE === '1';
 
 async function main() {
   await loadHistory();
@@ -32,23 +33,54 @@ async function main() {
         inputSchema: {
           type: 'object',
           properties: {
-            goal: { type: 'string', description: "The agent's current goal" },
-            plan: { type: 'string', description: "The agent's detailed plan" },
+            goal: {
+              type: 'string',
+              description: "The agent's current goal",
+              examples: ['Ship CPI v2.5 with zero regressions']
+            },
+            plan: {
+              type: 'string',
+              description: "The agent's detailed plan",
+              examples: ['1) Write tests 2) Refactor 3) Canary rollout']
+            },
             modelOverride: {
               type: 'object',
               properties: {
                 provider: { type: 'string', enum: ['gemini', 'openai', 'openrouter'] },
                 model: { type: 'string' }
               },
-              required: []
+              required: [],
+              examples: [{ provider: 'gemini', model: 'gemini-2.5-pro' }]
             },
-            userPrompt: { type: 'string', description: 'The original user prompt' },
-            progress: { type: 'string', description: "The agent's progress so far" },
-            uncertainties: { type: 'array', items: { type: 'string' }, description: "The agent's uncertainties" },
-            taskContext: { type: 'string', description: 'The context of the current task' },
-            sessionId: { type: 'string', description: 'Optional session ID for state management' }
+            userPrompt: {
+              type: 'string',
+              description: 'The original user prompt',
+              examples: ['Summarize the repo']
+            },
+            progress: {
+              type: 'string',
+              description: "The agent's progress so far",
+              examples: ['Finished step 1']
+            },
+            uncertainties: {
+              type: 'array',
+              items: { type: 'string' },
+              description: "The agent's uncertainties",
+              examples: [['uncertain about deployment']]
+            },
+            taskContext: {
+              type: 'string',
+              description: 'The context of the current task',
+              examples: ['repo: vibe-check-mcp @2.5.0']
+            },
+            sessionId: {
+              type: 'string',
+              description: 'Optional session ID for state management',
+              examples: ['session-123']
+            }
           },
-          required: ['goal', 'plan']
+          required: ['goal', 'plan'],
+          additionalProperties: false
         }
       },
       {
@@ -57,13 +89,36 @@ async function main() {
         inputSchema: {
           type: 'object',
           properties: {
-            mistake: { type: 'string', description: 'One-sentence description of the learning entry' },
-            category: { type: 'string', description: `Category (standard categories: ${STANDARD_CATEGORIES.join(', ')})`, enum: STANDARD_CATEGORIES },
-            solution: { type: 'string', description: 'How it was corrected (if applicable)' },
-            type: { type: 'string', enum: ['mistake', 'preference', 'success'], description: 'Type of learning entry' },
-            sessionId: { type: 'string', description: 'Optional session ID for state management' }
+            mistake: {
+              type: 'string',
+              description: 'One-sentence description of the learning entry',
+              examples: ['Skipped writing tests']
+            },
+            category: {
+              type: 'string',
+              description: `Category (standard categories: ${STANDARD_CATEGORIES.join(', ')})`,
+              enum: STANDARD_CATEGORIES,
+              examples: ['Premature Implementation']
+            },
+            solution: {
+              type: 'string',
+              description: 'How it was corrected (if applicable)',
+              examples: ['Added regression tests']
+            },
+            type: {
+              type: 'string',
+              enum: ['mistake', 'preference', 'success'],
+              description: 'Type of learning entry',
+              examples: ['mistake']
+            },
+            sessionId: {
+              type: 'string',
+              description: 'Optional session ID for state management',
+              examples: ['session-123']
+            }
           },
-          required: ['mistake', 'category']
+          required: ['mistake', 'category'],
+          additionalProperties: false
         }
       },
       {
@@ -72,10 +127,11 @@ async function main() {
         inputSchema: {
           type: 'object',
           properties: {
-            sessionId: { type: 'string' },
-            rule: { type: 'string' }
+            sessionId: { type: 'string', examples: ['session-123'] },
+            rule: { type: 'string', examples: ['Always write tests first'] }
           },
-          required: ['sessionId', 'rule']
+          required: ['sessionId', 'rule'],
+          additionalProperties: false
         }
       },
       {
@@ -84,10 +140,15 @@ async function main() {
         inputSchema: {
           type: 'object',
           properties: {
-            sessionId: { type: 'string' },
-            rules: { type: 'array', items: { type: 'string' } }
+            sessionId: { type: 'string', examples: ['session-123'] },
+            rules: {
+              type: 'array',
+              items: { type: 'string' },
+              examples: [['Be kind', 'Avoid loops']]
+            }
           },
-          required: ['sessionId', 'rules']
+          required: ['sessionId', 'rules'],
+          additionalProperties: false
         }
       },
       {
@@ -96,21 +157,30 @@ async function main() {
         inputSchema: {
           type: 'object',
           properties: {
-            sessionId: { type: 'string' }
+            sessionId: { type: 'string', examples: ['session-123'] }
           },
-          required: ['sessionId']
+          required: ['sessionId'],
+          additionalProperties: false
         }
       }
     ]
   }));
 
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
-    const { name, arguments: args } = req.params;
+    const { name, arguments: raw } = req.params;
+    const args: any = raw;
 
     switch (name) {
       case 'vibe_check': {
-        if (!args || typeof args.goal !== 'string' || typeof args.plan !== 'string') {
-          throw new McpError(ErrorCode.InvalidParams, 'goal and plan are required strings');
+        const missing: string[] = [];
+        if (!args || typeof args.goal !== 'string') missing.push('goal');
+        if (!args || typeof args.plan !== 'string') missing.push('plan');
+        if (missing.length) {
+          const example = '{"goal":"Ship CPI v2.5","plan":"1) tests 2) refactor 3) canary"}';
+          if (IS_DISCOVERY) {
+            return { content: [{ type: 'text', text: `discovery: missing [${missing.join(', ')}]; example: ${example}` }] };
+          }
+          throw new McpError(ErrorCode.InvalidParams, `Missing: ${missing.join(', ')}. Example: ${example}`);
         }
         const input: VibeCheckInput = {
           goal: args.goal,
@@ -127,8 +197,15 @@ async function main() {
       }
 
       case 'vibe_learn': {
-        if (!args || typeof args.mistake !== 'string' || typeof args.category !== 'string') {
-          throw new McpError(ErrorCode.InvalidParams, 'mistake and category are required strings');
+        const missing: string[] = [];
+        if (!args || typeof args.mistake !== 'string') missing.push('mistake');
+        if (!args || typeof args.category !== 'string') missing.push('category');
+        if (missing.length) {
+          const example = '{"mistake":"Skipped tests","category":"Feature Creep"}';
+          if (IS_DISCOVERY) {
+            return { content: [{ type: 'text', text: `discovery: missing [${missing.join(', ')}]; example: ${example}` }] };
+          }
+          throw new McpError(ErrorCode.InvalidParams, `Missing: ${missing.join(', ')}. Example: ${example}`);
         }
         const input: VibeLearnInput = {
           mistake: args.mistake,
@@ -144,8 +221,15 @@ async function main() {
       }
 
       case 'update_constitution': {
-        if (!args || typeof args.sessionId !== 'string' || typeof args.rule !== 'string') {
-          throw new McpError(ErrorCode.InvalidParams, 'sessionId (string) and rule (string) are required');
+        const missing: string[] = [];
+        if (!args || typeof args.sessionId !== 'string') missing.push('sessionId');
+        if (!args || typeof args.rule !== 'string') missing.push('rule');
+        if (missing.length) {
+          const example = '{"sessionId":"123","rule":"Always write tests first"}';
+          if (IS_DISCOVERY) {
+            return { content: [{ type: 'text', text: `discovery: missing [${missing.join(', ')}]; example: ${example}` }] };
+          }
+          throw new McpError(ErrorCode.InvalidParams, `Missing: ${missing.join(', ')}. Example: ${example}`);
         }
         updateConstitution(args.sessionId, args.rule);
         console.log('[Constitution:update]', { sessionId: args.sessionId, count: getConstitution(args.sessionId).length });
@@ -153,8 +237,15 @@ async function main() {
       }
 
       case 'reset_constitution': {
-        if (!args || typeof args.sessionId !== 'string' || !Array.isArray(args.rules)) {
-          throw new McpError(ErrorCode.InvalidParams, 'sessionId (string) and rules (string[]) are required');
+        const missing: string[] = [];
+        if (!args || typeof args.sessionId !== 'string') missing.push('sessionId');
+        if (!args || !Array.isArray(args.rules)) missing.push('rules');
+        if (missing.length) {
+          const example = '{"sessionId":"123","rules":["Be kind","Avoid loops"]}';
+          if (IS_DISCOVERY) {
+            return { content: [{ type: 'text', text: `discovery: missing [${missing.join(', ')}]; example: ${example}` }] };
+          }
+          throw new McpError(ErrorCode.InvalidParams, `Missing: ${missing.join(', ')}. Example: ${example}`);
         }
         resetConstitution(args.sessionId, args.rules);
         console.log('[Constitution:reset]', { sessionId: args.sessionId, count: getConstitution(args.sessionId).length });
@@ -162,8 +253,15 @@ async function main() {
       }
 
       case 'check_constitution': {
-        if (!args || typeof args.sessionId !== 'string') {
-          throw new McpError(ErrorCode.InvalidParams, 'sessionId (string) is required');
+        const missing: string[] = [];
+        if (!args || typeof args.sessionId !== 'string') missing.push('sessionId');
+        if (missing.length) {
+          const example = '{"sessionId":"123"}';
+          if (IS_DISCOVERY) {
+            return { content: [{ type: 'text', text: `discovery: missing [${missing.join(', ')}]; example: ${example}` }] };
+          }
+        
+          throw new McpError(ErrorCode.InvalidParams, `Missing: ${missing.join(', ')}. Example: ${example}`);
         }
         const rules = getConstitution(args.sessionId);
         console.log('[Constitution:check]', { sessionId: args.sessionId, count: rules.length });
@@ -178,7 +276,7 @@ async function main() {
   const app = express();
   const allowedOrigin = process.env.CORS_ORIGIN || '*';
   app.use(cors({ origin: allowedOrigin }));
-  app.use(bodyParser.json());
+  app.use(express.json());
 
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
   await server.connect(transport);
@@ -204,12 +302,20 @@ async function main() {
     res.status(405).json({ jsonrpc: '2.0', error: { code: -32000, message: 'Method not allowed' }, id: null });
   });
 
+  app.get('/healthz', (_req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
+
   const PORT = Number(process.env.MCP_HTTP_PORT || 3000);
   const listener = app.listen(PORT, () => {
     const addr = listener.address();
     const actualPort = typeof addr === 'object' && addr ? addr.port : PORT;
     console.log(`[MCP] HTTP listening on :${actualPort}`);
   });
+
+  const close = () => listener.close(() => process.exit(0));
+  process.on('SIGTERM', close);
+  process.on('SIGINT', close);
 }
 
 function formatVibeCheckOutput(result: VibeCheckOutput): string {
