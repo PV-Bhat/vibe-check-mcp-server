@@ -7,23 +7,37 @@ import net from 'net';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function runStartupTest(envVar: 'MCP_HTTP_PORT' | 'PORT') {
+async function runStartupTest(envVar: 'MCP_HTTP_PORT' | 'PORT' | 'BOTH') {
   const startTime = Date.now();
 
   const projectRoot = path.resolve(__dirname, '..');
   const indexPath = path.join(projectRoot, 'build', 'index.js');
 
-  const port = await new Promise<number>((resolve, reject) => {
-    const s = net.createServer();
-    s.listen(0, () => {
-      const p = (s.address() as any).port;
-      s.close(() => resolve(p));
+  const getPort = () =>
+    new Promise<number>((resolve, reject) => {
+      const s = net.createServer();
+      s.listen(0, () => {
+        const p = (s.address() as any).port;
+        s.close(() => resolve(p));
+      });
+      s.on('error', reject);
     });
-    s.on('error', reject);
-  });
+
+  const mainPort = await getPort();
+  const env: NodeJS.ProcessEnv = { ...process.env };
+
+  if (envVar === 'MCP_HTTP_PORT') {
+    env.MCP_HTTP_PORT = String(mainPort);
+  } else if (envVar === 'PORT') {
+    env.PORT = String(mainPort);
+  } else {
+    env.MCP_HTTP_PORT = String(mainPort);
+    const otherPort = await getPort();
+    env.PORT = String(otherPort);
+  }
 
   const serverProcess = spawn('node', [indexPath], {
-    env: { ...process.env, [envVar]: String(port) },
+    env,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
 
@@ -31,7 +45,7 @@ async function runStartupTest(envVar: 'MCP_HTTP_PORT' | 'PORT') {
     let res: Response | null = null;
     for (let i = 0; i < 40; i++) {
       try {
-        const attempt = await fetch(`http://localhost:${port}/mcp`, {
+        const attempt = await fetch(`http://localhost:${mainPort}/mcp`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -67,5 +81,9 @@ describe('Server Startup and Response Time', () => {
 
   it('should start and respond to a tools/list request over HTTP using PORT', async () => {
     await runStartupTest('PORT');
+  }, 10000);
+
+  it('should prefer MCP_HTTP_PORT when both MCP_HTTP_PORT and PORT are set', async () => {
+    await runStartupTest('BOTH');
   }, 10000);
 });
