@@ -38,6 +38,9 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "publishConfig": {
+  "registry": "https://npm.pkg.github.com/"
+  },
   "keywords": [
     "mcp",
     "mcp-server",
