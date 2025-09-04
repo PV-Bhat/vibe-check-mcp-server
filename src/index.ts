@@ -306,7 +306,7 @@ async function main() {
     res.status(200).json({ status: 'ok' });
   });
 
-  const PORT = Number(process.env.MCP_HTTP_PORT || 3000);
+  const PORT = Number(process.env.PORT || process.env.MCP_HTTP_PORT || 3000);
   const listener = app.listen(PORT, () => {
     const addr = listener.address();
     const actualPort = typeof addr === 'object' && addr ? addr.port : PORT;
