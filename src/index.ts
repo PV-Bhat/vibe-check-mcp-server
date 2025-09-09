@@ -19,6 +19,10 @@ import { loadHistory } from './utils/state.js';
 const IS_DISCOVERY = process.env.MCP_DISCOVERY_MODE === '1';
 const USE_STDIO = process.env.MCP_TRANSPORT === 'stdio';
 
+if (USE_STDIO) {
+  console.log = (...args) => console.error(...args);
+}
+
 async function main() {
   await loadHistory();
 
@@ -281,12 +285,10 @@ async function main() {
   app.use(express.json());
 
   if (USE_STDIO) {
-    // Use stdio transport for MCP clients like Windsurf
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.log('[MCP] stdio transport connected');
+    console.error('[MCP] stdio transport connected');
   } else {
-    // Use HTTP transport for web-based clients
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
     await server.connect(transport);
 
