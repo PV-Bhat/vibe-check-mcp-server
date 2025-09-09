@@ -201,7 +201,7 @@ This repository includes a CI-based security scan that runs on every pull reques
 4. Optional human-in-the-loop review
 
 ## Contributing & Community
-Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) and join our Discord for discussion.
+Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## FAQ
 - **Does it increase latency?** A single CPI call typically adds ~1 second depending on the provider.
