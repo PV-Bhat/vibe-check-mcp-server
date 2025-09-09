@@ -7,6 +7,7 @@ import express from 'express';
 import cors from 'cors';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { McpError, ErrorCode, ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from './tools/vibeCheck.js';
@@ -16,6 +17,11 @@ import { STANDARD_CATEGORIES, LearningType } from './utils/storage.js';
 import { loadHistory } from './utils/state.js';
 
 const IS_DISCOVERY = process.env.MCP_DISCOVERY_MODE === '1';
+const USE_STDIO = process.env.MCP_TRANSPORT === 'stdio';
+
+if (USE_STDIO) {
+  console.log = (...args) => console.error(...args);
+}
 
 async function main() {
   await loadHistory();
@@ -278,44 +284,50 @@ async function main() {
   app.use(cors({ origin: allowedOrigin }));
   app.use(express.json());
 
-  const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
-  await server.connect(transport);
+  if (USE_STDIO) {
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error('[MCP] stdio transport connected');
+  } else {
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+    await server.connect(transport);
 
-  app.post('/mcp', async (req, res) => {
-    const started = Date.now();
-    const { id, method } = req.body ?? {};
-    const sessionId = req.body?.params?.sessionId || req.body?.params?.arguments?.sessionId;
-    console.log('[MCP] request', { id, method, sessionId });
-    try {
-      await transport.handleRequest(req, res, req.body);
-    } catch (e: any) {
-      console.error('[MCP] error', { err: e?.message, id });
-      if (!res.headersSent) {
-        res.status(500).json({ jsonrpc: '2.0', id: id ?? null, error: { code: -32603, message: 'Internal server error' } });
+    app.post('/mcp', async (req, res) => {
+      const started = Date.now();
+      const { id, method } = req.body ?? {};
+      const sessionId = req.body?.params?.sessionId || req.body?.params?.arguments?.sessionId;
+      console.log('[MCP] request', { id, method, sessionId });
+      try {
+        await transport.handleRequest(req, res, req.body);
+      } catch (e: any) {
+        console.error('[MCP] error', { err: e?.message, id });
+        if (!res.headersSent) {
+          res.status(500).json({ jsonrpc: '2.0', id: id ?? null, error: { code: -32603, message: 'Internal server error' } });
+        }
+      } finally {
+        console.log('[MCP] handled', { id, ms: Date.now() - started });
       }
-    } finally {
-      console.log('[MCP] handled', { id, ms: Date.now() - started });
-    }
-  });
+    });
 
-  app.get('/mcp', (_req, res) => {
-    res.status(405).json({ jsonrpc: '2.0', error: { code: -32000, message: 'Method not allowed' }, id: null });
-  });
+    app.get('/mcp', (_req, res) => {
+      res.status(405).json({ jsonrpc: '2.0', error: { code: -32000, message: 'Method not allowed' }, id: null });
+    });
 
-  app.get('/healthz', (_req, res) => {
-    res.status(200).json({ status: 'ok' });
-  });
+    app.get('/healthz', (_req, res) => {
+      res.status(200).json({ status: 'ok' });
+    });
 
-  const PORT = Number(process.env.MCP_HTTP_PORT || process.env.PORT || 3000);
-  const listener = app.listen(PORT, () => {
-    const addr = listener.address();
-    const actualPort = typeof addr === 'object' && addr ? addr.port : PORT;
-    console.log(`[MCP] HTTP listening on :${actualPort}`);
-  });
+    const PORT = Number(process.env.MCP_HTTP_PORT || process.env.PORT || 3000);
+    const listener = app.listen(PORT, () => {
+      const addr = listener.address();
+      const actualPort = typeof addr === 'object' && addr ? addr.port : PORT;
+      console.log(`[MCP] HTTP listening on :${actualPort}`);
+    });
 
-  const close = () => listener.close(() => process.exit(0));
-  process.on('SIGTERM', close);
-  process.on('SIGINT', close);
+    const close = () => listener.close(() => process.exit(0));
+    process.on('SIGTERM', close);
+    process.on('SIGINT', close);
+  }
 }
 
 function formatVibeCheckOutput(result: VibeCheckOutput): string {
