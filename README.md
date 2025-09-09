@@ -22,7 +22,10 @@
 [![Version](https://img.shields.io/badge/version-2.5.0-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![CI](https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-80+%25-brightgreen)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Coverage](https://img.shields.io/badge/coverage-90+%25-brightgreen)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
+
 [![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
 [![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
 [![DOI: 10.5281/zenodo.14851363](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.14851363-blue?style=flat-square)](https://doi.org/10.5281/zenodo.14851363)
