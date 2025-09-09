@@ -2,7 +2,7 @@
 
 # Metadata for discoverability and registry listing
 name: vibe-check-mcp
-version: 2.2.0
+version: 2.5.0
 description: Metacognitive AI agent oversight tool implementing CPI-driven interrupts for alignment and safety.
 author: PV-Bhat
 repository: https://github.com/PV-Bhat/vibe-check-mcp-server
@@ -35,57 +35,16 @@ installation:
   npm: "@mseep/vibe-check-mcp"  # For manual npm install
 
 startCommand:
-  type: stdio
-  configSchema:
-    type: object
-    required:
-      - geminiApiKey
-      - openaiApiKey
-      - openrouterApiKey
-      - defaultProvider
-      - defaultModel
-    properties:
-      geminiApiKey:
-        type: string
-        description: API key for Gemini integration (primary default).
-        default: ""
-      openaiApiKey:
-        type: string
-        description: API key for OpenAI integration.
-        default: ""
-      openrouterApiKey:
-        type: string
-        description: API key for OpenRouter integration, enabling provider routing.
-        default: ""
-      defaultProvider:
-        type: string
-        description: Default LLM provider (select for UI visibility).
-        enum: ["gemini", "openai", "openrouter"]
-        default: "openrouter"  # Highlights OpenRouter for better visibility
-      defaultModel:
-        type: string
-        description: Default LLM model (e.g., gemini-2.5-pro).
-        default: "gemini-2.5-pro"
-  commandFunction: |-
-    (config) => ({
-      command: 'node',
-      args: ['build/index.js'],
-      env: {
-        ...(config.geminiApiKey && { GEMINI_API_KEY: config.geminiApiKey }),
-        ...(config.openaiApiKey && { OPENAI_API_KEY: config.openaiApiKey }),
-        ...(config.openrouterApiKey && { OPENROUTER_API_KEY: config.openrouterApiKey }),
-        ...(config.defaultProvider && { DEFAULT_LLM_PROVIDER: config.defaultProvider }),
-        ...(config.defaultModel && { DEFAULT_MODEL: config.defaultModel }),
-        DEBUG: 'true',  # Enables verbose logging for troubleshooting
-        TIMEOUT: '120000'  # 2-minute timeout to match serverless constraints
-      }
-    })
-  exampleConfig:
-    geminiApiKey: EXAMPLE_GEMINI_API_KEY_123
-    openaiApiKey: EXAMPLE_OPENAI_API_KEY
-    openrouterApiKey: EXAMPLE_OPENROUTER_API_KEY
-    defaultProvider: openrouter
-    defaultModel: gemini-2.5-pro
+  type: http
+  command: node build/index.js
+  env:
+    MCP_HTTP_PORT: "3000"
+    MCP_DISCOVERY_MODE: "1"
+
+http:
+  endpoint: "/mcp"
+  cors:
+    origin: "${CORS_ORIGIN:-*}"
 
 # Documentation links
 documentation:

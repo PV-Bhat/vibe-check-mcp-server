@@ -40,4 +40,10 @@ describe('vibeCheckTool', () => {
     await vibeCheckTool({ goal: 'C', plan: 'D', sessionId: 's1' });
     expect(mockedState.addToHistory).toHaveBeenCalledTimes(2);
   });
+
+  it('falls back to default questions when llm fails', async () => {
+    mockedLLM.getMetacognitiveQuestions = vi.fn().mockRejectedValue(new Error('fail'));
+    const result = await vibeCheckTool({ goal: 'x', plan: 'y' });
+    expect(result.questions).toContain('Does this plan directly address');
+  });
 });

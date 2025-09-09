@@ -1,30 +1,41 @@
-# 🧠 VibeCheck MCP v2.2
+# 🧠 VibeCheck MCP v2.5.0
 
-<img width="500" height="300" alt="vibecheckv2 1" src="https://github.com/user-attachments/assets/98c55b95-8f3c-4106-b917-20ceaf292f63" />
+<p align="center">
+  <a href="https://www.researchgate.net/publication/394946231_Do_AI_Agents_Need_Mentors_Evaluating_Chain-Pattern_Interrupt_CPI_for_Oversight_and_Reliability?channel=doi&linkId=68ad6178ca495d76982ff192&showFulltext=true">
+    <img src="https://img.shields.io/badge/Research-CPI%20%28MURST%29-blue?style=flat-square" alt="CPI (MURST) Research">
+  </a><br/>
+  
+> **CPI × Vibe Check**  
+> Vibe Check uses CPI (Chain-Pattern Interrupt) for the runtime oversight. Across 153 runs in the study, **success increased from ~27% → 54%** and **harm dropped from ~83% → 42%** when CPI was applied.  
+</p>
+
+<img width="500" height="300" alt="vibecheckv2.5" src="https://github.com/user-attachments/assets/bcd06d7d-a184-43e9-8c43-22aca3074d32" />
 
 *Adaptive metacognitive oversight for autonomous AI agents – a research-backed MCP server keeping LLMs aligned, reflective and safe.*
 
 ## The Most Widely-Deployed Feedback Layer in the MCP Ecosystem
-> ~10k+ downloads on PulseMCP and counting.
+> ~17k+ downloads on PulseMCP and counting.
 > Over 1k monthly tool calls via Smithery.
-> Listed on 12+ orchestration platforms.
+> Listed on 12+ MCP platforms.
 > Security rating 4.3 on MSEEP.ai.
 
-[![Version](https://img.shields.io/badge/version-2.2-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Version](https://img.shields.io/badge/version-2.5.0-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![CI](https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Coverage](https://img.shields.io/badge/coverage-90+%25-brightgreen)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
+
 [![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
 [![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
+[![DOI: 10.5281/zenodo.14851363](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.14851363-blue?style=flat-square)](https://doi.org/10.5281/zenodo.14851363)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
 
 ## Table of Contents
 - [What is VibeCheck MCP?](#what-is-vibecheck-mcp)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
-- [What's New in v2.2](#whats-new-in-v22)
+- [What's New in v2.5.0](#whats-new-in-v250)
 - [Quickstart & Installation](#quickstart--installation)
 - [Usage Examples](#usage-examples)
 - [Adaptive Metacognitive Interrupts (CPI)](#adaptive-metacognitive-interrupts-cpi)
@@ -58,11 +69,10 @@ Large language models can confidently follow flawed plans. Without an external n
 | **History Continuity** | Summarizes prior advice when `sessionId` is supplied | context retention |
 | **Optional vibe_learn** | Log mistakes and fixes for future reflection | self-improvement |
 
-## What's New in v2.2
-- CPI-driven adaptive interrupts for smarter interventions
-- Multi-provider routing (Gemini, OpenAI, OpenRouter)
-- Optional `vibe_learn` logging
-- History continuity across sessions
+## What's New in v2.5.0
+- **Transport → Streamable HTTP** (JSON-RPC over HTTP; SSE optional). No more STDIO coupling; concurrent clients supported.  
+- **Session “Constitution”**: three tool calls to configure user rules per `sessionId` — `update_constitution`, `reset_constitution`, `check_constitution`.  
+- **Research surfaced**: banner + concise CPI summary and links (RG + Git + Zenodo).  
 
 ## Quickstart & Installation
 ```bash
@@ -123,6 +133,15 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
+## Research & Philosophy
+
+**CPI (Chain-Pattern Interrupt)** is the research-backed oversight method behind Vibe Check. It injects brief, well-timed “pause points” at risk inflection moments to re-align the agent to the user’s true priority, preventing destructive cascades and **reasoning lock-in (RLI)**. In pooled evaluation across 153 runs, CPI **nearly doubles success (~27%→54%) and roughly halves harmful actions (~83%→42%)**. Optimal interrupt **dosage is ~10–20%** of steps. *Vibe Check MCP implements CPI as an external mentor layer at test time.*
+
+**Links:**  
+- 📄 **CPI Paper (ResearchGate)** — primary canonical link *(banner above)*.  
+- 📘 **CPI Reference Implementation (GitHub)**: https://github.com/PV-Bhat/cpi
+- 📚 **MURST Zenodo DOI (RSRC archival)**: https://doi.org/10.5281/zenodo.14851363
+
 ## Usage Examples
 ```ts
 import { vibe_check } from 'vibe-check-mcp';
@@ -171,9 +190,6 @@ As an autonomous agent you will:
 - [Philosophy](./docs/philosophy.md)
 - [Case Studies](./docs/case-studies.md)
 - [Changelog](./docs/changelog.md)
-
-## Research & Philosophy
-See [docs/philosophy.md](./docs/philosophy.md) for the alignment research behind VibeCheck. The approach draws inspiration from Reflexion, Constitutional AI and other high-trust frameworks.
 
 ## Security
 This repository includes a CI-based security scan that runs on every pull request. It checks dependencies with `npm audit` and scans the source for risky patterns. See [SECURITY.md](./SECURITY.md) for details and how to report issues.

@@ -1,6 +1,10 @@
 # The Philosophy Behind Vibe Check
 
-> "The problem isn't that machines can think like humans. It's that they can't stop and question their own thoughts." 
+> **CPI × Vibe Check (MURST)**  
+> CPI (Chain-Pattern Interrupt) is the runtime oversight method that Vibe Check operationalizes. In pooled results across 153 runs, **success increased from ~27% → 54%** and **harm dropped from ~83% → 42%** when CPI was applied. Recommended “dosage”: **~10–20%** of steps receive an interrupt.  
+> **Read the paper →** ResearchGate (primary), plus Git & Zenodo in the Research section below.  
+
+> "The problem isn't that machines can think like humans. It's that they can't stop and question their own thoughts."
 
 ## Beyond the Vibe: Serious AI Alignment Principles
 
