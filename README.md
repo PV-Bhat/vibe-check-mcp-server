@@ -1,4 +1,4 @@
-# 🧠 VibeCheck MCP v2.5.0
+# 🧠 Vibe Check MCP v2.5.0
 
 <p align="center">
   <a href="https://www.researchgate.net/publication/394946231_Do_AI_Agents_Need_Mentors_Evaluating_Chain-Pattern_Interrupt_CPI_for_Oversight_and_Reliability?channel=doi&linkId=68ad6178ca495d76982ff192&showFulltext=true">
@@ -32,7 +32,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
 
 ## Table of Contents
-- [What is VibeCheck MCP?](#what-is-vibecheck-mcp)
+- [What is Vibe Check MCP?](#what-is-vibecheck-mcp)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
 - [What's New in v2.5.0](#whats-new-in-v250)
@@ -47,18 +47,18 @@
 - [Roadmap](#roadmap)
 - [Contributing & Community](#contributing--community)
 - [FAQ](#faq)
-- [Find VibeCheck MCP on](#find-vibecheck-mcp-on)
+- [Find Vibe Check MCP on](#find-vibecheck-mcp-on)
 - [Credits & License](#credits--license)
 
 ---
 
-## What is VibeCheck MCP?
+## What is Vibe Check MCP?
 
-VibeCheck MCP is a lightweight server implementing Anthropic's [Model Context Protocol](https://anthropic.com/mcp). It acts as an **AI meta-mentor** for your agents, interrupting pattern inertia with **Chain-Pattern Interrupts (CPI)** to prevent Reasoning Lock-In (RLI). Think of it as a rubber-duck debugger for LLMs – a quick sanity check before your agent goes down the wrong path.
+Vibe Check MCP is a lightweight server implementing Anthropic's [Model Context Protocol](https://anthropic.com/mcp). It acts as an **AI meta-mentor** for your agents, interrupting pattern inertia with **Chain-Pattern Interrupts (CPI)** to prevent Reasoning Lock-In (RLI). Think of it as a rubber-duck debugger for LLMs – a quick sanity check before your agent goes down the wrong path.
 
 ## The Problem: Pattern Inertia & Reasoning Lock-In
 
-Large language models can confidently follow flawed plans. Without an external nudge they may spiral into overengineering or misalignment. VibeCheck provides that nudge through short reflective pauses, improving reliability and safety.
+Large language models can confidently follow flawed plans. Without an external nudge they may spiral into overengineering or misalignment. Vibe Check provides that nudge through short reflective pauses, improving reliability and safety.
 
 ## Key Features
 
@@ -138,7 +138,7 @@ Add to `claude_desktop_config.json`:
 **CPI (Chain-Pattern Interrupt)** is the research-backed oversight method behind Vibe Check. It injects brief, well-timed “pause points” at risk inflection moments to re-align the agent to the user’s true priority, preventing destructive cascades and **reasoning lock-in (RLI)**. In pooled evaluation across 153 runs, CPI **nearly doubles success (~27%→54%) and roughly halves harmful actions (~83%→42%)**. Optimal interrupt **dosage is ~10–20%** of steps. *Vibe Check MCP implements CPI as an external mentor layer at test time.*
 
 **Links:**  
-- 📄 **CPI Paper (ResearchGate)** — primary canonical link *(banner above)*.  
+- 📄 **CPI Paper (ResearchGate)** — http://dx.doi.org/10.13140/RG.2.2.18237.93922  
 - 📘 **CPI Reference Implementation (GitHub)**: https://github.com/PV-Bhat/cpi
 - 📚 **MURST Zenodo DOI (RSRC archival)**: https://doi.org/10.5281/zenodo.14851363
 
@@ -162,7 +162,7 @@ flowchart TD
 
 ## Adaptive Metacognitive Interrupts (CPI)
 <details><summary>Advanced CPI Details</summary>
-The CPI architecture monitors planning, implementation and review phases. When uncertainty spikes, VibeCheck pauses execution, poses clarifying questions and resumes once the agent acknowledges the feedback.
+The CPI architecture monitors planning, implementation and review phases. When uncertainty spikes, Vibe Check pauses execution, poses clarifying questions and resumes once the agent acknowledges the feedback.
 </details>
 
 ## Agent Prompting Essentials
@@ -207,7 +207,7 @@ Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 - **Does it increase latency?** A single CPI call typically adds ~1 second depending on the provider.
 - **Can I disable logging?** Yes, `vibe_learn` is optional.
 
-## Find VibeCheck MCP on
+## Find Vibe Check MCP on
 * 🌐 [MSEEP](https://mseep.ai/app/pv-bhat-vibe-check-mcp-server)
 * 📡 [MCP Servers](https://mcpservers.org/servers/PV-Bhat/vibe-check-mcp-server)
 * 🧠 [MCP.so](https://mcp.so/server/vibe-check-mcp-server/PV-Bhat)
@@ -224,4 +224,7 @@ Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 [![Star History Chart](https://api.star-history.com/svg?repos=PV-Bhat/vibe-check-mcp-server&type=Date)](https://www.star-history.com/#PV-Bhat/vibe-check-mcp-server&Date)
 
 ## Credits & License
-VibeCheck MCP is released under the [MIT License](LICENSE). Built for reliable, enterprise-ready AI agents.
+Vibe Check MCP is released under the [MIT License](LICENSE). Built for reliable, enterprise-ready AI agents.
+
+## Author Credits & Links
+Vibe Check MCP created by: [Pruthvi Bhat](https://pruthvibhat.com/), Intiative - https://murst.org/
