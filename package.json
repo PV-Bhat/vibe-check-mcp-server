@@ -19,7 +19,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.17.1",
     "@modelcontextprotocol/sdk": "^1.16.0",
-    "axios": "^1.8.4",
+    "axios": "^1.12.2",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
