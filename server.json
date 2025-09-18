@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "name": "io.github.PV-Bhat/vibe-check-mcp-server",
+  "description": "Metacognitive AI agent oversight: adaptive CPI interrupts for alignment, reflection and safety",
+  "status": "active",
+  "repository": {
+    "url": "https://github.com/PV-Bhat/vibe-check-mcp-server",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "packages": [
+  {
+    "registry_type": "npm",
+    "identifier": "@pv-bhat/vibe-check-mcp",
+    "version": "2.5.1",
+    "transport": {
+      "type": "stdio"
+    },
+    "environment_variables": [
+      {
+        "description": "Your API key for the service",
+        "is_required": true,
+        "format": "string",
+        "is_secret": true,
+        "name": "YOUR_API_KEY"
+      }
+    ]
+  }
+  ]
+}
