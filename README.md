@@ -1,38 +1,42 @@
-# 🧠 Vibe Check MCP v2.5.0
+# 🧠 Vibe Check MCP v2.5.1
+
+<p align="center">
+  <b>Based on research</b><br/>
+  In our study agents calling Vibe Check improved success (27 → 54%) and halved harmful actions (83 → 42%).
+</p>
 
 <p align="center">
   <a href="https://www.researchgate.net/publication/394946231_Do_AI_Agents_Need_Mentors_Evaluating_Chain-Pattern_Interrupt_CPI_for_Oversight_and_Reliability?channel=doi&linkId=68ad6178ca495d76982ff192&showFulltext=true">
     <img src="https://img.shields.io/badge/Research-CPI%20%28MURST%29-blue?style=flat-square" alt="CPI (MURST) Research">
-  </a><br/>
-  
-> **CPI × Vibe Check**  
-> Vibe Check uses CPI (Chain-Pattern Interrupt) for the runtime oversight. Across 153 runs in the study, **success increased from ~27% → 54%** and **harm dropped from ~83% → 42%** when CPI was applied.  
+  </a>
+  <a href="https://github.com/modelcontextprotocol/servers"><img src="https://img.shields.io/badge/Anthropic%20MCP-listed-111?labelColor=111&color=555&style=flat-square" alt="Anthropic MCP: listed"></a>
+  <a href="https://registry.modelcontextprotocol.io/"><img src="https://img.shields.io/badge/MCP%20Registry-discoverable-555?labelColor=111&style=flat-square" alt="MCP Registry: discoverable"></a>
+  <a href="https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml"><img src="https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0b7285?style=flat-square" alt="MIT License"></a>
 </p>
+
+<p align="center">
+  <sub>18k+ installs across MCP clients • research-backed oversight • streamable HTTP transport</sub>
+</p>
+
 
 <img width="500" height="300" alt="vibecheckv2.5" src="https://github.com/user-attachments/assets/bcd06d7d-a184-43e9-8c43-22aca3074d32" />
 
-*Adaptive metacognitive oversight for autonomous AI agents – a research-backed MCP server keeping LLMs aligned, reflective and safe.*
+*Plug-and-play metacognitive oversight layer for autonomous AI agents – a research-backed MCP server keeping LLMs aligned, reflective and safe.*
+### Recognition
+- Listed in Anthropic’s official Model Context Protocol repo [🔗](https://github.com/modelcontextprotocol/servers?tab=readme-ov-file#-community-servers)
+- Discoverable in the official MCP Registry [🔗](https://registry.modelcontextprotocol.io/v0/servers?search=vibe-check-mcp)
+- 18k+ installs across public MCP directories/clients 
 
-## The Most Widely-Deployed Feedback Layer in the MCP Ecosystem
-> ~17k+ downloads on PulseMCP and counting.
-> Over 1k monthly tool calls via Smithery.
-> Listed on 12+ MCP platforms.
-> Security rating 4.3 on MSEEP.ai.
 
-[![Version](https://img.shields.io/badge/version-2.5.0-blue)](https://github.com/PV-Bhat/vibe-check-mcp-server)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![CI](https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-90+%25-brightgreen)](https://github.com/PV-Bhat/vibe-check-mcp-server)
-
+[![Version](https://img.shields.io/badge/version-2.5.1-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
-
 [![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
-[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
-[![DOI: 10.5281/zenodo.14851363](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.14851363-blue?style=flat-square)](https://doi.org/10.5281/zenodo.14851363)
+[![Security 4.3★ on MSEEP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
 
 ## Table of Contents
-- [What is Vibe Check MCP?](#what-is-vibecheck-mcp)
+- [What is Vibe Check MCP?](#what-is-vibe-check-mcp)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
 - [What's New in v2.5.0](#whats-new-in-v250)
@@ -47,11 +51,9 @@
 - [Roadmap](#roadmap)
 - [Contributing & Community](#contributing--community)
 - [FAQ](#faq)
-- [Find Vibe Check MCP on](#find-vibecheck-mcp-on)
+- [Listed on](#find-vibe-check-mcp-on)
 - [Credits & License](#credits--license)
-
 ---
-
 ## What is Vibe Check MCP?
 
 Vibe Check MCP is a lightweight server implementing Anthropic's [Model Context Protocol](https://anthropic.com/mcp). It acts as an **AI meta-mentor** for your agents, interrupting pattern inertia with **Chain-Pattern Interrupts (CPI)** to prevent Reasoning Lock-In (RLI). Think of it as a rubber-duck debugger for LLMs – a quick sanity check before your agent goes down the wrong path.
@@ -69,10 +71,16 @@ Large language models can confidently follow flawed plans. Without an external n
 | **History Continuity** | Summarizes prior advice when `sessionId` is supplied | context retention |
 | **Optional vibe_learn** | Log mistakes and fixes for future reflection | self-improvement |
 
-## What's New in v2.5.0
-- **Transport → Streamable HTTP** (JSON-RPC over HTTP; SSE optional). No more STDIO coupling; concurrent clients supported.  
-- **Session “Constitution”**: three tool calls to configure user rules per `sessionId` — `update_constitution`, `reset_constitution`, `check_constitution`.  
-- **Research surfaced**: banner + concise CPI summary and links (RG + Git + Zenodo).  
+## What's New in v2.5.1
+
+## Session Constitution (per-session rules)
+
+Use a lightweight “constitution” to enforce rules per `sessionId` that CPI will honor. Typical uses: “no external network calls,” “prefer unit tests before refactors,” “never write secrets to disk.”
+
+**API (tools):**
+- `update_constitution({ sessionId, rules })` → merges/sets rule set for the session
+- `reset_constitution({ sessionId })` → clears session rules
+- `check_constitution({ sessionId })` → returns effective rules for the session
 
 ## Quickstart & Installation
 ```bash
@@ -177,10 +185,13 @@ As an autonomous agent you will:
 ```
 
 ## When to Use Each Tool
-| Tool | Purpose |
-|------|---------|
-| 🛑 **vibe_check** | Challenge assumptions and prevent tunnel vision |
-| 🔄 **vibe_learn** | Capture mistakes, preferences and successes |
+| Tool                   | Purpose                                                      |
+|------------------------|--------------------------------------------------------------|
+| 🛑 **vibe_check**       | Challenge assumptions and prevent tunnel vision              |
+| 🔄 **vibe_learn**       | Capture mistakes, preferences, and successes                 |
+| 🧰 **update_constitution** | Set/merge session rules the CPI layer will enforce         |
+| 🧹 **reset_constitution**  | Clear rules for a session                                  |
+| 🔎 **check_constitution**  | Inspect effective rules for a session                      |
 
 ## Documentation
 - [Agent Prompting Strategies](./docs/agent-prompting.md)
