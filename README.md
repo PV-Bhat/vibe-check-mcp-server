@@ -19,7 +19,6 @@
   <sub>18k+ installs across MCP clients • research-backed oversight • streamable HTTP transport</sub>
 </p>
 
-
 <img width="500" height="300" alt="vibecheckv2.5" src="https://github.com/user-attachments/assets/bcd06d7d-a184-43e9-8c43-22aca3074d32" />
 
 *Plug-and-play metacognitive oversight layer for autonomous AI agents – a research-backed MCP server keeping LLMs aligned, reflective and safe.*
@@ -41,7 +40,7 @@
 - [Architecture](#architecture)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
-- [What's New in v2.5.0](#whats-new-in-v250)
+- [What's New in v2.5.0](##-What's-New-in-v2.5.1)
 - [Quickstart & Installation](#quickstart--installation)
 - [Usage Examples](#usage-examples)
 - [Adaptive Metacognitive Interrupts (CPI)](#adaptive-metacognitive-interrupts-cpi)
@@ -62,7 +61,7 @@ Vibe Check MCP is a lightweight server implementing Anthropic's [Model Context P
 
 ## Overview
 
-Vibe Check MCP pairs a metacognitive signal layer with CPI so agents can pause when risk spikes. VibeCheck surfaces traits, uncertainty, and risk scores; CPI consumes those triggers and enforces an intervention policy before the agent resumes. See the [CPI integration guide](./docs/integrations/cpi.md) and the CPI repo placeholder at <https://github.com/<ORG>/cpi> for wiring details.
+Vibe Check MCP pairs a metacognitive signal layer with CPI so agents can pause when risk spikes. Vibe Check surfaces traits, uncertainty, and risk scores; CPI consumes those triggers and enforces an intervention policy before the agent resumes. See the [CPI integration guide](./docs/integrations/cpi.md) and the CPI repo at https://github.com/PV-Bhat/cpi for wiring details.
 
 ## Architecture
 
