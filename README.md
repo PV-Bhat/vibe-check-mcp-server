@@ -19,7 +19,6 @@
   <sub>18k+ installs across MCP clients • research-backed oversight • streamable HTTP transport</sub>
 </p>
 
-
 <img width="500" height="300" alt="vibecheckv2.5" src="https://github.com/user-attachments/assets/bcd06d7d-a184-43e9-8c43-22aca3074d32" />
 
 *Plug-and-play metacognitive oversight layer for autonomous AI agents – a research-backed MCP server keeping LLMs aligned, reflective and safe.*
@@ -37,9 +36,11 @@
 
 ## Table of Contents
 - [What is Vibe Check MCP?](#what-is-vibe-check-mcp)
+- [Overview](#overview)
+- [Architecture](#architecture)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
-- [What's New in v2.5.0](#whats-new-in-v250)
+- [What's New in v2.5.0](##-What's-New-in-v2.5.1)
 - [Quickstart & Installation](#quickstart--installation)
 - [Usage Examples](#usage-examples)
 - [Adaptive Metacognitive Interrupts (CPI)](#adaptive-metacognitive-interrupts-cpi)
@@ -57,6 +58,14 @@
 ## What is Vibe Check MCP?
 
 Vibe Check MCP is a lightweight server implementing Anthropic's [Model Context Protocol](https://anthropic.com/mcp). It acts as an **AI meta-mentor** for your agents, interrupting pattern inertia with **Chain-Pattern Interrupts (CPI)** to prevent Reasoning Lock-In (RLI). Think of it as a rubber-duck debugger for LLMs – a quick sanity check before your agent goes down the wrong path.
+
+## Overview
+
+Vibe Check MCP pairs a metacognitive signal layer with CPI so agents can pause when risk spikes. Vibe Check surfaces traits, uncertainty, and risk scores; CPI consumes those triggers and enforces an intervention policy before the agent resumes. See the [CPI integration guide](./docs/integrations/cpi.md) and the CPI repo at https://github.com/PV-Bhat/cpi for wiring details.
+
+## Architecture
+
+Vibe Check runs alongside your agent workflow, emitting signals that downstream overseers like CPI or human reviewers can act on. The high-level component map lives in [docs/architecture.md](./docs/architecture.md), while the CPI handoff diagram and example shim are captured in [docs/integrations/cpi.md](./docs/integrations/cpi.md).
 
 ## The Problem: Pattern Inertia & Reasoning Lock-In
 
@@ -195,6 +204,7 @@ As an autonomous agent you will:
 
 ## Documentation
 - [Agent Prompting Strategies](./docs/agent-prompting.md)
+- [CPI Integration](./docs/integrations/cpi.md)
 - [Advanced Integration](./docs/advanced-integration.md)
 - [Technical Reference](./docs/technical-reference.md)
 - [Automatic Docker Setup](./docs/docker-automation.md)
