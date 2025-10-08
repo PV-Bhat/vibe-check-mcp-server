@@ -89,7 +89,9 @@ Use a lightweight “constitution” to enforce rules per `sessionId` that CPI w
 **API (tools):**
 - `update_constitution({ sessionId, rules })` → merges/sets rule set for the session
 - `reset_constitution({ sessionId })` → clears session rules
-- `check_constitution({ sessionId })` → returns effective rules for the session
+- `check_constitution({ sessionId })` → returns effective rules for the session as a JSON string in text format for broad MCP client compatibility
+
+**Response Format Note:** The `check_constitution` tool returns its data with `type: 'text'` containing a JSON string (rather than `type: 'json'`) to ensure compatibility with the widest range of MCP clients. Clients will need to parse the text field to access the JSON data.
 
 ## Quickstart & Installation
 ```bash
@@ -200,7 +202,7 @@ As an autonomous agent you will:
 | 🔄 **vibe_learn**       | Capture mistakes, preferences, and successes                 |
 | 🧰 **update_constitution** | Set/merge session rules the CPI layer will enforce         |
 | 🧹 **reset_constitution**  | Clear rules for a session                                  |
-| 🔎 **check_constitution**  | Inspect effective rules for a session                      |
+| 🔎 **check_constitution**  | Inspect effective rules for a session (returns JSON as text for MCP compatibility) |
 
 ## Documentation
 - [Agent Prompting Strategies](./docs/agent-prompting.md)
