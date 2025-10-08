@@ -271,7 +271,7 @@ async function main() {
         }
         const rules = getConstitution(args.sessionId);
         console.log('[Constitution:check]', { sessionId: args.sessionId, count: rules.length });
-        return { content: [{ type: 'json', json: { rules } }] };
+        return { content: [{ type: 'text', text: JSON.stringify({ rules }) }] };
       }
 
       default:

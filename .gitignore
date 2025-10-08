@@ -40,3 +40,11 @@ temp/
 .npmrc
 .mcpregistry_github_token
 .mcpregistry_registry_token
+
+# Cursor IDE
+.cursor/
+
+# Claude Code
+.claude/
+.mcp.json
+Claude.md
