@@ -2,6 +2,15 @@
 
 This guide shows how to run the Vibe Check MCP server in Docker and configure it to start automatically with Cursor.
 
+## Alternative to CLI Installation
+
+**Note:** The recommended installation method is the NPX one-liner installer:
+```bash
+npx vibe-check-mcp install
+```
+
+Use Docker setup only if you specifically need containerization or are in an environment where NPX isn't available.
+
 ## Prerequisites
 
 - Docker and Docker Compose installed and available in your `PATH`.

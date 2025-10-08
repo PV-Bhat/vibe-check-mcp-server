@@ -1,0 +1,15 @@
+{
+  "name": "{{serverName}}",
+  {{#if isStdio}}
+  "type": "command",
+  "command": "node \"{{serverScriptPath}}\"{{#if apiKey}},
+  "env": {
+    "GEMINI_API_KEY": "{{apiKey}}"
+  }
+  {{/if}}
+  {{/if}}
+  {{#if isHttp}}
+  "type": "http",
+  "url": "http://localhost:{{port}}/mcp"
+  {{/if}}
+}
