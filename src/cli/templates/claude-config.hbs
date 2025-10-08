@@ -1,0 +1,12 @@
+{
+  "{{serverName}}": {
+    "command": "node",
+    "args": [
+      "{{serverScriptPath}}"
+    ]{{#if apiKey}},
+    "env": {
+      "GEMINI_API_KEY": "{{apiKey}}"
+    }
+    {{/if}}
+  }
+}
