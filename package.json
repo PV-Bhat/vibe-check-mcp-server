@@ -16,6 +16,7 @@
     "prepare": "npm run build",
     "start": "node build/index.js",
     "dev": "tsc-watch --onSuccess \"node build/index.js\"",
+    "pretest": "npm run build",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "security-check": "node scripts/security-check.cjs"
@@ -25,15 +26,19 @@
     "@modelcontextprotocol/sdk": "^1.16.0",
     "axios": "^1.12.2",
     "body-parser": "^1.20.2",
+    "commander": "^12.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+    "execa": "^9.5.1",
     "express": "^4.19.2",
-    "openai": "^4.68.1"
+    "openai": "^4.68.1",
+    "semver": "^7.6.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^20.17.25",
+    "@types/semver": "^7.7.1",
     "@vitest/coverage-v8": "^3.2.4",
     "tsc-watch": "^6.0.0",
     "typescript": "^5.3.0",
