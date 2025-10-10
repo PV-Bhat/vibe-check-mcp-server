@@ -16,6 +16,7 @@
     "prepare": "npm run build",
     "start": "node build/index.js",
     "dev": "tsc-watch --onSuccess \"node build/index.js\"",
+    "pretest": "npm run build",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "security-check": "node scripts/security-check.cjs"

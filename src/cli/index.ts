@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import { execa } from 'execa';
 import { checkNodeVersion, detectEnvFiles, portStatus, readEnvFile } from './doctor.js';
 import { resolveEnvSources } from './env.js';
@@ -13,6 +13,8 @@ type PackageJson = {
     node?: string;
   };
 };
+
+type Transport = 'http' | 'stdio';
 
 type StartOptions = {
   stdio?: boolean;
@@ -73,40 +75,16 @@ async function runStartCommand(options: StartOptions): Promise<void> {
     throw new Error('Select either --stdio or --http, not both.');
   }
 
-  const envTransport = spawnEnv.MCP_TRANSPORT;
-  let transport: string;
-
-  if (options.http) {
-    transport = 'http';
-  } else if (options.stdio) {
-    transport = 'stdio';
-  } else if (envTransport) {
-    transport = envTransport;
-  } else {
-    transport = 'stdio';
-  }
-
+  const transport = resolveTransport({ http: options.http, stdio: options.stdio }, spawnEnv.MCP_TRANSPORT);
   spawnEnv.MCP_TRANSPORT = transport;
-  const normalizedTransport = transport.toLowerCase();
 
-  let httpPort: number | undefined;
-  if (normalizedTransport === 'http') {
-    if (options.port != null) {
-      httpPort = options.port;
-    } else if (spawnEnv.MCP_HTTP_PORT) {
-      const existing = Number.parseInt(spawnEnv.MCP_HTTP_PORT, 10);
-      if (!Number.isNaN(existing) && existing > 0) {
-        httpPort = existing;
-      }
-    }
-
-    if (!httpPort) {
-      httpPort = 2091;
-    }
-
+  if (transport === 'http') {
+    const httpPort = resolveHttpPort(options.port, spawnEnv.MCP_HTTP_PORT);
     spawnEnv.MCP_HTTP_PORT = String(httpPort);
-  } else if (options.port != null) {
-    throw new Error('The --port option is only available when using --http.');
+  } else {
+    if (options.port != null) {
+      throw new Error('The --port option is only available when using --http.');
+    }
   }
 
   if (options.dryRun) {
@@ -114,7 +92,7 @@ async function runStartCommand(options: StartOptions): Promise<void> {
     console.log(`Entrypoint: ${process.execPath} ${entrypoint}`);
     console.log('Environment overrides:');
     console.log(`  MCP_TRANSPORT=${spawnEnv.MCP_TRANSPORT}`);
-    if (spawnEnv.MCP_HTTP_PORT) {
+    if (transport === 'http' && spawnEnv.MCP_HTTP_PORT) {
       console.log(`  MCP_HTTP_PORT=${spawnEnv.MCP_HTTP_PORT}`);
     }
     return;
@@ -141,29 +119,14 @@ async function runDoctorCommand(options: DoctorOptions): Promise<void> {
   console.log(`Project .env: ${envFiles.cwdEnv ?? 'not found'}`);
   console.log(`Home .env: ${envFiles.homeEnv ?? 'not found'}`);
 
-  const envTransport = (process.env.MCP_TRANSPORT ?? '').toLowerCase();
-  const shouldCheckHttp = options.http ?? (envTransport === 'http');
+  const transport = resolveTransport({ http: options.http }, process.env.MCP_TRANSPORT);
 
-  if (!shouldCheckHttp) {
-    console.log('HTTP transport not requested; skipping port check.');
+  if (transport !== 'http') {
+    console.log('Using stdio transport; port checks skipped.');
     return;
   }
 
-  let port = options.port;
-  if (port == null) {
-    const envPort = process.env.MCP_HTTP_PORT;
-    if (envPort) {
-      const parsed = Number.parseInt(envPort, 10);
-      if (!Number.isNaN(parsed) && parsed > 0) {
-        port = parsed;
-      }
-    }
-  }
-
-  if (port == null) {
-    port = 2091;
-  }
-
+  const port = resolveHttpPort(options.port, process.env.MCP_HTTP_PORT);
   const status = await portStatus(port);
   console.log(`HTTP port ${port}: ${status}`);
 }
@@ -180,8 +143,8 @@ export function createCliProgram(): Command {
   program
     .command('start')
     .description('Start the Vibe Check MCP server')
-    .option('--stdio', 'Use STDIO transport')
-    .option('--http', 'Use HTTP transport')
+    .addOption(new Option('--stdio', 'Use STDIO transport').conflicts('http'))
+    .addOption(new Option('--http', 'Use HTTP transport').conflicts('stdio'))
     .option('--port <number>', 'HTTP port (default: 2091)', parsePort)
     .option('--dry-run', 'Print the resolved command without executing')
     .action(async (options: StartOptions) => {
@@ -210,11 +173,49 @@ export function createCliProgram(): Command {
   return program;
 }
 
+function normalizeTransport(value: string | undefined): Transport | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'http' || normalized === 'stdio') {
+    return normalized;
+  }
+
+  return undefined;
+}
+
+function resolveTransport(
+  options: { http?: boolean; stdio?: boolean },
+  envTransport: string | undefined,
+): Transport {
+  const flagTransport = options.http ? 'http' : options.stdio ? 'stdio' : undefined;
+  const resolvedEnv = normalizeTransport(envTransport);
+
+  return flagTransport ?? resolvedEnv ?? 'stdio';
+}
+
+function resolveHttpPort(optionPort: number | undefined, envPort: string | undefined): number {
+  if (optionPort != null) {
+    return optionPort;
+  }
+
+  if (envPort) {
+    const parsed = Number.parseInt(envPort, 10);
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  return 2091;
+}
+
 const executedFile = process.argv[1] ? pathToFileURL(process.argv[1]).href : undefined;
 if (executedFile === import.meta.url) {
   createCliProgram()
     .parseAsync(process.argv)
-    .catch((error) => {
+    .catch((error: unknown) => {
       console.error((error as Error).message);
       process.exitCode = 1;
     });
