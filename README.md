@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <sub>18k+ installs across MCP clients • research-backed oversight • streamable HTTP transport</sub>
+  <sub>28k+ installs PulseMCP & 2k+ Monthly calls Smithery.ai • research-backed oversight • streamable HTTP transport</sub>
 </p>
 
 <img width="500" height="300" alt="vibecheckv2.5" src="https://github.com/user-attachments/assets/bcd06d7d-a184-43e9-8c43-22aca3074d32" />
