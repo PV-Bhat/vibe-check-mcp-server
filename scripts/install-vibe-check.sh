@@ -32,25 +32,25 @@ if [ "$OS" = "Unknown" ]; then
     exit 1
 fi
 
-echo "Step 1: Installing vibe-check-mcp globally..."
-npm install -g vibe-check-mcp
+echo "Step 1: Installing @pv-bhat/vibe-check-mcp globally..."
+npm install -g @pv-bhat/vibe-check-mcp
 
 if [ $? -ne 0 ]; then
-    echo "Error: Failed to install vibe-check-mcp globally."
+    echo "Error: Failed to install @pv-bhat/vibe-check-mcp globally."
     exit 1
 fi
 
 echo ""
 echo "Step 2: Finding global npm installation path..."
 NPM_GLOBAL=$(npm root -g)
-VIBE_CHECK_PATH="$NPM_GLOBAL/vibe-check-mcp/build/index.js"
+VIBE_CHECK_PATH="$NPM_GLOBAL/@pv-bhat/vibe-check-mcp/build/index.js"
 
 if [ ! -f "$VIBE_CHECK_PATH" ]; then
-    echo "Error: Could not find vibe-check-mcp installation at $VIBE_CHECK_PATH"
+    echo "Error: Could not find @pv-bhat/vibe-check-mcp installation at $VIBE_CHECK_PATH"
     exit 1
 fi
 
-echo "Found vibe-check-mcp at: $VIBE_CHECK_PATH"
+echo "Found @pv-bhat/vibe-check-mcp at: $VIBE_CHECK_PATH"
 echo ""
 
 echo "Step 3: Enter your Gemini API key for vibe-check-mcp..."
