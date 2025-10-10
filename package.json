@@ -5,11 +5,14 @@
   "description": "Metacognitive AI agent oversight: adaptive CPI interrupts for alignment, reflection and safety",
   "main": "build/index.js",
   "type": "module",
+  "bin": {
+    "vibe-check-mcp": "build/cli/index.js"
+  },
   "files": [
     "build"
   ],
   "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "build": "tsc && node -e \"const fs=require('fs');['build/index.js','build/cli/index.js'].forEach((f)=>{if(fs.existsSync(f)){fs.chmodSync(f,0o755);}})\"",
     "prepare": "npm run build",
     "start": "node build/index.js",
     "dev": "tsc-watch --onSuccess \"node build/index.js\"",
@@ -37,7 +40,7 @@
     "vitest": "^3.2.4"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "keywords": [
     "mcp",

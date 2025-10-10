@@ -41,6 +41,7 @@
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
 - [What's New in v2.5.0](##-What's-New-in-v2.5.1)
+- [Quickstart (npx)](#quickstart-npx)
 - [Quickstart & Installation](#quickstart--installation)
 - [Usage Examples](#usage-examples)
 - [Adaptive Metacognitive Interrupts (CPI)](#adaptive-metacognitive-interrupts-cpi)
@@ -91,6 +92,12 @@ Use a lightweight “constitution” to enforce rules per `sessionId` that CPI w
 - `reset_constitution({ sessionId })` → clears session rules
 - `check_constitution({ sessionId })` → returns effective rules for the session
 
+## Quickstart (npx)
+```bash
+npx @pv-bhat/vibe-check-mcp --help
+# start/install/doctor coming in next release
+```
+
 ## Quickstart & Installation
 ```bash
 # Clone and install
@@ -99,7 +106,7 @@ cd vibe-check-mcp-server
 npm install
 npm run build
 ```
-This project targets Node **20+**. If you see a TypeScript error about a duplicate `require` declaration when building with Node 20.19.3, ensure your dependencies are up to date (`npm install`) or use the Docker setup below which handles the build automatically.
+This project targets Node **>=20**. If you see a TypeScript error about a duplicate `require` declaration when building with Node 20.19.3, ensure your dependencies are up to date (`npm install`) or use the Docker setup below which handles the build automatically.
 
 Create a `.env` file with the API keys you plan to use:
 ```bash
