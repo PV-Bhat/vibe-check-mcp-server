@@ -146,9 +146,17 @@ Add to `claude_desktop_config.json`:
 "vibe-check": {
   "command": "node",
   "args": ["/path/to/vibe-check-mcp/build/index.js"],
-  "env": { "GEMINI_API_KEY": "YOUR_GEMINI_API_KEY" }
+  "env": {
+    "GEMINI_API_KEY": "YOUR_GEMINI_API_KEY",
+    "MCP_TRANSPORT": "stdio"
+  }
 }
 ```
+
+Claude Desktop (including Claude Code auto-start on macOS) talks MCP over stdio. If
+`MCP_TRANSPORT` is not set to `stdio`, the server defaults to HTTP mode and the
+desktop app will hang while trying to connect. After editing the configuration,
+restart Claude Desktop so it reloads the MCP registry.
 
 ## Research & Philosophy
 
