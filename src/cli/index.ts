@@ -73,11 +73,24 @@ async function runStartCommand(options: StartOptions): Promise<void> {
     throw new Error('Select either --stdio or --http, not both.');
   }
 
-  const transport = options.http ? 'http' : 'stdio';
+  const envTransport = spawnEnv.MCP_TRANSPORT;
+  let transport: string;
+
+  if (options.http) {
+    transport = 'http';
+  } else if (options.stdio) {
+    transport = 'stdio';
+  } else if (envTransport) {
+    transport = envTransport;
+  } else {
+    transport = 'stdio';
+  }
+
   spawnEnv.MCP_TRANSPORT = transport;
+  const normalizedTransport = transport.toLowerCase();
 
   let httpPort: number | undefined;
-  if (transport === 'http') {
+  if (normalizedTransport === 'http') {
     if (options.port != null) {
       httpPort = options.port;
     } else if (spawnEnv.MCP_HTTP_PORT) {
