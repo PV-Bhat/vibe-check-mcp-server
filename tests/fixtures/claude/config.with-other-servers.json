@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "vibe-check-mcp": {
+      "command": "python",
+      "args": ["/opt/vibe-check.py"],
+      "env": {
+        "MCP_TRANSPORT": "stdio"
+      }
+    },
+    "another-server": {
+      "command": "node",
+      "args": ["/opt/another/index.js"],
+      "env": {}
+    }
+  }
+}

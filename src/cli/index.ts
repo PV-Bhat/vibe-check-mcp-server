@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Command, Option } from 'commander';
 import { execa } from 'execa';
 import { checkNodeVersion, detectEnvFiles, portStatus, readEnvFile } from './doctor.js';
-import { resolveEnvSources } from './env.js';
+import { claudeConfigCandidates, locateClaudeConfig, mergeMcpEntry, readClaudeConfig, writeClaudeConfigAtomic } from './clients/claude.js';
+import { ensureEnv, REQUIRED_ENV_KEYS, resolveEnvSources } from './env.js';
+import { renderUnifiedDiff } from './utils/diff.js';
 
 type PackageJson = {
   version?: string;
@@ -28,10 +30,19 @@ type DoctorOptions = {
   port?: number;
 };
 
+type InstallOptions = {
+  client: string;
+  dryRun?: boolean;
+  nonInteractive?: boolean;
+  local?: boolean;
+  config?: string;
+};
+
 const cliDir = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(cliDir, '..', '..');
 const entrypoint = resolve(projectRoot, 'build', 'index.js');
 const packageJsonPath = resolve(projectRoot, 'package.json');
+const projectEntrypoint = resolve(projectRoot, 'build', 'index.js');
 
 function readPackageJson(): PackageJson {
   const raw = readFileSync(packageJsonPath, 'utf8');
@@ -131,6 +142,101 @@ async function runDoctorCommand(options: DoctorOptions): Promise<void> {
   console.log(`HTTP port ${port}: ${status}`);
 }
 
+function requiredEnvMissing(): string[] {
+  return REQUIRED_ENV_KEYS.filter((key) => !process.env[key]);
+}
+
+function detectClaudeCommand(): { command: string; args: string[]; env: Record<string, string> } {
+  const pathEntries = (process.env.PATH ?? '').split(process.platform === 'win32' ? ';' : ':');
+  const executables = process.platform === 'win32' ? ['npx.cmd', 'npx.exe', 'npx'] : ['npx'];
+
+  for (const entry of pathEntries) {
+    if (!entry) continue;
+    for (const executable of executables) {
+      const candidate = join(entry, executable);
+      if (existsSync(candidate)) {
+        return { command: 'npx', args: ['@pv-bhat/vibe-check-mcp', 'start', '--stdio'], env: {} };
+      }
+    }
+  }
+
+  return { command: process.execPath, args: [projectEntrypoint], env: { MCP_TRANSPORT: 'stdio' } };
+}
+
+async function runInstallCommand(options: InstallOptions): Promise<void> {
+  if (options.client !== 'claude') {
+    throw new Error(`Unsupported client: ${options.client}`);
+  }
+
+  const interactive = !options.nonInteractive;
+  await ensureEnv({ interactive, local: Boolean(options.local) });
+  const missing = requiredEnvMissing();
+  if (missing.length > 0) {
+    console.warn(`Missing required environment variables: ${missing.join(', ')}`);
+    if (interactive) {
+      console.warn('Re-run the command to capture the values.');
+    } else {
+      console.warn('Provide the variables via environment or .env files and re-run with --non-interactive.');
+    }
+    return;
+  }
+
+  const configPath = options.config ? resolve(options.config) : await locateClaudeConfig();
+  if (!configPath) {
+    console.log('Claude Desktop configuration not found.');
+    console.log('Checked paths:');
+    for (const candidate of claudeConfigCandidates()) {
+      console.log(`  - ${candidate}`);
+    }
+    console.log('Launch Claude Desktop once or specify --config <path> to continue.');
+    return;
+  }
+
+  let currentConfig: any = {};
+  try {
+    currentConfig = await readClaudeConfig(configPath);
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === 'ENOENT') {
+      currentConfig = {};
+    } else {
+      throw error;
+    }
+  }
+
+  const entry = detectClaudeCommand();
+  const mergeResult = mergeMcpEntry(currentConfig, entry, {
+    id: 'vibe-check-mcp',
+    sentinel: 'vibe-check-mcp-cli',
+  });
+
+  if (!mergeResult.changed) {
+    if (mergeResult.reason) {
+      console.warn(`Existing mcpServers.vibe-check-mcp entry is unmanaged (${mergeResult.reason}). Skipping.`);
+    } else {
+      console.log('Claude Desktop configuration already up to date.');
+    }
+    return;
+  }
+
+  const nextSerialized = `${JSON.stringify(mergeResult.next, null, 2)}\n`;
+  const currentSerialized = `${JSON.stringify(currentConfig, null, 2)}\n`;
+
+  if (options.dryRun) {
+    console.log(`Dry run: no changes written to ${configPath}`);
+    console.log(renderUnifiedDiff('current', configPath, currentSerialized, nextSerialized));
+    return;
+  }
+
+  await writeClaudeConfigAtomic(configPath, mergeResult.next);
+  console.log(`Updated Claude Desktop configuration at ${configPath}`);
+  const summary = mergeResult.next.mcpServers?.['vibe-check-mcp'];
+  if (summary) {
+    console.log('Registered entry:');
+    console.log(JSON.stringify(summary, null, 2));
+  }
+}
+
 export function createCliProgram(): Command {
   const pkg = readPackageJson();
   const program = new Command();
@@ -164,6 +270,23 @@ export function createCliProgram(): Command {
     .action(async (options: DoctorOptions) => {
       try {
         await runDoctorCommand(options);
+      } catch (error) {
+        console.error((error as Error).message);
+        process.exitCode = 1;
+      }
+    });
+
+  program
+    .command('install')
+    .description('Install client integrations')
+    .requiredOption('--client <client>', 'Client to configure (only "claude" supported)')
+    .option('--dry-run', 'Preview changes without writing')
+    .option('--non-interactive', 'Fail instead of prompting for missing secrets')
+    .option('--local', 'Write secrets to the project .env instead of the home directory')
+    .option('--config <path>', 'Path to Claude Desktop configuration JSON')
+    .action(async (options: InstallOptions) => {
+      try {
+        await runInstallCommand(options);
       } catch (error) {
         console.error((error as Error).message);
         process.exitCode = 1;

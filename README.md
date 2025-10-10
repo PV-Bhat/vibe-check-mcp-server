@@ -155,23 +155,29 @@ docker build -t vibe-check-mcp .
 docker run -e GEMINI_API_KEY=your_gemini_api_key -p 3000:3000 vibe-check-mcp
 ```
 
-### Integrating with Claude Desktop
-Add to `claude_desktop_config.json`:
-```json
-"vibe-check": {
-  "command": "node",
-  "args": ["/path/to/vibe-check-mcp/build/index.js"],
-  "env": {
-    "GEMINI_API_KEY": "YOUR_GEMINI_API_KEY",
-    "MCP_TRANSPORT": "stdio"
-  }
-}
+### Install (Claude Desktop)
+
+Register the Vibe Check MCP server as a local Claude Desktop integration:
+
+```bash
+npx @pv-bhat/vibe-check-mcp install --client claude
+
+# Non-interactive (e.g. CI) when env is already populated
+VIBE_CHECK_API_KEY=... npx @pv-bhat/vibe-check-mcp install --client claude --non-interactive
 ```
 
-Claude Desktop (including Claude Code auto-start on macOS) talks MCP over stdio. If
-`MCP_TRANSPORT` is not set to `stdio`, the server defaults to HTTP mode and the
-desktop app will hang while trying to connect. After editing the configuration,
-restart Claude Desktop so it reloads the MCP registry.
+The installer merges an entry under `mcpServers.vibe-check-mcp`, tagged with a
+`managedBy: "vibe-check-mcp-cli"` sentinel for safe updates/uninstalls. Secrets
+are sourced from the environment, your project `.env`, and finally
+`~/.vibe-check/.env` (the default write location). If required keys are missing
+and you are in interactive mode, the CLI prompts once and stores them with
+`0600` permissions. For unattended environments, provide the variables up front
+with `--non-interactive`.
+
+This command configures Claude for local **STDIO** usage via the packaged CLI.
+Remote HTTP servers should continue to be registered through Claude’s desktop UI
+for connectors. See [Claude’s MCP documentation](https://support.anthropic.com)
+for the schema reference used by the installer.
 
 ## Research & Philosophy
 

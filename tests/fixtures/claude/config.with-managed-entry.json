@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "vibe-check-mcp": {
+      "command": "npx",
+      "args": ["@pv-bhat/vibe-check-mcp", "start", "--stdio"],
+      "env": {},
+      "managedBy": "vibe-check-mcp-cli"
+    },
+    "other": {
+      "command": "bash",
+      "args": ["/usr/local/bin/run.sh"],
+      "env": {
+        "FOO": "BAR"
+      }
+    }
+  }
+}
