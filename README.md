@@ -93,9 +93,17 @@ Use a lightweight “constitution” to enforce rules per `sessionId` that CPI w
 - `check_constitution({ sessionId })` → returns effective rules for the session
 
 ## Quickstart (npx)
+> **Requires Node.js >= 20**
+
 ```bash
-npx @pv-bhat/vibe-check-mcp --help
-# start/install/doctor coming in next release
+# Quick try via STDIO (Claude-friendly)
+npx @pv-bhat/vibe-check-mcp start --stdio
+
+# Or HTTP mode
+npx @pv-bhat/vibe-check-mcp start --http --port 2091
+
+# Basic diagnostics
+npx @pv-bhat/vibe-check-mcp doctor
 ```
 
 ## Quickstart & Installation
