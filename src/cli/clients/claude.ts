@@ -41,8 +41,12 @@ function expandHomePath(path: string): string {
     return home;
   }
 
-  const withoutTilde = path.slice(1);
-  return resolve(join(home, withoutTilde));
+  const remainder = path.slice(1);
+  if (remainder.startsWith('/') || remainder.startsWith('\\')) {
+    return resolve(join(home, remainder.slice(1)));
+  }
+
+  return resolve(join(home, remainder));
 }
 
 export async function locateClaudeConfig(customPath?: string): Promise<string | null> {

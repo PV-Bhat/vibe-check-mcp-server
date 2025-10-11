@@ -24,6 +24,14 @@ describe('Claude config helpers', () => {
     expect(result).toBe(join(tmpHome, 'config.json'));
   });
 
+  it('expands custom paths with a tilde and backslash', async () => {
+    const tmpHome = await fs.mkdtemp(join(os.tmpdir(), 'claude-home-'));
+    vi.spyOn(os, 'homedir').mockReturnValue(tmpHome);
+
+    const result = await locateClaudeConfig('~\\config.json');
+    expect(result).toBe(join(tmpHome, 'config.json'));
+  });
+
   it('locates the default macOS path when present', async () => {
     const tmpHome = await fs.mkdtemp(join(os.tmpdir(), 'claude-home-'));
     vi.spyOn(os, 'homedir').mockReturnValue(tmpHome);
