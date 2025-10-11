@@ -19,7 +19,7 @@
   <sub>28k+ installs PulseMCP & 2k+ Monthly calls Smithery.ai • research-backed oversight • streamable HTTP transport</sub>
 </p>
 
-<img width="500" height="300" alt="vibecheckv2.5" src="https://github.com/user-attachments/assets/bcd06d7d-a184-43e9-8c43-22aca3074d32" />
+<img width="500" height="300" alt="Gemini_Generated_Image_wfc5z4wfc5z4wfc5" src="https://github.com/user-attachments/assets/d3f49301-fcdb-48b3-bd8a-505ffa845957" />
 
 [![Version](https://img.shields.io/badge/version-2.7.0-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
