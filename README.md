@@ -178,12 +178,14 @@ Register Vibe Check as a **local MCP server** inside Claude Desktop with the pac
 npx @pv-bhat/vibe-check-mcp install --client claude
 ```
 
-For CI or other unattended environments, provide the API key up front and disable prompts:
+For CI or other unattended environments, provide a provider API key up front and disable prompts:
 
 ```bash
 ANTHROPIC_API_KEY=your_anthropic_api_key \
   npx @pv-bhat/vibe-check-mcp install --client claude --non-interactive
 ```
+
+Set whichever key matches your provider — `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`. The installer requires at least one of these when running with `--non-interactive`.
 
 The installer discovers your `claude_desktop_config.json`, creates a timestamped backup, and merges an entry under `mcpServers.vibe-check-mcp` that launches `npx @pv-bhat/vibe-check-mcp start --stdio`. Entries tagged with `"managedBy": "vibe-check-mcp-cli"` are updated in place on subsequent runs, keeping other servers intact.
 

@@ -7,7 +7,12 @@ import { stdin as input, stdout as output } from 'node:process';
 
 const { mkdir, readFile, rename, writeFile } = fsPromises;
 
-const REQUIRED_ENV_KEYS = ['VIBE_CHECK_API_KEY'];
+export const PROVIDER_ENV_KEYS = [
+  'ANTHROPIC_API_KEY',
+  'OPENAI_API_KEY',
+  'GEMINI_API_KEY',
+  'OPENROUTER_API_KEY',
+] as const;
 
 type EnsureEnvOptions = {
   interactive: boolean;
@@ -73,41 +78,42 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
   const sources = resolveEnvSources();
   const cwdValues = await readEnvFile(sources.cwdEnv);
   const homeValues = await readEnvFile(sources.homeEnv);
-  const missing: string[] = [];
+  const resolved: string[] = [];
 
-  for (const key of REQUIRED_ENV_KEYS) {
+  for (const key of PROVIDER_ENV_KEYS) {
     if (process.env[key]) {
+      resolved.push(key);
       continue;
     }
 
     if (key in cwdValues) {
       process.env[key] = cwdValues[key];
+      resolved.push(key);
       continue;
     }
 
     if (key in homeValues) {
       process.env[key] = homeValues[key];
+      resolved.push(key);
       continue;
     }
-
-    missing.push(key);
   }
 
-  if (missing.length === 0) {
+  if (resolved.length > 0) {
     return { wrote: false };
   }
 
   if (!options.interactive) {
-    console.log(`Missing required environment variables: ${missing.join(', ')}`);
-    console.log('Provide them via your shell or .env file, then re-run with --non-interactive.');
-    return { wrote: false, missing };
+    console.log(`No provider API keys detected. Set one of: ${PROVIDER_ENV_KEYS.join(', ')}`);
+    console.log('Provide it via your shell or .env file, then re-run with --non-interactive.');
+    return { wrote: false, missing: [...PROVIDER_ENV_KEYS] };
   }
 
   const targetPath = options.local ? resolve(process.cwd(), '.env') : resolve(homeConfigDir(), '.env');
   const targetValues = options.local ? cwdValues : homeValues;
   const prompter = options.prompt;
 
-  let rl: ReturnType<typeof createInterface> | null = null;
+  let rl: any = null;
   const ask = async (key: string): Promise<string> => {
     if (prompter) {
       return prompter(key);
@@ -117,27 +123,35 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
       rl = createInterface({ input, output });
     }
 
-    const answer = await rl.question(`Enter value for ${key}: `);
+    const answer = await rl.question(`Enter value for ${key} (leave blank to skip): `);
     return answer;
   };
 
   const newEntries: Record<string, string> = {};
+  let provided = false;
 
   try {
-    for (const key of missing) {
-      let value = '';
-      do {
-        value = (await ask(key)).trim();
-      } while (!value);
+    for (const key of PROVIDER_ENV_KEYS) {
+      const value = (await ask(key)).trim();
+      if (!value) {
+        continue;
+      }
 
       process.env[key] = value;
       targetValues[key] = value;
       newEntries[key] = value;
+      provided = true;
+      break;
     }
   } finally {
     if (rl) {
       rl.close();
     }
+  }
+
+  if (!provided) {
+    console.log(`No provider API key entered. Set one of: ${PROVIDER_ENV_KEYS.join(', ')} and re-run.`);
+    return { wrote: false, missing: [...PROVIDER_ENV_KEYS] };
   }
 
   const existingContent = existsSync(targetPath) ? await readFile(targetPath, 'utf8') : '';
