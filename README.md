@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <sub>28k+ installs PulseMCP & 2k+ Monthly calls Smithery.ai • research-backed oversight • streamable HTTP transport</sub>
+  <sub>30k+ installs PulseMCP & 2k+ Monthly calls Smithery.ai • research-backed oversight • STDIO + streamable HTTP transport</sub>
 </p>
 
 <img width="500" height="300" alt="Gemini_Generated_Image_wfc5z4wfc5z4wfc5" src="https://github.com/user-attachments/assets/d3f49301-fcdb-48b3-bd8a-505ffa845957" />
