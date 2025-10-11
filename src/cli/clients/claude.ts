@@ -1,55 +1,26 @@
-import { promises as fsPromises, constants as fsConstants } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { join } from 'node:path';
 import os from 'node:os';
-import { isDeepStrictEqual } from 'node:util';
+import {
+  ClientAdapter,
+  JsonRecord,
+  MergeOpts,
+  MergeResult,
+  expandHomePath,
+  mergeIntoMap,
+  pathExists,
+  readJsonFile,
+  writeJsonFileAtomic,
+} from './shared.js';
 
-const { access, mkdir, readFile, rename, writeFile } = fsPromises;
+type LocateFn = (customPath?: string) => Promise<string | null>;
 
-type JsonRecord = Record<string, unknown>;
+type ReadFn = (path: string, raw?: string) => Promise<JsonRecord>;
 
-type MergeOptions = {
-  id: string;
-  sentinel: string;
-};
+type MergeFn = (config: JsonRecord, entry: JsonRecord, options: MergeOpts) => MergeResult;
 
-type MergeResult = {
-  next: JsonRecord;
-  changed: boolean;
-  reason?: string;
-};
+type WriteFn = (path: string, data: JsonRecord) => Promise<void>;
 
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-async function pathExists(path: string): Promise<boolean> {
-  try {
-    await access(path, fsConstants.F_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function expandHomePath(path: string): string {
-  if (!path.startsWith('~')) {
-    return resolve(path);
-  }
-
-  const home = os.homedir();
-  if (path === '~') {
-    return home;
-  }
-
-  const remainder = path.slice(1);
-  if (remainder.startsWith('/') || remainder.startsWith('\\')) {
-    return resolve(join(home, remainder.slice(1)));
-  }
-
-  return resolve(join(home, remainder));
-}
-
-export async function locateClaudeConfig(customPath?: string): Promise<string | null> {
+export const locateClaudeConfig: LocateFn = async (customPath) => {
   if (customPath) {
     return expandHomePath(customPath);
   }
@@ -79,51 +50,32 @@ export async function locateClaudeConfig(customPath?: string): Promise<string | 
   }
 
   return null;
-}
+};
 
-export async function readClaudeConfig(path: string, rawData?: string): Promise<JsonRecord> {
-  const raw = rawData ?? (await readFile(path, 'utf8'));
-  const parsed = JSON.parse(raw);
-  if (!isRecord(parsed)) {
-    throw new Error('Claude config must be a JSON object.');
-  }
+export const readClaudeConfig: ReadFn = async (path, raw) => {
+  return readJsonFile(path, raw, 'Claude config');
+};
 
-  return parsed;
-}
+export const writeClaudeConfigAtomic: WriteFn = async (path, data) => {
+  await writeJsonFileAtomic(path, data);
+};
 
-export async function writeClaudeConfigAtomic(path: string, data: JsonRecord): Promise<void> {
-  const directory = dirname(path);
-  await mkdir(directory, { recursive: true });
+export const mergeMcpEntry: MergeFn = (config, entry, options) => {
+  return mergeIntoMap(config, entry, options, 'mcpServers');
+};
 
-  const tempPath = `${path}.${process.pid}.${Date.now()}.tmp`;
-  const payload = `${JSON.stringify(data, null, 2)}\n`;
-
-  await writeFile(tempPath, payload, { mode: 0o600 });
-  await rename(tempPath, path);
-}
-
-export function mergeMcpEntry(config: JsonRecord, entry: JsonRecord, options: MergeOptions): MergeResult {
-  const { id, sentinel } = options;
-  const baseConfig = isRecord(config) ? config : {};
-
-  const existingServers = isRecord(baseConfig.mcpServers) ? (baseConfig.mcpServers as JsonRecord) : {};
-  const currentEntry = isRecord(existingServers[id]) ? (existingServers[id] as JsonRecord) : null;
-
-  if (currentEntry && currentEntry.managedBy !== sentinel) {
+const adapter: ClientAdapter = {
+  locate: locateClaudeConfig,
+  read: readClaudeConfig,
+  merge: mergeMcpEntry,
+  writeAtomic: writeClaudeConfigAtomic,
+  describe() {
     return {
-      next: baseConfig,
-      changed: false,
-      reason: `Existing entry "${id}" is not managed by ${sentinel}.`,
+      name: 'Claude Desktop',
+      pathHint: 'claude_desktop_config.json',
+      notes: 'Launch Claude Desktop once to generate the config file.',
     };
-  }
+  },
+};
 
-  const nextEntry = { ...entry, managedBy: sentinel };
-  const nextServers = { ...existingServers, [id]: nextEntry };
-  const nextConfig: JsonRecord = { ...baseConfig, mcpServers: nextServers };
-
-  if (currentEntry && isDeepStrictEqual({ ...currentEntry, managedBy: sentinel }, nextEntry)) {
-    return { next: baseConfig, changed: false };
-  }
-
-  return { next: nextConfig, changed: true };
-}
+export default adapter;

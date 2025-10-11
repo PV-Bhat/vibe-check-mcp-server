@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "other": {
+      "command": "node",
+      "args": ["tool.js"],
+      "env": {
+        "LOG": "debug"
+      }
+    }
+  }
+}

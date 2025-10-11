@@ -1,4 +1,4 @@
-# 🧠 Vibe Check MCP v2.5.1
+# 🧠 Vibe Check MCP v2.7.0
 
 <p align="center">
   <b>Based on research</b><br/>
@@ -26,12 +26,16 @@
 ## Quickstart (npx)
 
 ```bash
+# Try it (Claude-friendly)
 npx @pv-bhat/vibe-check-mcp start --stdio
 
-# Or HTTP mode
-npx @pv-bhat/vibe-check-mcp start --http --port 2091
+# Install to a client
+npx @pv-bhat/vibe-check-mcp install --client claude
+npx @pv-bhat/vibe-check-mcp install --client cursor
+npx @pv-bhat/vibe-check-mcp install --client windsurf
+npx @pv-bhat/vibe-check-mcp install --client vscode --config ./.vscode/mcp.json
 
-# Basic diagnostics
+# Doctor
 npx @pv-bhat/vibe-check-mcp doctor
 ```
 
@@ -43,7 +47,7 @@ Requires Node **>=20**. These commands install straight from npm, build the CLI 
 - 30k+ installs total across public MCP directories/clients 
 
 
-[![Version](https://img.shields.io/badge/version-2.5.1-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Version](https://img.shields.io/badge/version-2.7.0-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
 [![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
 [![Security 4.3★/5 on MSEEP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
@@ -97,7 +101,11 @@ Large language models can confidently follow flawed plans. Without an external n
 | **History Continuity** | Summarizes prior advice when `sessionId` is supplied | context retention |
 | **Optional vibe_learn** | Log mistakes and fixes for future reflection | self-improvement |
 
-## What's New in v2.5.1
+## What's New in v2.7.0
+
+- `install --client` now supports Cursor, Windsurf, and Visual Studio Code with idempotent merges, atomic writes, and `.bak` rollbacks.
+- HTTP-aware installers preserve `serverUrl` entries for Windsurf and emit VS Code workspace snippets plus a `vscode:mcp/install` link when no config is provided.
+- Documentation now consolidates provider keys, transport selection, uninstall guidance, and dedicated client docs at [docs/clients.md](./docs/clients.md).
 
 ## Session Constitution (per-session rules)
 
@@ -164,34 +172,57 @@ Cut a new version by tagging the repository with [semantic versioning](https://s
 
 1. build the project with Node 20 via `npm ci` and `npm run build`,
 2. enforce coverage with `npm run test:coverage`,
-3. run CLI smoke checks (`doctor`, `start --stdio --dry-run`, `start --http --port 2091 --dry-run`),
+3. run CLI smoke checks (`doctor`, `start --stdio --dry-run`, `start --http --port 2091 --dry-run`, `install --client claude --dry-run`),
 4. publish the package to npmjs using the `NPM_TOKEN` repository secret, and
 5. verify the published tarball by running `npx @pv-bhat/vibe-check-mcp@<version> --help` on the freshly released build.
 
 Ensure `NPM_TOKEN` is configured under **Repository Settings → Secrets and variables → Actions** before tagging.
 
-### Install (Claude Desktop)
+### Provider keys
 
-Register Vibe Check as a **local MCP server** inside Claude Desktop with the packaged CLI:
+Set whichever API key matches your provider — `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`. The installer requires at least one of these when running with `--non-interactive`.
 
-```bash
-npx @pv-bhat/vibe-check-mcp install --client claude
-```
+Secrets default to `~/.vibe-check/.env` (created with `0600` permissions); pass `--local` to write to the current project's `.env`. Values are resolved in this order: shell environment → project `.env` → home config. The CLI never writes secrets to client config files – it references your environment instead.
 
-For CI or other unattended environments, provide a provider API key up front and disable prompts:
+### Transport selection
 
-```bash
-ANTHROPIC_API_KEY=your_anthropic_api_key \
-  npx @pv-bhat/vibe-check-mcp install --client claude --non-interactive
-```
+The CLI supports stdio and HTTP transports. Transport resolution follows this order: explicit flags (`--stdio`/`--http`) → `MCP_TRANSPORT` → default `stdio`. When using HTTP, specify `--port` (or set `MCP_HTTP_PORT`); the default port is **2091**. The generated entries add `--stdio` or `--http --port <n>` accordingly, and HTTP-capable clients also receive a `http://127.0.0.1:<port>` endpoint.
 
-Set whichever key matches your provider — `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`. The installer requires at least one of these when running with `--non-interactive`.
+### Client installers
 
-The installer discovers your `claude_desktop_config.json`, creates a timestamped backup, and merges an entry under `mcpServers.vibe-check-mcp` that launches `npx @pv-bhat/vibe-check-mcp start --stdio`. Entries tagged with `"managedBy": "vibe-check-mcp-cli"` are updated in place on subsequent runs, keeping other servers intact.
+Each installer is idempotent and tags entries with `"managedBy": "vibe-check-mcp-cli"`. Backups are written once per run before changes are applied, and merges are atomic (`*.bak` files make rollback easy). See [docs/clients.md](./docs/clients.md) for deeper client-specific references.
 
-Secrets default to `~/.vibe-check/.env`; pass `--local` to write to the current project's `.env`. Values are resolved in this order: shell environment → project `.env` → home config. Files are written atomically with `0600` permissions.
+#### Claude Desktop
 
-> ℹ️ Claude's desktop app uses the [Model Context Protocol](https://docs.anthropic.com/en/docs/claude-desktop/model-context-protocol) for local stdio servers. Remote HTTP connectors should still be added through Claude's UI as documented in the [Claude support guide](https://support.anthropic.com/en/articles/9492100-connect-apis-and-tools-to-claude-desktop).
+- Config path: `claude_desktop_config.json` (auto-discovered per platform).
+- Default transport: stdio (`npx … start --stdio`).
+- Restart Claude Desktop after installation to load the new MCP server.
+- If an unmanaged entry already exists for `vibe-check-mcp`, the CLI leaves it untouched and prints a warning.
+
+#### Cursor
+
+- Config path: `~/.cursor/mcp.json` (provide `--config` if you store it elsewhere).
+- Schema mirrors Claude’s `mcpServers` layout.
+- If the file is missing, the CLI prints a ready-to-paste JSON block for Cursor’s settings panel instead of failing.
+
+#### Windsurf (Cascade)
+
+- Config path: legacy `~/.codeium/windsurf/mcp_config.json`, new builds use `~/.codeium/mcp_config.json`.
+- Stdio is the default; pass `--http` to emit an entry with `serverUrl` for Windsurf’s HTTP client.
+- Existing sentinel-managed `serverUrl` entries are preserved and updated in place.
+
+#### Visual Studio Code
+
+- Workspace config lives at `.vscode/mcp.json`; profiles also store `mcp.json` in your VS Code user data directory.
+- Provide `--config <path>` to target a workspace file. Without `--config`, the CLI prints a JSON snippet and a `vscode:mcp/install?...` link you can open directly from the terminal.
+- VS Code supports optional dev fields; pass `--dev-watch` and/or `--dev-debug <value>` to populate `dev.watch`/`dev.debug`.
+- Requires VS Code **v1.102** or later for MCP discovery in the UI.
+
+### Uninstall & rollback
+
+- Restore the backup generated during installation (the newest `*.bak` next to your config) to revert immediately.
+- To remove the server manually, delete the `vibe-check-mcp` entry under `mcpServers` (Claude/Windsurf/Cursor) or `servers` (VS Code) as long as it is still tagged with `"managedBy": "vibe-check-mcp-cli"`.
+- After removal or rollback, restart your client to drop the MCP connection.
 
 ## Research & Philosophy
 

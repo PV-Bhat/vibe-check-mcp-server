@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "vibe-check-mcp": {
+      "serverUrl": "http://127.0.0.1:2091",
+      "managedBy": "vibe-check-mcp-cli"
+    },
+    "existing": {
+      "command": "npm",
+      "args": ["run", "tool"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}

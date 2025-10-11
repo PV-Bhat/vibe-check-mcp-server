@@ -19,14 +19,17 @@ describe('ensureEnv', () => {
     process.env = { ...ORIGINAL_ENV };
   });
 
-  it('returns without writing when a provider key is present non-interactively', async () => {
-    process.env.ANTHROPIC_API_KEY = 'present';
+  it.each(PROVIDER_ENV_KEYS)(
+    'returns without writing when %s is present non-interactively',
+    async (key) => {
+      process.env[key] = 'present';
 
-    const result = await ensureEnv({ interactive: false });
-    expect(result.wrote).toBe(false);
-    expect(result.path).toBeUndefined();
-    expect(result.missing).toBeUndefined();
-  });
+      const result = await ensureEnv({ interactive: false });
+      expect(result.wrote).toBe(false);
+      expect(result.path).toBeUndefined();
+      expect(result.missing).toBeUndefined();
+    },
+  );
 
   it('reports missing values when non-interactive', async () => {
     delete process.env.ANTHROPIC_API_KEY;

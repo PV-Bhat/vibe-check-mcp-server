@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "other": {
+      "command": "python",
+      "args": ["tool.py"],
+      "env": {
+        "TOKEN": "abc"
+      }
+    }
+  }
+}
