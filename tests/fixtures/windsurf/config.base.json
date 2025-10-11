@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "existing": {
+      "command": "npm",
+      "args": ["run", "tool"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}

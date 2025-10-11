@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "vibe-check-mcp": {
+      "command": "npx",
+      "args": ["@pv-bhat/vibe-check-mcp", "start"],
+      "env": {},
+      "managedBy": "vibe-check-mcp-cli"
+    },
+    "other": {
+      "command": "python",
+      "args": ["tool.py"],
+      "env": {
+        "TOKEN": "abc"
+      }
+    }
+  }
+}

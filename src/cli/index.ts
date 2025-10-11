@@ -7,12 +7,11 @@ import { execa } from 'execa';
 import { checkNodeVersion, detectEnvFiles, portStatus, readEnvFile } from './doctor.js';
 import { ensureEnv, resolveEnvSources } from './env.js';
 import { formatUnifiedDiff } from './diff.js';
-import {
-  locateClaudeConfig,
-  mergeMcpEntry,
-  readClaudeConfig,
-  writeClaudeConfigAtomic,
-} from './clients/claude.js';
+import claudeAdapter from './clients/claude.js';
+import cursorAdapter from './clients/cursor.js';
+import windsurfAdapter from './clients/windsurf.js';
+import vscodeAdapter from './clients/vscode.js';
+import { ClientAdapter, JsonRecord, MergeOpts, isRecord } from './clients/shared.js';
 
 type PackageJson = {
   version?: string;
@@ -41,12 +40,27 @@ type InstallOptions = {
   nonInteractive?: boolean;
   local?: boolean;
   config?: string;
+  http?: boolean;
+  stdio?: boolean;
+  port?: number;
+  devWatch?: boolean;
+  devDebug?: string;
 };
 
 const cliDir = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(cliDir, '..', '..');
 const entrypoint = resolve(projectRoot, 'build', 'index.js');
 const packageJsonPath = resolve(projectRoot, 'package.json');
+
+const MANAGED_ID = 'vibe-check-mcp';
+const SENTINEL = 'vibe-check-mcp-cli';
+
+const CLIENT_ADAPTERS: Record<string, ClientAdapter> = {
+  claude: claudeAdapter,
+  cursor: cursorAdapter,
+  windsurf: windsurfAdapter,
+  vscode: vscodeAdapter,
+};
 
 function readPackageJson(): PackageJson {
   const raw = readFileSync(packageJsonPath, 'utf8');
@@ -147,8 +161,9 @@ async function runDoctorCommand(options: DoctorOptions): Promise<void> {
 }
 
 async function runInstallCommand(options: InstallOptions): Promise<void> {
-  const client = options.client?.toLowerCase();
-  if (client !== 'claude') {
+  const clientKey = options.client?.toLowerCase();
+  const adapter = clientKey ? CLIENT_ADAPTERS[clientKey] : undefined;
+  if (!adapter) {
     throw new Error(`Unsupported client: ${options.client}`);
   }
 
@@ -163,38 +178,69 @@ async function runInstallCommand(options: InstallOptions): Promise<void> {
     console.log(`Secrets written to ${envResult.path}`);
   }
 
-  const configPath = await locateClaudeConfig(options.config);
+  const transport = resolveTransport({ http: options.http, stdio: options.stdio }, process.env.MCP_TRANSPORT);
+
+  let httpPort: number | undefined;
+  let httpUrl: string | undefined;
+
+  if (transport === 'http') {
+    httpPort = resolveHttpPort(options.port, process.env.MCP_HTTP_PORT);
+    httpUrl = `http://127.0.0.1:${httpPort}`;
+  } else if (options.port != null) {
+    throw new Error('The --port option is only available when using --http.');
+  }
+
+  const entry = createInstallEntry(transport, httpPort);
+
+  const mergeOptions: MergeOpts = {
+    id: MANAGED_ID,
+    sentinel: SENTINEL,
+    transport,
+    httpUrl,
+  };
+
+  if (options.devWatch || options.devDebug) {
+    mergeOptions.dev = {};
+    if (options.devWatch) {
+      mergeOptions.dev.watch = true;
+    }
+    if (options.devDebug) {
+      mergeOptions.dev.debug = options.devDebug;
+    }
+  }
+
+  const description = adapter.describe();
+  const configPath = await adapter.locate(options.config);
+
   if (!configPath) {
-    console.log('Claude Desktop config was not found. Provide --config <path> or launch Claude Desktop once to generate it.');
+    emitManualInstallMessage({
+      adapter,
+      clientKey,
+      description,
+      entry,
+      mergeOptions,
+      transport,
+      httpUrl,
+    });
     return;
   }
 
   const configExists = await fileExists(configPath);
   let existingRaw = '';
-  let currentConfig: Record<string, unknown> = {};
+  let currentConfig: JsonRecord = {};
 
   if (configExists) {
     existingRaw = await fsPromises.readFile(configPath, 'utf8');
-    currentConfig = await readClaudeConfig(configPath, existingRaw);
+    currentConfig = await adapter.read(configPath, existingRaw);
   }
 
-  const sentinel = 'vibe-check-mcp-cli';
-  const entry = {
-    command: 'npx',
-    args: ['@pv-bhat/vibe-check-mcp', 'start', '--stdio'],
-    env: {},
-  } satisfies Record<string, unknown>;
-
-  const { next, changed, reason } = mergeMcpEntry(currentConfig, entry, {
-    id: 'vibe-check-mcp',
-    sentinel,
-  });
+  const { next, changed, reason } = adapter.merge(currentConfig, entry, mergeOptions);
 
   if (!changed) {
     if (reason) {
       console.warn(reason);
     } else {
-      console.log('Claude Desktop already has a managed entry for vibe-check-mcp.');
+      console.log(`${description.name} already has a managed entry for ${MANAGED_ID}.`);
     }
     return;
   }
@@ -212,13 +258,130 @@ async function runInstallCommand(options: InstallOptions): Promise<void> {
     console.log(`Backup created at ${backupPath}`);
   }
 
-  await writeClaudeConfigAtomic(configPath, next);
+  await adapter.writeAtomic(configPath, next);
 
-  const summaryEntry = (next.mcpServers as Record<string, unknown> | undefined)?.['vibe-check-mcp'];
-  console.log(`Claude Desktop config updated: ${configPath}`);
+  const summaryEntry = extractManagedEntry(next, MANAGED_ID);
+  console.log(`${description.name} config updated (${transport}): ${configPath}`);
   if (summaryEntry) {
     console.log(JSON.stringify(summaryEntry, null, 2));
   }
+  console.log('Restart the client to pick up the new MCP server.');
+  if (transport === 'http' && httpPort) {
+    const startCommand = formatStartCommand(entry);
+    console.log(`Start the server separately with: ${startCommand}`);
+    console.log(`HTTP endpoint: ${httpUrl}`);
+  }
+}
+
+function createInstallEntry(transport: Transport, port?: number): JsonRecord {
+  const args: string[] = ['-y', '@pv-bhat/vibe-check-mcp', 'start'];
+
+  if (transport === 'http') {
+    args.push('--http');
+    const resolvedPort = port ?? 2091;
+    args.push('--port', String(resolvedPort));
+  } else {
+    args.push('--stdio');
+  }
+
+  return {
+    command: 'npx',
+    args,
+    env: {},
+  } satisfies JsonRecord;
+}
+
+function formatStartCommand(entry: JsonRecord): string {
+  const command = typeof entry.command === 'string' ? entry.command : 'npx';
+  const args = Array.isArray(entry.args) ? entry.args.map((value) => String(value)) : [];
+  return [command, ...args].join(' ');
+}
+
+function extractManagedEntry(config: JsonRecord, id: string): JsonRecord | null {
+  const mapCandidates: Array<JsonRecord | undefined> = [];
+
+  if (isRecord(config.mcpServers)) {
+    mapCandidates.push(config.mcpServers as JsonRecord);
+  }
+
+  if (isRecord(config.servers)) {
+    mapCandidates.push(config.servers as JsonRecord);
+  }
+
+  for (const map of mapCandidates) {
+    if (!map) {
+      continue;
+    }
+    const entry = map[id];
+    if (isRecord(entry)) {
+      return entry as JsonRecord;
+    }
+  }
+
+  return null;
+}
+
+type ManualInstallArgs = {
+  adapter: ClientAdapter;
+  clientKey: string;
+  description: ReturnType<ClientAdapter['describe']>;
+  entry: JsonRecord;
+  mergeOptions: MergeOpts;
+  transport: Transport;
+  httpUrl?: string;
+};
+
+function emitManualInstallMessage(args: ManualInstallArgs): void {
+  const { adapter, clientKey, description, entry, mergeOptions, transport, httpUrl } = args;
+
+  console.log(`${description.name} configuration not found at ${description.pathHint}.`);
+  if (description.notes) {
+    console.log(description.notes);
+  }
+
+  const preview = adapter.merge({}, entry, mergeOptions);
+  const managedEntry = extractManagedEntry(preview.next, MANAGED_ID) ?? preview.next;
+
+  console.log('Add this MCP server configuration manually:');
+  console.log(JSON.stringify(managedEntry, null, 2));
+
+  if (clientKey === 'vscode') {
+    const installUrl = createVsCodeInstallUrl(entry, mergeOptions);
+    console.log('VS Code quick install link:');
+    console.log(installUrl);
+    console.log('Command Palette → "MCP: Add Server" will open the profile file.');
+  } else if (clientKey === 'cursor') {
+    console.log('Cursor → Settings → MCP Servers lets you paste this JSON.');
+  } else if (clientKey === 'windsurf') {
+    console.log('Create the file if it does not exist, then restart Windsurf.');
+  }
+
+  if (transport === 'http' && httpUrl) {
+    const startCommand = formatStartCommand(entry);
+    console.log(`Expose the HTTP server separately with: ${startCommand}`);
+    console.log(`HTTP endpoint: ${httpUrl}`);
+  }
+}
+
+function createVsCodeInstallUrl(entry: JsonRecord, options: MergeOpts): string {
+  const url = new URL('vscode:mcp/install');
+  url.searchParams.set('name', 'Vibe Check MCP');
+
+  const command = typeof entry.command === 'string' ? entry.command : 'npx';
+  url.searchParams.set('command', command);
+
+  const args = Array.isArray(entry.args) ? entry.args.map((value) => String(value)) : [];
+  if (args.length > 0) {
+    url.searchParams.set('args', JSON.stringify(args));
+  }
+
+  if (options.transport === 'http' && options.httpUrl) {
+    url.searchParams.set('url', options.httpUrl);
+  } else {
+    url.searchParams.set('transport', options.transport);
+  }
+
+  return url.toString();
 }
 
 export function createCliProgram(): Command {
@@ -264,10 +427,15 @@ export function createCliProgram(): Command {
     .command('install')
     .description('Install client integrations')
     .requiredOption('--client <name>', 'Client to configure')
-    .option('--config <path>', 'Path to a Claude Desktop configuration file')
+    .option('--config <path>', 'Path to the client configuration file')
     .option('--dry-run', 'Show the merged configuration without writing')
     .option('--non-interactive', 'Do not prompt for missing environment values')
     .option('--local', 'Write secrets to the project .env instead of ~/.vibe-check/.env')
+    .addOption(new Option('--stdio', 'Configure STDIO transport').conflicts('http'))
+    .addOption(new Option('--http', 'Configure HTTP transport').conflicts('stdio'))
+    .option('--port <number>', 'HTTP port (default: 2091)', parsePort)
+    .option('--dev-watch', 'Add dev.watch=true (VS Code only)')
+    .option('--dev-debug <value>', 'Set dev.debug (VS Code only)')
     .action(async (options: InstallOptions) => {
       try {
         await runInstallCommand(options);

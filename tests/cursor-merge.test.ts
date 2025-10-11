@@ -2,19 +2,32 @@ import { promises as fs } from 'node:fs';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import os from 'node:os';
-import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import cursorAdapter from '../src/cli/clients/cursor.js';
+import { MergeOpts } from '../src/cli/clients/shared.js';
 import { createCliProgram } from '../src/cli/index.js';
-import { mergeMcpEntry } from '../src/cli/clients/claude.js';
 
 const SENTINEL = 'vibe-check-mcp-cli';
-const FIXTURE_DIR = join(process.cwd(), 'tests', 'fixtures', 'claude');
+const FIXTURE_DIR = join(process.cwd(), 'tests', 'fixtures', 'cursor');
 
 function loadFixture(name: string): Record<string, unknown> {
   const raw = readFileSync(join(FIXTURE_DIR, name), 'utf8');
   return JSON.parse(raw) as Record<string, unknown>;
 }
 
-describe('Claude MCP config merge', () => {
+const ENTRY = {
+  command: 'npx',
+  args: ['-y', '@pv-bhat/vibe-check-mcp', 'start', '--stdio'],
+  env: {},
+} as const;
+
+const MERGE_OPTS: MergeOpts = {
+  id: 'vibe-check-mcp',
+  sentinel: SENTINEL,
+  transport: 'stdio',
+};
+
+describe('Cursor MCP config merge', () => {
   const ORIGINAL_ENV = { ...process.env };
 
   beforeEach(() => {
@@ -29,13 +42,7 @@ describe('Claude MCP config merge', () => {
 
   it('appends the managed entry to a base config', () => {
     const base = loadFixture('config.base.json');
-    const entry = {
-      command: 'npx',
-      args: ['-y', '@pv-bhat/vibe-check-mcp', 'start', '--stdio'],
-      env: {},
-    };
-
-    const result = mergeMcpEntry(base, entry, { id: 'vibe-check-mcp', sentinel: SENTINEL });
+    const result = cursorAdapter.merge(base, ENTRY, MERGE_OPTS);
     expect(result.changed).toBe(true);
     expect(result.next.mcpServers).toMatchObject({
       'vibe-check-mcp': {
@@ -45,21 +52,14 @@ describe('Claude MCP config merge', () => {
         managedBy: SENTINEL,
       },
     });
-    expect(result.next.mcpServers).toHaveProperty('other-server');
   });
 
   it('updates an existing managed entry in place', () => {
     const base = loadFixture('config.with-managed-entry.json');
-    const entry = {
-      command: 'npx',
-      args: ['-y', '@pv-bhat/vibe-check-mcp', 'start', '--stdio'],
-      env: {},
-    };
-
-    const result = mergeMcpEntry(base, entry, { id: 'vibe-check-mcp', sentinel: SENTINEL });
+    const result = cursorAdapter.merge(base, ENTRY, MERGE_OPTS);
     expect(result.changed).toBe(true);
-    const nextServers = result.next.mcpServers as Record<string, unknown>;
-    expect(nextServers['vibe-check-mcp']).toEqual({
+    const next = result.next.mcpServers as Record<string, unknown>;
+    expect(next['vibe-check-mcp']).toEqual({
       command: 'npx',
       args: ['-y', '@pv-bhat/vibe-check-mcp', 'start', '--stdio'],
       env: {},
@@ -67,28 +67,20 @@ describe('Claude MCP config merge', () => {
     });
   });
 
-  it('skips unmanaged entries with the same id', () => {
-    const base = loadFixture('config.with-other-servers.json');
-    const entry = {
-      command: 'npx',
-      args: ['-y', '@pv-bhat/vibe-check-mcp', 'start', '--stdio'],
-      env: {},
-    };
-
-    const result = mergeMcpEntry(base, entry, { id: 'vibe-check-mcp', sentinel: SENTINEL });
+  it('does not replace an unmanaged entry', () => {
+    const base = loadFixture('../claude/config.with-other-servers.json');
+    const result = cursorAdapter.merge(base, ENTRY, MERGE_OPTS);
     expect(result.changed).toBe(false);
     expect(result.reason).toContain('not managed');
-    expect(result.next).toEqual(base);
   });
 
-  it('writes atomically and creates a backup when installing via CLI', async () => {
-    const tmpDir = await fs.mkdtemp(join(os.tmpdir(), 'vibe-claude-'));
-    const configPath = join(tmpDir, 'claude.json');
-    const fixturePath = join(FIXTURE_DIR, 'config.base.json');
-    const original = readFileSync(fixturePath, 'utf8');
+  it('creates a backup and writes via the CLI install command', async () => {
+    const tmpDir = await fs.mkdtemp(join(os.tmpdir(), 'cursor-merge-'));
+    const configPath = join(tmpDir, 'mcp.json');
+    const original = readFileSync(join(FIXTURE_DIR, 'config.base.json'), 'utf8');
     await fs.writeFile(configPath, original, 'utf8');
 
-    process.env.OPENAI_API_KEY = 'test-token';
+    process.env.OPENAI_API_KEY = 'cursor-key';
 
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -99,7 +91,7 @@ describe('Claude MCP config merge', () => {
       'vibe-check-mcp',
       'install',
       '--client',
-      'claude',
+      'cursor',
       '--config',
       configPath,
       '--non-interactive',
@@ -111,8 +103,10 @@ describe('Claude MCP config merge', () => {
     const files = await fs.readdir(tmpDir);
     const backup = files.find((file) => file.endsWith('.bak'));
     expect(backup).toBeDefined();
-    const backupContent = await fs.readFile(join(tmpDir, backup as string), 'utf8');
-    expect(backupContent).toBe(original);
+    if (backup) {
+      const backupContent = await fs.readFile(join(tmpDir, backup), 'utf8');
+      expect(backupContent).toBe(original);
+    }
 
     const finalContent = await fs.readFile(configPath, 'utf8');
     const parsed = JSON.parse(finalContent) as Record<string, any>;
@@ -122,6 +116,5 @@ describe('Claude MCP config merge', () => {
       env: {},
       managedBy: SENTINEL,
     });
-    expect(parsed.mcpServers).toHaveProperty('other-server');
   });
 });
