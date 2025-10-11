@@ -78,12 +78,12 @@ Requires Node **>=20**. These commands install straight from npm, build the CLI 
 
 ## Table of Contents
 - [Quickstart (npx)](#quickstart-npx)
-- [What is Vibe Check MCP?](#what-is-vibe-check-mcp)
+- [What is Vibe Check MCP?](#whats-vibe-check)
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
-- [What's New in v2.5.1](#whats-new-in-v251)
+- [What's New](#whats-new-in-v270)
 - [Quickstart & Installation](#quickstart--installation)
 - [Release](#release)
 - [Usage Examples](#usage-examples)
@@ -99,7 +99,7 @@ Requires Node **>=20**. These commands install straight from npm, build the CLI 
 - [Listed on](#find-vibe-check-mcp-on)
 - [Credits & License](#credits--license)
 ---
-## What is Vibe Check MCP?
+## What's Vibe Check?
 
 Vibe Check MCP is a lightweight server implementing Anthropic's [Model Context Protocol](https://anthropic.com/mcp). It acts as an **AI meta-mentor** for your agents, interrupting pattern inertia with **Chain-Pattern Interrupts (CPI)** to prevent Reasoning Lock-In (RLI). Think of it as a rubber-duck debugger for LLMs – a quick sanity check before your agent goes down the wrong path.
 
