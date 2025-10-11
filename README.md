@@ -22,6 +22,21 @@
 <img width="500" height="300" alt="vibecheckv2.5" src="https://github.com/user-attachments/assets/bcd06d7d-a184-43e9-8c43-22aca3074d32" />
 
 *Plug-and-play metacognitive oversight layer for autonomous AI agents – a research-backed MCP server keeping LLMs aligned, reflective and safe.*
+
+## Quickstart (npx)
+
+```bash
+npx @pv-bhat/vibe-check-mcp start --stdio
+
+# Or HTTP mode
+npx @pv-bhat/vibe-check-mcp start --http --port 2091
+
+# Basic diagnostics
+npx @pv-bhat/vibe-check-mcp doctor
+```
+
+Requires Node **>=20**. These commands install straight from npm, build the CLI on demand, and work on any machine with `npx`.
+
 ### Recognition
 - Listed in Anthropic’s official Model Context Protocol repo [🔗](https://github.com/modelcontextprotocol/servers?tab=readme-ov-file#-community-servers)
 - Discoverable in the official MCP Registry [🔗](https://registry.modelcontextprotocol.io/v0/servers?search=vibe-check-mcp)
@@ -35,14 +50,15 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
 
 ## Table of Contents
+- [Quickstart (npx)](#quickstart-npx)
 - [What is Vibe Check MCP?](#what-is-vibe-check-mcp)
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
-- [What's New in v2.5.0](##-What's-New-in-v2.5.1)
-- [Quickstart (npx)](#quickstart-npx)
+- [What's New in v2.5.1](#whats-new-in-v251)
 - [Quickstart & Installation](#quickstart--installation)
+- [Release](#release)
 - [Usage Examples](#usage-examples)
 - [Adaptive Metacognitive Interrupts (CPI)](#adaptive-metacognitive-interrupts-cpi)
 - [Agent Prompting Essentials](#agent-prompting-essentials)
@@ -92,29 +108,16 @@ Use a lightweight “constitution” to enforce rules per `sessionId` that CPI w
 - `reset_constitution({ sessionId })` → clears session rules
 - `check_constitution({ sessionId })` → returns effective rules for the session
 
-## Quickstart (npx)
-> **Requires Node.js >= 20**
-
-```bash
-# Quick try via STDIO (Claude-friendly)
-npx @pv-bhat/vibe-check-mcp start --stdio
-
-# Or HTTP mode
-npx @pv-bhat/vibe-check-mcp start --http --port 2091
-
-# Basic diagnostics
-npx @pv-bhat/vibe-check-mcp doctor
-```
-
 ## Quickstart & Installation
 ```bash
 # Clone and install
 git clone https://github.com/PV-Bhat/vibe-check-mcp-server.git
 cd vibe-check-mcp-server
-npm install
+npm ci
 npm run build
+npm test
 ```
-This project targets Node **>=20**. If you see a TypeScript error about a duplicate `require` declaration when building with Node 20.19.3, ensure your dependencies are up to date (`npm install`) or use the Docker setup below which handles the build automatically.
+Use **npm** for all workflows (`npm ci`, `npm run build`, `npm test`). This project targets Node **>=20**. If you see a TypeScript error about a duplicate `require` declaration when building with Node 20.19.3, ensure your dependencies are up to date (`npm ci`) or use the Docker setup below which handles the build automatically.
 
 Create a `.env` file with the API keys you plan to use:
 ```bash
@@ -155,6 +158,18 @@ docker build -t vibe-check-mcp .
 docker run -e GEMINI_API_KEY=your_gemini_api_key -p 3000:3000 vibe-check-mcp
 ```
 
+## Release
+
+Cut a new version by tagging the repository with [semantic versioning](https://semver.org/) (e.g., `v2.6.0`). The release workflow will:
+
+1. build the project with Node 20 via `npm ci` and `npm run build`,
+2. enforce coverage with `npm run test:coverage`,
+3. run CLI smoke checks (`doctor`, `start --stdio --dry-run`, `start --http --port 2091 --dry-run`),
+4. publish the package to npmjs using the `NPM_TOKEN` repository secret, and
+5. verify the published tarball by running `npx @pv-bhat/vibe-check-mcp@<version> --help` on the freshly released build.
+
+Ensure `NPM_TOKEN` is configured under **Repository Settings → Secrets and variables → Actions** before tagging.
+
 ### Install (Claude Desktop)
 
 Register Vibe Check as a **local MCP server** inside Claude Desktop with the packaged CLI:
@@ -163,12 +178,14 @@ Register Vibe Check as a **local MCP server** inside Claude Desktop with the pac
 npx @pv-bhat/vibe-check-mcp install --client claude
 ```
 
-For CI or other unattended environments, provide the API key up front and disable prompts:
+For CI or other unattended environments, provide a provider API key up front and disable prompts:
 
 ```bash
-VIBE_CHECK_API_KEY=your_token \
+ANTHROPIC_API_KEY=your_anthropic_api_key \
   npx @pv-bhat/vibe-check-mcp install --client claude --non-interactive
 ```
+
+Set whichever key matches your provider — `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`. The installer requires at least one of these when running with `--non-interactive`.
 
 The installer discovers your `claude_desktop_config.json`, creates a timestamped backup, and merges an entry under `mcpServers.vibe-check-mcp` that launches `npx @pv-bhat/vibe-check-mcp start --stdio`. Entries tagged with `"managedBy": "vibe-check-mcp-cli"` are updated in place on subsequent runs, keeping other servers intact.
 

@@ -1,0 +1,36 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm run build
+      - run: npm run test:coverage
+      - run: node build/cli/index.js doctor
+      - run: node build/cli/index.js start --stdio --dry-run
+      - run: node build/cli/index.js start --http --port 2091 --dry-run
+      - name: Verify package contents
+        run: |
+          PKG_TGZ=$(npm pack --silent)
+          tar -tf "$PKG_TGZ" | grep -q 'package/build/cli/index.js'
+          node -e "const p=require('./package.json');process.exit((p.bin&&Object.values(p.bin).includes('build/cli/index.js'))?0:1)"
+      - name: Publish to npmjs
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+      - name: Post-publish smoke via npx
+        run: |
+          PKG=$(node -p "require('./package.json').name")
+          VER=$(node -p "require('./package.json').version")
+          npx -y "$PKG@$VER" --help

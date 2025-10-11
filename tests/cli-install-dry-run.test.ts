@@ -27,7 +27,7 @@ describe('cli install --dry-run', () => {
     const original = readFileSync(FIXTURE, 'utf8');
     await fs.writeFile(configPath, original, 'utf8');
 
-    process.env.VIBE_CHECK_API_KEY = 'dry-run-key';
+    process.env.ANTHROPIC_API_KEY = 'dry-run-key';
 
     const logs: string[] = [];
     const logSpy = vi.spyOn(console, 'log').mockImplementation((message?: unknown, ...rest: unknown[]) => {

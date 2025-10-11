@@ -12,6 +12,11 @@ Contributing to Vibe Check isn't just about code—it's about joining a communit
 
 2. **Fork & clone**: The standard GitHub dance. Fork the repo, clone it locally, and create a branch for your changes.
 
+### Local setup
+
+- Use Node **>=20**.
+- Use **npm** for everything: `npm ci`, `npm run build`, `npm test`.
+
 3. **Make your changes**: Whether it's code, documentation, or just fixing a typo, all contributions are welcome.
 
 4. **Test your changes**: Make sure everything still works as expected.
