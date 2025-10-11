@@ -21,7 +21,35 @@
 
 <img width="500" height="300" alt="vibecheckv2.5" src="https://github.com/user-attachments/assets/bcd06d7d-a184-43e9-8c43-22aca3074d32" />
 
+[![Version](https://img.shields.io/badge/version-2.7.0-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
+[![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
+[![Security 4.3★/5 on MSEEP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
+
 *Plug-and-play metacognitive oversight layer for autonomous AI agents – a research-backed MCP server keeping LLMs aligned, reflective and safe.*
+
+<div align="center">
+  <a href="https://github.com/PV-Bhat/vibe-check-mcp-server">
+    <img src="https://unpkg.com/@lobehub/icons-static-svg@latest/icons/github.svg" width="40" height="40" alt="GitHub" />
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://registry.modelcontextprotocol.io">
+    <img src="https://unpkg.com/@lobehub/icons-static-svg@latest/icons/anthropic.svg" width="40" height="40" alt="Anthropic MCP Registry" />
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server">
+    <img src="https://unpkg.com/@lobehub/icons-static-svg@latest/icons/smithery.svg" width="40" height="40" alt="Smithery" />
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://www.pulsemcp.com/servers/pv-bhat-vibe-check">
+    <img src="https://www.pulsemcp.com/favicon.ico" width="40" height="40" alt="PulseMCP" />
+  </a>
+</div>
+
+<div align="center">
+  <em>Trusted by developers across major MCP platforms and registries</em>
+</div>
 
 ## Quickstart (npx)
 
@@ -41,17 +69,12 @@ npx @pv-bhat/vibe-check-mcp doctor
 
 Requires Node **>=20**. These commands install straight from npm, build the CLI on demand, and work on any machine with `npx`.
 
+[![Star History Chart](https://api.star-history.com/svg?repos=PV-Bhat/vibe-check-mcp-server&type=Date)](https://www.star-history.com/#PV-Bhat/vibe-check-mcp-server&Date)
+
 ### Recognition
 - Listed in Anthropic’s official Model Context Protocol repo [🔗](https://github.com/modelcontextprotocol/servers?tab=readme-ov-file#-community-servers)
 - Discoverable in the official MCP Registry [🔗](https://registry.modelcontextprotocol.io/v0/servers?search=vibe-check-mcp)
 - 30k+ installs total across public MCP directories/clients 
-
-
-[![Version](https://img.shields.io/badge/version-2.7.0-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
-[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
-[![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
-[![Security 4.3★/5 on MSEEP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
 
 ## Table of Contents
 - [Quickstart (npx)](#quickstart-npx)
@@ -313,10 +336,6 @@ Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 * 📇 [MCP Directory](https://mcpdirectory.ai/mcpserver/2419/)
 * 🧙 [MagicSlides](https://www.magicslides.app/mcps/pv-bhat-vibe-check)
 * 🗃️ [AIAgentsList](https://aiagentslist.com/mcp-servers/vibe-check-mcp-server)
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=PV-Bhat/vibe-check-mcp-server&type=Date)](https://www.star-history.com/#PV-Bhat/vibe-check-mcp-server&Date)
 
 ## Credits & License
 Vibe Check MCP is released under the [MIT License](LICENSE). Built for reliable, enterprise-ready AI agents.
