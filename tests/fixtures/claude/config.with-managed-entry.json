@@ -1,0 +1,18 @@
+{
+  "theme": "system",
+  "mcpServers": {
+    "vibe-check-mcp": {
+      "command": "npx",
+      "args": ["@pv-bhat/vibe-check-mcp", "start"],
+      "env": {},
+      "managedBy": "vibe-check-mcp-cli"
+    },
+    "other": {
+      "command": "ruby",
+      "args": ["tool.rb"],
+      "env": {
+        "LEVEL": "info"
+      }
+    }
+  }
+}

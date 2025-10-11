@@ -1,0 +1,12 @@
+{
+  "theme": "system",
+  "mcpServers": {
+    "other-server": {
+      "command": "node",
+      "args": ["other.js"],
+      "env": {
+        "TOKEN": "abc123"
+      }
+    }
+  }
+}

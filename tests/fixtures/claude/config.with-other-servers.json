@@ -1,0 +1,17 @@
+{
+  "theme": "system",
+  "mcpServers": {
+    "vibe-check-mcp": {
+      "command": "node",
+      "args": ["legacy.js"],
+      "env": {}
+    },
+    "another": {
+      "command": "python",
+      "args": ["server.py"],
+      "env": {
+        "DEBUG": "1"
+      }
+    }
+  }
+}

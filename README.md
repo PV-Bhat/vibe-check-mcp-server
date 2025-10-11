@@ -155,23 +155,26 @@ docker build -t vibe-check-mcp .
 docker run -e GEMINI_API_KEY=your_gemini_api_key -p 3000:3000 vibe-check-mcp
 ```
 
-### Integrating with Claude Desktop
-Add to `claude_desktop_config.json`:
-```json
-"vibe-check": {
-  "command": "node",
-  "args": ["/path/to/vibe-check-mcp/build/index.js"],
-  "env": {
-    "GEMINI_API_KEY": "YOUR_GEMINI_API_KEY",
-    "MCP_TRANSPORT": "stdio"
-  }
-}
+### Install (Claude Desktop)
+
+Register Vibe Check as a **local MCP server** inside Claude Desktop with the packaged CLI:
+
+```bash
+npx @pv-bhat/vibe-check-mcp install --client claude
 ```
 
-Claude Desktop (including Claude Code auto-start on macOS) talks MCP over stdio. If
-`MCP_TRANSPORT` is not set to `stdio`, the server defaults to HTTP mode and the
-desktop app will hang while trying to connect. After editing the configuration,
-restart Claude Desktop so it reloads the MCP registry.
+For CI or other unattended environments, provide the API key up front and disable prompts:
+
+```bash
+VIBE_CHECK_API_KEY=your_token \
+  npx @pv-bhat/vibe-check-mcp install --client claude --non-interactive
+```
+
+The installer discovers your `claude_desktop_config.json`, creates a timestamped backup, and merges an entry under `mcpServers.vibe-check-mcp` that launches `npx @pv-bhat/vibe-check-mcp start --stdio`. Entries tagged with `"managedBy": "vibe-check-mcp-cli"` are updated in place on subsequent runs, keeping other servers intact.
+
+Secrets default to `~/.vibe-check/.env`; pass `--local` to write to the current project's `.env`. Values are resolved in this order: shell environment → project `.env` → home config. Files are written atomically with `0600` permissions.
+
+> ℹ️ Claude's desktop app uses the [Model Context Protocol](https://docs.anthropic.com/en/docs/claude-desktop/model-context-protocol) for local stdio servers. Remote HTTP connectors should still be added through Claude's UI as documented in the [Claude support guide](https://support.anthropic.com/en/articles/9492100-connect-apis-and-tools-to-claude-desktop).
 
 ## Research & Philosophy
 

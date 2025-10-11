@@ -1,11 +1,18 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs';
+import { readFileSync, promises as fsPromises } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Command, Option } from 'commander';
 import { execa } from 'execa';
 import { checkNodeVersion, detectEnvFiles, portStatus, readEnvFile } from './doctor.js';
-import { resolveEnvSources } from './env.js';
+import { ensureEnv, resolveEnvSources } from './env.js';
+import { formatUnifiedDiff } from './diff.js';
+import {
+  locateClaudeConfig,
+  mergeMcpEntry,
+  readClaudeConfig,
+  writeClaudeConfigAtomic,
+} from './clients/claude.js';
 
 type PackageJson = {
   version?: string;
@@ -26,6 +33,14 @@ type StartOptions = {
 type DoctorOptions = {
   http?: boolean;
   port?: number;
+};
+
+type InstallOptions = {
+  client: string;
+  dryRun?: boolean;
+  nonInteractive?: boolean;
+  local?: boolean;
+  config?: string;
 };
 
 const cliDir = dirname(fileURLToPath(import.meta.url));
@@ -131,6 +146,81 @@ async function runDoctorCommand(options: DoctorOptions): Promise<void> {
   console.log(`HTTP port ${port}: ${status}`);
 }
 
+async function runInstallCommand(options: InstallOptions): Promise<void> {
+  const client = options.client?.toLowerCase();
+  if (client !== 'claude') {
+    throw new Error(`Unsupported client: ${options.client}`);
+  }
+
+  const interactive = !options.nonInteractive;
+  const envResult = await ensureEnv({ interactive, local: Boolean(options.local) });
+
+  if (envResult.missing?.length) {
+    return;
+  }
+
+  if (envResult.wrote && envResult.path) {
+    console.log(`Secrets written to ${envResult.path}`);
+  }
+
+  const configPath = await locateClaudeConfig(options.config);
+  if (!configPath) {
+    console.log('Claude Desktop config was not found. Provide --config <path> or launch Claude Desktop once to generate it.');
+    return;
+  }
+
+  const configExists = await fileExists(configPath);
+  let existingRaw = '';
+  let currentConfig: Record<string, unknown> = {};
+
+  if (configExists) {
+    existingRaw = await fsPromises.readFile(configPath, 'utf8');
+    currentConfig = await readClaudeConfig(configPath, existingRaw);
+  }
+
+  const sentinel = 'vibe-check-mcp-cli';
+  const entry = {
+    command: 'npx',
+    args: ['@pv-bhat/vibe-check-mcp', 'start', '--stdio'],
+    env: {},
+  } satisfies Record<string, unknown>;
+
+  const { next, changed, reason } = mergeMcpEntry(currentConfig, entry, {
+    id: 'vibe-check-mcp',
+    sentinel,
+  });
+
+  if (!changed) {
+    if (reason) {
+      console.warn(reason);
+    } else {
+      console.log('Claude Desktop already has a managed entry for vibe-check-mcp.');
+    }
+    return;
+  }
+
+  const nextRaw = `${JSON.stringify(next, null, 2)}\n`;
+
+  if (options.dryRun) {
+    const diff = formatUnifiedDiff(existingRaw, nextRaw, configPath);
+    console.log(diff.trim() ? diff : 'No changes.');
+    return;
+  }
+
+  if (existingRaw) {
+    const backupPath = await createBackup(configPath, existingRaw);
+    console.log(`Backup created at ${backupPath}`);
+  }
+
+  await writeClaudeConfigAtomic(configPath, next);
+
+  const summaryEntry = (next.mcpServers as Record<string, unknown> | undefined)?.['vibe-check-mcp'];
+  console.log(`Claude Desktop config updated: ${configPath}`);
+  if (summaryEntry) {
+    console.log(JSON.stringify(summaryEntry, null, 2));
+  }
+}
+
 export function createCliProgram(): Command {
   const pkg = readPackageJson();
   const program = new Command();
@@ -164,6 +254,23 @@ export function createCliProgram(): Command {
     .action(async (options: DoctorOptions) => {
       try {
         await runDoctorCommand(options);
+      } catch (error) {
+        console.error((error as Error).message);
+        process.exitCode = 1;
+      }
+    });
+
+  program
+    .command('install')
+    .description('Install client integrations')
+    .requiredOption('--client <name>', 'Client to configure')
+    .option('--config <path>', 'Path to a Claude Desktop configuration file')
+    .option('--dry-run', 'Show the merged configuration without writing')
+    .option('--non-interactive', 'Do not prompt for missing environment values')
+    .option('--local', 'Write secrets to the project .env instead of ~/.vibe-check/.env')
+    .action(async (options: InstallOptions) => {
+      try {
+        await runInstallCommand(options);
       } catch (error) {
         console.error((error as Error).message);
         process.exitCode = 1;
@@ -209,6 +316,26 @@ function resolveHttpPort(optionPort: number | undefined, envPort: string | undef
   }
 
   return 2091;
+}
+
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await fsPromises.access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function formatTimestamp(date: Date): string {
+  const iso = date.toISOString();
+  return iso.replace(/[:.]/g, '-');
+}
+
+async function createBackup(path: string, contents: string): Promise<string> {
+  const backupPath = `${path}.${formatTimestamp(new Date())}.bak`;
+  await fsPromises.writeFile(backupPath, contents, { mode: 0o600 });
+  return backupPath;
 }
 
 const executedFile = process.argv[1] ? pathToFileURL(process.argv[1]).href : undefined;
