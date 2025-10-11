@@ -5,6 +5,7 @@
   "description": "Metacognitive AI agent oversight: adaptive CPI interrupts for alignment, reflection and safety",
   "main": "build/index.js",
   "type": "module",
+  "packageManager": "npm@10.8.2",
   "bin": {
     "vibe-check-mcp": "build/cli/index.js"
   },
@@ -19,7 +20,8 @@
     "pretest": "npm run build",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "security-check": "node scripts/security-check.cjs"
+    "security-check": "node scripts/security-check.cjs",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@google/generative-ai": "^0.17.1",
@@ -72,5 +74,8 @@
     "url": "https://github.com/PV-Bhat/vibe-check-mcp-server/issues"
   },
   "homepage": "https://github.com/PV-Bhat/vibe-check-mcp-server#readme",
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }
