@@ -34,3 +34,5 @@ jobs:
           PKG=$(node -p "require('./package.json').name")
           VER=$(node -p "require('./package.json').version")
           npx -y "$PKG@$VER" --help
+          npx -y "$PKG@$VER" start --stdio --dry-run
+          npx -y "$PKG@$VER" start --http --port 2091 --dry-run
