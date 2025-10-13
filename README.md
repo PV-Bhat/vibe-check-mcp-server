@@ -76,7 +76,7 @@ Requires Node **>=20**. These commands install straight from npm, build the CLI 
 
 ### By the numbers (as of 13 Oct 2025)
 - PulseMCP: ~32.3k total installs; ~12.8k this week; featured on “Most Popular (This Week)” front page
-- GitHub: 239⭐
+- Smither: Category leader in Smithery’s Developer Workflow Tools this week.
 - Study: success 27→54%, harmful actions 83→42%, optimal CPI dosage ~10–20%
 
 [![Star History Chart](https://api.star-history.com/svg?repos=PV-Bhat/vibe-check-mcp-server&type=Date)](https://www.star-history.com/#PV-Bhat/vibe-check-mcp-server&Date)
