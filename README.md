@@ -85,7 +85,7 @@ Requires Node **>=20**. These commands install straight from npm, build the CLI 
 - Featured on PulseMCP “Most Popular (This Week)” front page (week of 13 Oct 2025) [🔗](https://www.pulsemcp.com/servers/pv-bhat-vibe-check)
 - Listed in Anthropic’s official Model Context Protocol repo [🔗](https://github.com/modelcontextprotocol/servers?tab=readme-overview#-community-servers)
 - Discoverable in the official MCP Registry [🔗](https://registry.modelcontextprotocol.io/v0/servers?search=vibe-check-mcp)
-- Featured on Sean Kochel's Top 9 MCP servers for vibe coders [🔗](https://www.youtube.com/watch?v=2wYO6sdQ9xc&t=1516s)
+- Featured on Sean Kochel's Top 9 MCP servers for vibe coders [🔗](https://youtu.be/2wYO6sdQ9xc?si=mlVo4iHf_hPKghxc&t=1331)
 - 32.3k installs total across public MCP directories/clients
 
 ## Table of Contents
