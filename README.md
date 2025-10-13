@@ -24,7 +24,7 @@
   <sub>32.3k installs on PulseMCP • 12.8k this week • featured on “Most Popular (This Week)” • 2k+ monthly calls on Smithery.ai • research-backed oversight • STDIO + streamable HTTP transport</sub>
 </p>
 
-<img width="500" height="300" alt="Gemini_Generated_Image_wfc5z4wfc5z4wfc5" src="https://github.com/user-attachments/assets/d3f49301-fcdb-48b3-bd8a-505ffa845957" />
+<img width="500" height="300" alt="Gemini_Generated_Image_kvdvp4kvdvp4kvdv" src="https://github.com/user-attachments/assets/ff4d9efa-2142-436d-b1df-2a711a28c34e" />
 
 [![Version](https://img.shields.io/badge/version-2.7.0-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
