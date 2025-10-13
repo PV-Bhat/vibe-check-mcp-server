@@ -1,5 +1,7 @@
 # 🧠 Vibe Check MCP v2.7.0
 
+<p align="center"><b>KISS overzealous agents goodbye — stop over-engineering; ship the minimal viable path first.</b></p>
+
 <p align="center">
   <b>Based on research</b><br/>
   In our study agents calling Vibe Check improved success (27 → 54%) and halved harmful actions (83 → 42%).
@@ -11,12 +13,15 @@
   </a>
   <a href="https://github.com/modelcontextprotocol/servers"><img src="https://img.shields.io/badge/Anthropic%20MCP-listed-111?labelColor=111&color=555&style=flat-square" alt="Anthropic MCP: listed"></a>
   <a href="https://registry.modelcontextprotocol.io/"><img src="https://img.shields.io/badge/MCP%20Registry-discoverable-555?labelColor=111&style=flat-square" alt="MCP Registry: discoverable"></a>
+  <a href="https://www.pulsemcp.com/servers/pv-bhat-vibe-check">
+    <img src="https://img.shields.io/badge/PulseMCP-Most%20Popular%20(this%20week)-0b7285?style=flat-square" alt="PulseMCP: Most Popular (this week)">
+  </a>
   <a href="https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml"><img src="https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0b7285?style=flat-square" alt="MIT License"></a>
 </p>
 
 <p align="center">
-  <sub>30k+ installs PulseMCP & 2k+ Monthly calls Smithery.ai • research-backed oversight • STDIO + streamable HTTP transport</sub>
+  <sub>32.3k installs on PulseMCP • 12.8k this week • featured on “Most Popular (This Week)” • 2k+ monthly calls on Smithery.ai • research-backed oversight • STDIO + streamable HTTP transport</sub>
 </p>
 
 <img width="500" height="300" alt="Gemini_Generated_Image_wfc5z4wfc5z4wfc5" src="https://github.com/user-attachments/assets/d3f49301-fcdb-48b3-bd8a-505ffa845957" />
@@ -27,7 +32,7 @@
 [![Security 4.3★/5 on MSEEP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
 
-*Plug-and-play metacognitive oversight layer for autonomous AI agents – a research-backed MCP server keeping LLMs aligned, reflective and safe.*
+*Plug-and-play mentor layer that stops agents from over-engineering and keeps them on the minimal viable path — research-backed MCP server keeping LLMs aligned, reflective and safe.*
 
 <div align="center">
   <a href="https://github.com/PV-Bhat/vibe-check-mcp-server">
@@ -69,16 +74,22 @@ npx @pv-bhat/vibe-check-mcp doctor
 
 Requires Node **>=20**. These commands install straight from npm, build the CLI on demand, and work on any machine with `npx`.
 
+### By the numbers (as of 13 Oct 2025)
+- PulseMCP: ~32.3k total installs; ~12.8k this week; featured on “Most Popular (This Week)” front page
+- GitHub: 239⭐
+- Study: success 27→54%, harmful actions 83→42%, optimal CPI dosage ~10–20%
+
 [![Star History Chart](https://api.star-history.com/svg?repos=PV-Bhat/vibe-check-mcp-server&type=Date)](https://www.star-history.com/#PV-Bhat/vibe-check-mcp-server&Date)
 
 ### Recognition
-- Listed in Anthropic’s official Model Context Protocol repo [🔗](https://github.com/modelcontextprotocol/servers?tab=readme-ov-file#-community-servers)
+- Featured on PulseMCP “Most Popular (This Week)” front page (week of 13 Oct 2025) [🔗](https://www.pulsemcp.com/servers/pv-bhat-vibe-check)
+- Listed in Anthropic’s official Model Context Protocol repo [🔗](https://github.com/modelcontextprotocol/servers?tab=readme-overview#-community-servers)
 - Discoverable in the official MCP Registry [🔗](https://registry.modelcontextprotocol.io/v0/servers?search=vibe-check-mcp)
-- 30k+ installs total across public MCP directories/clients 
+- 32.3k installs total across public MCP directories/clients
 
 ## Table of Contents
 - [Quickstart (npx)](#quickstart-npx)
-- [What is Vibe Check MCP?](#whats-vibe-check)
+- [What is Vibe Check MCP?](#what-is-vibe-check-mcp)
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
@@ -97,11 +108,12 @@ Requires Node **>=20**. These commands install straight from npm, build the CLI 
 - [Contributing & Community](#contributing--community)
 - [FAQ](#faq)
 - [Listed on](#find-vibe-check-mcp-on)
+- [Contributors](#contributors)
 - [Credits & License](#credits--license)
 ---
-## What's Vibe Check?
+## What is Vibe Check MCP?
 
-Vibe Check MCP is a lightweight server implementing Anthropic's [Model Context Protocol](https://anthropic.com/mcp). It acts as an **AI meta-mentor** for your agents, interrupting pattern inertia with **Chain-Pattern Interrupts (CPI)** to prevent Reasoning Lock-In (RLI). Think of it as a rubber-duck debugger for LLMs – a quick sanity check before your agent goes down the wrong path.
+Vibe Check MCP keeps agents on the minimal viable path and escalates complexity only when evidence demands it. Vibe Check MCP is a lightweight server implementing Anthropic's [Model Context Protocol](https://anthropic.com/mcp). It acts as an **AI meta-mentor** for your agents, interrupting pattern inertia with **Chain-Pattern Interrupts (CPI)** to prevent Reasoning Lock-In (RLI). Think of it as a rubber-duck debugger for LLMs – a quick sanity check before your agent goes down the wrong path.
 
 ## Overview
 
@@ -313,10 +325,26 @@ As an autonomous agent you will:
 This repository includes a CI-based security scan that runs on every pull request. It checks dependencies with `npm audit` and scans the source for risky patterns. See [SECURITY.md](./SECURITY.md) for details and how to report issues.
 
 ## Roadmap
-1. Benchmarks and latency profiling
-2. Adaptive tuning based on agent performance
-3. Multi-agent cooperation support
-4. Optional human-in-the-loop review
+
+### Community Signals: What Builders Are Asking For
+GitHub issues, PulseMCP reviews, and Discord discussions keep surfacing the same needs: turn the validated research prototype into a dependable day-to-day tool, make the mentor's output easier to wire into automations, and provide lightweight guardrails so solo builders can adopt CPI without heavy lift.
+
+### Priority 1 – Builder Experience & Guidance
+- **Structured output for `vibe_check`:** Return a JSON envelope such as `{ advice, riskScore, traits }` so downstream agents can reason deterministically while preserving readable reflections.
+- **Agent prompt starter kit:** Publish a plug-and-play system prompt snippet that teaches the CPI dosage principle (10–20% of steps), calls out risk inflection points, and reminds agents to include the last 5–10 tool calls in `taskContext`.
+- **Documentation refresh:** Highlight the new prompt template and context requirements throughout the README and integration guides.
+
+### Priority 2 – Core Reliability Requests
+- **LLM resilience:** Wrap `generateResponse` in `src/utils/llm.ts` with retries and exponential backoff, with a follow-up circuit breaker once the basics land.
+- **Input sanitization:** Validate and cleanse tool arguments in `src/index.ts` to mitigate prompt-injection vectors.
+- **State stewardship:** Add TTL-based cleanup in `src/utils/state.ts` and switch `src/utils/storage.ts` file writes to `fs.promises` to avoid blocking the event loop.
+
+These initiatives are tracked as community-facing GitHub issues so contributors can grab them and see progress in the open.
+
+### Additional Follow-On Ideas & Good First Issues
+- **Telemetry sanity checks:** Add a lint-style CI step that verifies `docs/` examples compile (e.g., TypeScript snippet type-check) to catch drift between docs and code.
+- **CLI help polish:** Ensure every CLI subcommand prints a concise `--help` example aligned with the refreshed prompt guidance.
+- **Docs navigation cleanup:** Cross-link `docs/agent-prompting.md` and `docs/technical-reference.md` from the README section headers to reduce context switching for new contributors.
 
 ## Contributing & Community
 Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
@@ -337,8 +365,14 @@ Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 * 🧙 [MagicSlides](https://www.magicslides.app/mcps/pv-bhat-vibe-check)
 * 🗃️ [AIAgentsList](https://aiagentslist.com/mcp-servers/vibe-check-mcp-server)
 
+## Contributors
+<a href="https://github.com/PV-Bhat/vibe-check-mcp-server/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=PV-Bhat/vibe-check-mcp-server" alt="Contributors"/>
+</a>
+<sub>Special thanks: <a href="https://github.com/calclavia">calclavia</a>, <a href="https://github.com/eltociear">eltociear</a>, <a href="https://github.com/lwsinclair">lwsinclair</a>, <a href="https://github.com/Matvey-Kuk">Matvey-Kuk</a>, <a href="https://github.com/narraje">narraje</a>.</sub>
+
 ## Credits & License
 Vibe Check MCP is released under the [MIT License](LICENSE). Built for reliable, enterprise-ready AI agents.
 
 ## Author Credits & Links
-Vibe Check MCP created by: [Pruthvi Bhat](https://pruthvibhat.com/), Intiative - https://murst.org/
+Vibe Check MCP created by: [Pruthvi Bhat](https://pruthvibhat.com/), Initiative - https://murst.org/
