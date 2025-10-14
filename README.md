@@ -370,7 +370,6 @@ Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 <a href="https://github.com/PV-Bhat/vibe-check-mcp-server/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=PV-Bhat/vibe-check-mcp-server" alt="Contributors"/>
 </a>
-<sub>Special thanks: <a href="https://github.com/calclavia">calclavia</a>, <a href="https://github.com/eltociear">eltociear</a>, <a href="https://github.com/lwsinclair">lwsinclair</a>, <a href="https://github.com/Matvey-Kuk">Matvey-Kuk</a>, <a href="https://github.com/narraje">narraje</a>.</sub>
 
 ## Credits & License
 Vibe Check MCP is released under the [MIT License](LICENSE). Built for reliable, enterprise-ready AI agents.
