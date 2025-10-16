@@ -7,6 +7,25 @@ import { stdin as input, stdout as output } from 'node:process';
 
 const { mkdir, readFile, rename, writeFile } = fsPromises;
 
+const PROVIDER_VALIDATIONS: Record<string, { regex: RegExp; message: string }> = {
+  ANTHROPIC_API_KEY: {
+    regex: /^sk-ant-/,
+    message: 'must start with "sk-ant-".',
+  },
+  OPENAI_API_KEY: {
+    regex: /^sk-/,
+    message: 'must start with "sk-".',
+  },
+  GEMINI_API_KEY: {
+    regex: /^AI/,
+    message: 'must start with "AI".',
+  },
+  OPENROUTER_API_KEY: {
+    regex: /^sk-or-/,
+    message: 'must start with "sk-or-".',
+  },
+};
+
 export const PROVIDER_ENV_KEYS = [
   'ANTHROPIC_API_KEY',
   'OPENAI_API_KEY',
@@ -82,27 +101,62 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
   const requiredKeys = options.requiredKeys?.length ? [...options.requiredKeys] : null;
   const targetKeys = requiredKeys ?? [...PROVIDER_ENV_KEYS];
   const resolved = new Set<string>();
+  const invalidReasons = new Map<string, string>();
+  const projectEnvLabel = 'project .env';
+  const homeEnvLabel = '~/.vibe-check/.env';
 
-  const hydrateFrom = (key: string, source: Record<string, string>): boolean => {
+  const validateProviderKey = (key: string, value: string): string | null => {
+    const rule = PROVIDER_VALIDATIONS[key];
+    if (!rule) {
+      return null;
+    }
+    if (rule.regex.test(value)) {
+      return null;
+    }
+    return `Invalid ${key}: ${rule.message}`;
+  };
+
+  const registerValue = (key: string, value: string, sourceLabel: string | null): boolean => {
+    const normalized = value.trim();
+    const error = validateProviderKey(key, normalized);
+    if (error) {
+      const context = sourceLabel ? `${error} (from ${sourceLabel})` : error;
+      invalidReasons.set(key, context);
+      return false;
+    }
+
+    invalidReasons.delete(key);
+    process.env[key] = normalized;
+    resolved.add(key);
+    return true;
+  };
+
+  const hydrateFrom = (
+    key: string,
+    source: Record<string, string>,
+    label: string | null,
+  ): boolean => {
     if (key in source) {
-      process.env[key] = source[key];
-      resolved.add(key);
-      return true;
+      return registerValue(key, source[key], label);
     }
     return false;
   };
 
   for (const key of targetKeys) {
     if (process.env[key]) {
-      resolved.add(key);
+      if (registerValue(key, process.env[key] as string, 'environment variable')) {
+        continue;
+      }
+      delete process.env[key];
+    }
+
+    if (hydrateFrom(key, cwdValues, projectEnvLabel)) {
       continue;
     }
 
-    if (hydrateFrom(key, cwdValues)) {
+    if (hydrateFrom(key, homeValues, homeEnvLabel)) {
       continue;
     }
-
-    hydrateFrom(key, homeValues);
   }
 
   if (!requiredKeys && resolved.size > 0) {
@@ -116,6 +170,13 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
   }
 
   if (!options.interactive) {
+    if (invalidReasons.size > 0) {
+      for (const message of invalidReasons.values()) {
+        console.log(message);
+      }
+      const invalidKeys = [...invalidReasons.keys()];
+      return { wrote: false, missing: [...new Set([...invalidKeys, ...missing])] };
+    }
     if (requiredKeys) {
       console.log(`Missing required API keys: ${requiredKeys.join(', ')}`);
       return { wrote: false, missing: [...missing] };
@@ -128,11 +189,13 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
 
   const targetPath = options.local ? resolve(process.cwd(), '.env') : resolve(homeConfigDir(), '.env');
   const targetValues = options.local ? cwdValues : homeValues;
+  const targetLabel = options.local ? projectEnvLabel : homeEnvLabel;
   const prompter = options.prompt;
 
   let rl: any = null;
   const ask = async (key: string): Promise<string> => {
     if (prompter) {
+      console.log(`[${targetLabel}] Enter value for ${key} (leave blank to skip):`);
       return prompter(key);
     }
 
@@ -140,7 +203,7 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
       rl = createInterface({ input, output });
     }
 
-    const answer = await rl.question(`Enter value for ${key} (leave blank to skip): `);
+    const answer = await rl.question(`[${targetLabel}] Enter value for ${key} (leave blank to skip): `);
     return answer;
   };
 
@@ -148,23 +211,44 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
   const promptedKeys = requiredKeys ?? missing;
   let providedAny = false;
 
+  if (invalidReasons.size > 0) {
+    for (const message of invalidReasons.values()) {
+      console.log(`${message} Please provide a new value.`);
+    }
+  }
+
+  let stopPrompting = false;
+
   try {
     for (const key of promptedKeys) {
-      const value = (await ask(key)).trim();
-      if (!value) {
-        if (requiredKeys) {
+      if (stopPrompting) {
+        break;
+      }
+      while (true) {
+        const value = (await ask(key)).trim();
+        if (!value) {
+          if (requiredKeys) {
+            break;
+          }
+          break;
+        }
+
+        const error = validateProviderKey(key, value);
+        if (error) {
+          console.log(`${error} Please try again.`);
           continue;
         }
-        continue;
-      }
 
-      process.env[key] = value;
-      targetValues[key] = value;
-      newEntries[key] = value;
-      resolved.add(key);
-      providedAny = true;
+        process.env[key] = value;
+        targetValues[key] = value;
+        newEntries[key] = value;
+        resolved.add(key);
+        invalidReasons.delete(key);
+        providedAny = true;
 
-      if (!requiredKeys) {
+        if (!requiredKeys) {
+          stopPrompting = true;
+        }
         break;
       }
     }
