@@ -65,7 +65,11 @@ const adapter: ClientAdapter = {
     return {
       name: 'Windsurf',
       pathHint: '~/.codeium/windsurf/mcp_config.json',
+      summary: 'Codeium Windsurf IDE with stdio and HTTP MCP transports.',
+      transports: ['stdio', 'http'],
+      defaultTransport: 'stdio',
       notes: 'Newer builds use ~/.codeium/mcp_config.json. Create an empty file to opt-in.',
+      docsUrl: 'https://docs.codeium.com/windsurf/model-context-protocol',
     };
   },
 };

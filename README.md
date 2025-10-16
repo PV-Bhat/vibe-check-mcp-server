@@ -64,15 +64,31 @@ npx @pv-bhat/vibe-check-mcp start --stdio
 
 # Install to a client
 npx @pv-bhat/vibe-check-mcp install --client claude
+npx @pv-bhat/vibe-check-mcp install --client claude-code
 npx @pv-bhat/vibe-check-mcp install --client cursor
 npx @pv-bhat/vibe-check-mcp install --client windsurf
 npx @pv-bhat/vibe-check-mcp install --client vscode --config ./.vscode/mcp.json
+
+# Discover supported clients
+npx @pv-bhat/vibe-check-mcp --list-clients
 
 # Doctor
 npx @pv-bhat/vibe-check-mcp doctor
 ```
 
 Requires Node **>=20**. These commands install straight from npm, build the CLI on demand, and work on any machine with `npx`.
+
+Claude Desktop and Claude Code rely on Anthropic – the installer enforces `ANTHROPIC_API_KEY` and will prompt to store it in
+`~/.vibe-check/.env` (or the project `.env` when you pass `--local`). Other clients can run on any supported provider key
+(`OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`); the CLI resolves secrets from your shell first, then project/home
+`.env` files.
+
+Prefer a hosted runtime? Smithery ships an official build of this server:
+
+```bash
+smithery add @PV-Bhat/vibe-check-mcp-server
+smithery run @PV-Bhat/vibe-check-mcp-server --client claude
+```
 
 ### By the numbers (as of 13 Oct 2025)
 - PulseMCP: ~32.3k total installs; ~12.8k this week; featured on “Most Popular (This Week)” front page
@@ -217,6 +233,8 @@ Ensure `NPM_TOKEN` is configured under **Repository Settings → Secrets and var
 ### Provider keys
 
 Set whichever API key matches your provider — `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`. The installer requires at least one of these when running with `--non-interactive`.
+
+Claude-family installers (`--client claude` / `--client claude-code`) specifically validate `ANTHROPIC_API_KEY`. Provide it via your environment or `.env` before running in CI, otherwise the CLI will prompt interactively and persist the secret for you.
 
 Secrets default to `~/.vibe-check/.env` (created with `0600` permissions); pass `--local` to write to the current project's `.env`. Values are resolved in this order: shell environment → project `.env` → home config. The CLI never writes secrets to client config files – it references your environment instead.
 

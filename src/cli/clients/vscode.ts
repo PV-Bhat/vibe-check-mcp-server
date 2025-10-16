@@ -67,7 +67,11 @@ const adapter: ClientAdapter = {
     return {
       name: 'Visual Studio Code',
       pathHint: '.vscode/mcp.json (workspace)',
+      summary: 'VS Code MCP configuration supporting stdio and HTTP transports.',
+      transports: ['stdio', 'http'],
+      defaultTransport: 'stdio',
       notes: 'Use the Command Palette → "MCP: Add Server" for profile installs.',
+      docsUrl: 'https://code.visualstudio.com/docs/copilot/mcp',
     };
   },
 };
