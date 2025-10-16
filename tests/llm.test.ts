@@ -40,7 +40,7 @@ describe('generateResponse', () => {
   });
 
   it('calls openrouter when configured', async () => {
-    process.env.OPENROUTER_API_KEY = 'key';
+    process.env.OPENROUTER_API_KEY = 'sk-or-key';
     mockedAxios.post = vi.fn(async () => ({ data: { choices: [{ message: { content: 'router reply' } }] } }));
     const res = await generateResponse({ goal: 'g', plan: 'p', modelOverride: { provider: 'openrouter', model: 'm1' } });
     expect(res.questions).toBe('router reply');

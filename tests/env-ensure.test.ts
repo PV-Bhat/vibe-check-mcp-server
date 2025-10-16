@@ -4,6 +4,13 @@ import os from 'node:os';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ensureEnv, homeConfigDir, PROVIDER_ENV_KEYS } from '../src/cli/env.js';
 
+const VALID_PROVIDER_VALUES: Record<(typeof PROVIDER_ENV_KEYS)[number], string> = {
+  ANTHROPIC_API_KEY: 'sk-ant-valid',
+  OPENAI_API_KEY: 'sk-valid',
+  GEMINI_API_KEY: 'AI-valid',
+  OPENROUTER_API_KEY: 'sk-or-valid',
+};
+
 const ORIGINAL_ENV = { ...process.env };
 describe('ensureEnv', () => {
   beforeEach(() => {
@@ -22,7 +29,7 @@ describe('ensureEnv', () => {
   it.each(PROVIDER_ENV_KEYS)(
     'returns without writing when %s is present non-interactively',
     async (key) => {
-      process.env[key] = 'present';
+      process.env[key] = VALID_PROVIDER_VALUES[key];
 
       const result = await ensureEnv({ interactive: false });
       expect(result.wrote).toBe(false);
@@ -30,6 +37,23 @@ describe('ensureEnv', () => {
       expect(result.missing).toBeUndefined();
     },
   );
+
+  it('surfaces invalid optional keys even when another provider is set non-interactively', async () => {
+    process.env.ANTHROPIC_API_KEY = VALID_PROVIDER_VALUES.ANTHROPIC_API_KEY;
+    process.env.OPENAI_API_KEY = 'totally-invalid';
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const result = await ensureEnv({ interactive: false });
+
+    expect(result.wrote).toBe(false);
+    expect(result.missing).toContain('OPENAI_API_KEY');
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Invalid OPENAI_API_KEY'),
+    );
+
+    logSpy.mockRestore();
+  });
 
   it('reports missing values when non-interactive', async () => {
     delete process.env.ANTHROPIC_API_KEY;
@@ -51,7 +75,7 @@ describe('ensureEnv', () => {
 
     const prompt = vi.fn().mockImplementation(async (key: string) => {
       if (key === 'ANTHROPIC_API_KEY') {
-        return 'interactive-secret';
+        return 'sk-ant-interactive-secret';
       }
       return '';
     });
@@ -66,8 +90,8 @@ describe('ensureEnv', () => {
     expect(stat.mode & 0o777).toBe(0o600);
 
     const content = await fs.readFile(result.path as string, 'utf8');
-    expect(content).toContain('ANTHROPIC_API_KEY=interactive-secret');
-    expect(process.env.ANTHROPIC_API_KEY).toBe('interactive-secret');
+    expect(content).toContain('ANTHROPIC_API_KEY=sk-ant-interactive-secret');
+    expect(process.env.ANTHROPIC_API_KEY).toBe('sk-ant-interactive-secret');
   });
 
   it('loads missing secrets from existing env files', async () => {
@@ -76,11 +100,11 @@ describe('ensureEnv', () => {
 
     const homeDir = join(tmpHome, '.vibe-check');
     await fs.mkdir(homeDir, { recursive: true });
-    await fs.writeFile(join(homeDir, '.env'), 'OPENAI_API_KEY=from-file\n', 'utf8');
+    await fs.writeFile(join(homeDir, '.env'), 'OPENAI_API_KEY=sk-from-file\n', 'utf8');
 
     const result = await ensureEnv({ interactive: false });
     expect(result.wrote).toBe(false);
-    expect(process.env.OPENAI_API_KEY).toBe('from-file');
+    expect(process.env.OPENAI_API_KEY).toBe('sk-from-file');
   });
 
   it('appends new secrets to the local project env file', async () => {
@@ -92,7 +116,7 @@ describe('ensureEnv', () => {
       process.chdir(tmpDir);
       const prompt = vi.fn().mockImplementation(async (key: string) => {
         if (key === 'GEMINI_API_KEY') {
-          return 'value with spaces';
+          return 'AI value with spaces';
         }
         return '';
       });
@@ -102,7 +126,7 @@ describe('ensureEnv', () => {
 
       const content = await fs.readFile(result.path as string, 'utf8');
       expect(content).toContain('EXISTING=value');
-      expect(content).toMatch(/GEMINI_API_KEY="value with spaces"/);
+      expect(content).toMatch(/GEMINI_API_KEY="AI value with spaces"/);
     } finally {
       process.chdir(originalCwd);
     }
@@ -126,7 +150,9 @@ describe('ensureEnv', () => {
 
     const prompt = vi
       .fn()
-      .mockImplementation(async (key: string) => (key === 'ANTHROPIC_API_KEY' ? 'anthropic-123' : 'openai-456'));
+      .mockImplementation(async (key: string) =>
+        key === 'ANTHROPIC_API_KEY' ? 'sk-ant-anthropic-123' : 'sk-openai-456',
+      );
 
     const result = await ensureEnv({
       interactive: true,
@@ -141,11 +167,78 @@ describe('ensureEnv', () => {
     expect(result.wrote).toBe(true);
     expect(result.path).toBe(join(homeConfigDir(), '.env'));
 
-    expect(process.env.ANTHROPIC_API_KEY).toBe('anthropic-123');
-    expect(process.env.OPENAI_API_KEY).toBe('openai-456');
+    expect(process.env.ANTHROPIC_API_KEY).toBe('sk-ant-anthropic-123');
+    expect(process.env.OPENAI_API_KEY).toBe('sk-openai-456');
 
     const content = await fs.readFile(result.path as string, 'utf8');
-    expect(content).toContain('ANTHROPIC_API_KEY=anthropic-123');
-    expect(content).toContain('OPENAI_API_KEY=openai-456');
+    expect(content).toContain('ANTHROPIC_API_KEY=sk-ant-anthropic-123');
+    expect(content).toContain('OPENAI_API_KEY=sk-openai-456');
+  });
+
+  it('prompts to correct invalid optional keys when another provider is configured', async () => {
+    const tmpHome = await fs.mkdtemp(join(os.tmpdir(), 'vibe-env-invalid-optional-'));
+    vi.spyOn(os, 'homedir').mockReturnValue(tmpHome);
+
+    process.env.ANTHROPIC_API_KEY = VALID_PROVIDER_VALUES.ANTHROPIC_API_KEY;
+    process.env.OPENAI_API_KEY = 'bad-value';
+
+    const prompt = vi.fn().mockResolvedValue('sk-openai-corrected');
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const result = await ensureEnv({ interactive: true, prompt });
+
+    expect(prompt).toHaveBeenCalledTimes(1);
+    expect(prompt).toHaveBeenCalledWith('OPENAI_API_KEY');
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid OPENAI_API_KEY'));
+    expect(result.wrote).toBe(true);
+    expect(process.env.OPENAI_API_KEY).toBe('sk-openai-corrected');
+
+    const content = await fs.readFile(join(homeConfigDir(), '.env'), 'utf8');
+    expect(content).toContain('OPENAI_API_KEY=sk-openai-corrected');
+
+    logSpy.mockRestore();
+  });
+
+  it('re-prompts when provided values fail validation', async () => {
+    const tmpHome = await fs.mkdtemp(join(os.tmpdir(), 'vibe-env-retry-'));
+    vi.spyOn(os, 'homedir').mockReturnValue(tmpHome);
+
+    const prompt = vi
+      .fn()
+      .mockResolvedValueOnce('invalid')
+      .mockResolvedValueOnce('sk-ant-correct');
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const result = await ensureEnv({
+      interactive: true,
+      requiredKeys: ['ANTHROPIC_API_KEY'],
+      prompt,
+    });
+
+    expect(prompt).toHaveBeenCalledTimes(2);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid ANTHROPIC_API_KEY'));
+    expect(result.wrote).toBe(true);
+    expect(process.env.ANTHROPIC_API_KEY).toBe('sk-ant-correct');
+
+    logSpy.mockRestore();
+  });
+
+  it('fails immediately when non-interactive values are invalid', async () => {
+    const tmpHome = await fs.mkdtemp(join(os.tmpdir(), 'vibe-env-invalid-'));
+    vi.spyOn(os, 'homedir').mockReturnValue(tmpHome);
+
+    const homeDir = join(tmpHome, '.vibe-check');
+    await fs.mkdir(homeDir, { recursive: true });
+    await fs.writeFile(join(homeDir, '.env'), 'OPENAI_API_KEY=not-valid\n', 'utf8');
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const result = await ensureEnv({ interactive: false, requiredKeys: ['OPENAI_API_KEY'] });
+
+    expect(result.wrote).toBe(false);
+    expect(result.missing).toEqual(['OPENAI_API_KEY']);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid OPENAI_API_KEY'));
+
+    logSpy.mockRestore();
   });
 });

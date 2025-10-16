@@ -88,7 +88,7 @@ describe('Claude MCP config merge', () => {
     const original = readFileSync(fixturePath, 'utf8');
     await fs.writeFile(configPath, original, 'utf8');
 
-    process.env.ANTHROPIC_API_KEY = 'test-token';
+    process.env.ANTHROPIC_API_KEY = 'sk-ant-test-token';
 
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
