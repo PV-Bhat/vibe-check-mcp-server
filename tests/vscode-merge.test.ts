@@ -83,7 +83,7 @@ describe('VS Code MCP config merge', () => {
     const original = readFileSync(join(FIXTURE_DIR, 'workspace.mcp.base.json'), 'utf8');
     await fs.writeFile(configPath, original, 'utf8');
 
-    process.env.OPENROUTER_API_KEY = 'vscode-key';
+    process.env.OPENROUTER_API_KEY = 'sk-or-vscode-key';
 
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});

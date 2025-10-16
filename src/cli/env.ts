@@ -159,13 +159,9 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
     }
   }
 
-  if (!requiredKeys && resolved.size > 0) {
-    return { wrote: false };
-  }
-
   const missing = targetKeys.filter((key) => !resolved.has(key));
 
-  if (missing.length === 0) {
+  if (missing.length === 0 && invalidReasons.size === 0) {
     return { wrote: false };
   }
 
@@ -177,6 +173,9 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
       const invalidKeys = [...invalidReasons.keys()];
       return { wrote: false, missing: [...new Set([...invalidKeys, ...missing])] };
     }
+    if (!requiredKeys && resolved.size > 0) {
+      return { wrote: false };
+    }
     if (requiredKeys) {
       console.log(`Missing required API keys: ${requiredKeys.join(', ')}`);
       return { wrote: false, missing: [...missing] };
@@ -185,6 +184,10 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
     console.log(`No provider API keys detected. Set one of: ${targetKeys.join(', ')}`);
     console.log('Provide it via your shell or .env file, then re-run with --non-interactive.');
     return { wrote: false, missing: [...targetKeys] };
+  }
+
+  if (!requiredKeys && resolved.size > 0 && invalidReasons.size === 0) {
+    return { wrote: false };
   }
 
   const targetPath = options.local ? resolve(process.cwd(), '.env') : resolve(homeConfigDir(), '.env');

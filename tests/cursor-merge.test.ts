@@ -80,7 +80,7 @@ describe('Cursor MCP config merge', () => {
     const original = readFileSync(join(FIXTURE_DIR, 'config.base.json'), 'utf8');
     await fs.writeFile(configPath, original, 'utf8');
 
-    process.env.OPENAI_API_KEY = 'cursor-key';
+    process.env.OPENAI_API_KEY = 'sk-cursor-key';
 
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});

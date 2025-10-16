@@ -15,7 +15,7 @@ describe('cli install vscode manual guidance', () => {
   });
 
   it('prints manual instructions and install link when config is missing', async () => {
-    process.env.OPENAI_API_KEY = 'manual-test';
+    process.env.OPENAI_API_KEY = 'sk-manual-test';
 
     const logs: string[] = [];
     const logSpy = vi.spyOn(console, 'log').mockImplementation((message?: unknown) => {

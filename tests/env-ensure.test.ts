@@ -38,6 +38,23 @@ describe('ensureEnv', () => {
     },
   );
 
+  it('surfaces invalid optional keys even when another provider is set non-interactively', async () => {
+    process.env.ANTHROPIC_API_KEY = VALID_PROVIDER_VALUES.ANTHROPIC_API_KEY;
+    process.env.OPENAI_API_KEY = 'totally-invalid';
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const result = await ensureEnv({ interactive: false });
+
+    expect(result.wrote).toBe(false);
+    expect(result.missing).toContain('OPENAI_API_KEY');
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Invalid OPENAI_API_KEY'),
+    );
+
+    logSpy.mockRestore();
+  });
+
   it('reports missing values when non-interactive', async () => {
     delete process.env.ANTHROPIC_API_KEY;
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -156,6 +173,30 @@ describe('ensureEnv', () => {
     const content = await fs.readFile(result.path as string, 'utf8');
     expect(content).toContain('ANTHROPIC_API_KEY=sk-ant-anthropic-123');
     expect(content).toContain('OPENAI_API_KEY=sk-openai-456');
+  });
+
+  it('prompts to correct invalid optional keys when another provider is configured', async () => {
+    const tmpHome = await fs.mkdtemp(join(os.tmpdir(), 'vibe-env-invalid-optional-'));
+    vi.spyOn(os, 'homedir').mockReturnValue(tmpHome);
+
+    process.env.ANTHROPIC_API_KEY = VALID_PROVIDER_VALUES.ANTHROPIC_API_KEY;
+    process.env.OPENAI_API_KEY = 'bad-value';
+
+    const prompt = vi.fn().mockResolvedValue('sk-openai-corrected');
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const result = await ensureEnv({ interactive: true, prompt });
+
+    expect(prompt).toHaveBeenCalledTimes(1);
+    expect(prompt).toHaveBeenCalledWith('OPENAI_API_KEY');
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid OPENAI_API_KEY'));
+    expect(result.wrote).toBe(true);
+    expect(process.env.OPENAI_API_KEY).toBe('sk-openai-corrected');
+
+    const content = await fs.readFile(join(homeConfigDir(), '.env'), 'utf8');
+    expect(content).toContain('OPENAI_API_KEY=sk-openai-corrected');
+
+    logSpy.mockRestore();
   });
 
   it('re-prompts when provided values fail validation', async () => {

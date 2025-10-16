@@ -99,7 +99,7 @@ describe('Windsurf MCP config merge', () => {
     const original = readFileSync(join(FIXTURE_DIR, 'config.base.json'), 'utf8');
     await fs.writeFile(configPath, original, 'utf8');
 
-    process.env.GEMINI_API_KEY = 'windsurf-key';
+    process.env.GEMINI_API_KEY = 'AI-windsurf-key';
 
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
