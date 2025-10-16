@@ -2,11 +2,19 @@
 
 This document supplements the CLI installers documented in the [README](../README.md). Each section outlines discovery paths, schema nuances, and post-installation tips.
 
+> Tip: Run `npx @pv-bhat/vibe-check-mcp --list-clients` to see a quick summary of every supported integration.
+
+## API keys & secrets
+
+- Secrets resolve in this order: current shell → project `.env` → `~/.vibe-check/.env`. Interactive runs prompt once and persist new entries with `0600` permissions (use `--local` to target the project file).
+- Claude Desktop and Claude Code require `ANTHROPIC_API_KEY`; other clients accept whichever provider key you configure (`OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`). Non-interactive installs exit early if a required key is missing.
+
 ## Claude Desktop
 
 - **Config path**: `claude_desktop_config.json` (auto-detected per platform).
 - **Schema**: `mcpServers` map keyed by server ID.
 - **Default transport**: stdio (`npx -y @pv-bhat/vibe-check-mcp start --stdio`).
+- **API keys**: Requires `ANTHROPIC_API_KEY`.
 - **Restart**: Quit and relaunch Claude Desktop after installation.
 
 ```jsonc
@@ -23,6 +31,29 @@ This document supplements the CLI installers documented in the [README](../READM
 ```
 
 Docs: [Claude Desktop MCP](https://docs.anthropic.com/en/docs/claude-desktop/model-context-protocol)
+
+## Claude Code
+
+- **Config path**: `~/.config/Claude/claude_code_config.json` (auto-detected per platform).
+- **Schema**: Claude-style `mcpServers` map.
+- **Default transport**: stdio (`npx -y @pv-bhat/vibe-check-mcp start --stdio`).
+- **API keys**: Requires `ANTHROPIC_API_KEY`.
+- **Bootstrap**: Run `claude code login` or any Claude Code command once to scaffold the config file.
+
+```jsonc
+{
+  "mcpServers": {
+    "vibe-check-mcp": {
+      "command": "npx",
+      "args": ["-y", "@pv-bhat/vibe-check-mcp", "start", "--stdio"],
+      "env": {},
+      "managedBy": "vibe-check-mcp-cli"
+    }
+  }
+}
+```
+
+Docs: [Claude Code MCP integration](https://docs.anthropic.com/en/docs/agents/claude-code)
 
 ## Cursor
 

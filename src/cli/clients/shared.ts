@@ -7,10 +7,12 @@ const { access, mkdir, readFile, rename, writeFile } = fsPromises;
 
 export type JsonRecord = Record<string, unknown>;
 
+export type TransportKind = 'stdio' | 'http';
+
 export type MergeOpts = {
   id: string;
   sentinel: string;
-  transport: 'stdio' | 'http';
+  transport: TransportKind;
   httpUrl?: string;
   dev?: {
     watch?: boolean;
@@ -24,12 +26,23 @@ export type MergeResult = {
   reason?: string;
 };
 
+export type ClientDescription = {
+  name: string;
+  pathHint: string;
+  summary?: string;
+  transports?: TransportKind[];
+  defaultTransport?: TransportKind;
+  requiredEnvKeys?: readonly string[];
+  notes?: string;
+  docsUrl?: string;
+};
+
 export interface ClientAdapter {
   locate(custom?: string): Promise<string | null>;
   read(path: string, raw?: string): Promise<JsonRecord>;
   merge(config: JsonRecord, entry: JsonRecord, options: MergeOpts): MergeResult;
   writeAtomic(path: string, data: JsonRecord): Promise<void>;
-  describe(): { name: string; pathHint: string; notes?: string };
+  describe(): ClientDescription;
 }
 
 export function isRecord(value: unknown): value is JsonRecord {

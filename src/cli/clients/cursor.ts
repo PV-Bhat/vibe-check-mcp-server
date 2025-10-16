@@ -47,7 +47,11 @@ const adapter: ClientAdapter = {
     return {
       name: 'Cursor',
       pathHint: '~/.cursor/mcp.json',
+      summary: 'Cursor IDE with Claude-style MCP configuration.',
+      transports: ['stdio'],
+      defaultTransport: 'stdio',
       notes: 'Open Cursor Settings → MCP Servers if the file does not exist yet.',
+      docsUrl: 'https://docs.cursor.com/ai/model-context-protocol',
     };
   },
 };

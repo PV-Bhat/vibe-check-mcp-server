@@ -18,6 +18,7 @@ type EnsureEnvOptions = {
   interactive: boolean;
   local?: boolean;
   prompt?: (key: string) => Promise<string>;
+  requiredKeys?: readonly string[];
 };
 
 type EnsureEnvResult = {
@@ -78,35 +79,51 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
   const sources = resolveEnvSources();
   const cwdValues = await readEnvFile(sources.cwdEnv);
   const homeValues = await readEnvFile(sources.homeEnv);
-  const resolved: string[] = [];
+  const requiredKeys = options.requiredKeys?.length ? [...options.requiredKeys] : null;
+  const targetKeys = requiredKeys ?? [...PROVIDER_ENV_KEYS];
+  const resolved = new Set<string>();
 
-  for (const key of PROVIDER_ENV_KEYS) {
+  const hydrateFrom = (key: string, source: Record<string, string>): boolean => {
+    if (key in source) {
+      process.env[key] = source[key];
+      resolved.add(key);
+      return true;
+    }
+    return false;
+  };
+
+  for (const key of targetKeys) {
     if (process.env[key]) {
-      resolved.push(key);
+      resolved.add(key);
       continue;
     }
 
-    if (key in cwdValues) {
-      process.env[key] = cwdValues[key];
-      resolved.push(key);
+    if (hydrateFrom(key, cwdValues)) {
       continue;
     }
 
-    if (key in homeValues) {
-      process.env[key] = homeValues[key];
-      resolved.push(key);
-      continue;
-    }
+    hydrateFrom(key, homeValues);
   }
 
-  if (resolved.length > 0) {
+  if (!requiredKeys && resolved.size > 0) {
+    return { wrote: false };
+  }
+
+  const missing = targetKeys.filter((key) => !resolved.has(key));
+
+  if (missing.length === 0) {
     return { wrote: false };
   }
 
   if (!options.interactive) {
-    console.log(`No provider API keys detected. Set one of: ${PROVIDER_ENV_KEYS.join(', ')}`);
+    if (requiredKeys) {
+      console.log(`Missing required API keys: ${requiredKeys.join(', ')}`);
+      return { wrote: false, missing: [...missing] };
+    }
+
+    console.log(`No provider API keys detected. Set one of: ${targetKeys.join(', ')}`);
     console.log('Provide it via your shell or .env file, then re-run with --non-interactive.');
-    return { wrote: false, missing: [...PROVIDER_ENV_KEYS] };
+    return { wrote: false, missing: [...targetKeys] };
   }
 
   const targetPath = options.local ? resolve(process.cwd(), '.env') : resolve(homeConfigDir(), '.env');
@@ -128,20 +145,28 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
   };
 
   const newEntries: Record<string, string> = {};
-  let provided = false;
+  const promptedKeys = requiredKeys ?? missing;
+  let providedAny = false;
 
   try {
-    for (const key of PROVIDER_ENV_KEYS) {
+    for (const key of promptedKeys) {
       const value = (await ask(key)).trim();
       if (!value) {
+        if (requiredKeys) {
+          continue;
+        }
         continue;
       }
 
       process.env[key] = value;
       targetValues[key] = value;
       newEntries[key] = value;
-      provided = true;
-      break;
+      resolved.add(key);
+      providedAny = true;
+
+      if (!requiredKeys) {
+        break;
+      }
     }
   } finally {
     if (rl) {
@@ -149,9 +174,19 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
     }
   }
 
-  if (!provided) {
-    console.log(`No provider API key entered. Set one of: ${PROVIDER_ENV_KEYS.join(', ')} and re-run.`);
-    return { wrote: false, missing: [...PROVIDER_ENV_KEYS] };
+  if (requiredKeys) {
+    const missingRequired = requiredKeys.filter((key) => !resolved.has(key));
+    if (missingRequired.length > 0) {
+      console.log(`Missing required API keys: ${missingRequired.join(', ')}`);
+      return { wrote: false, missing: missingRequired };
+    }
+  } else if (!providedAny) {
+    console.log(`No provider API key entered. Set one of: ${targetKeys.join(', ')} and re-run.`);
+    return { wrote: false, missing: [...targetKeys] };
+  }
+
+  if (Object.keys(newEntries).length === 0) {
+    return { wrote: false };
   }
 
   const existingContent = existsSync(targetPath) ? await readFile(targetPath, 'utf8') : '';

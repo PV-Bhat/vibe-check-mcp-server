@@ -58,6 +58,7 @@ describe('ensureEnv', () => {
 
     const result = await ensureEnv({ interactive: true, prompt });
     expect(prompt).toHaveBeenCalledWith('ANTHROPIC_API_KEY');
+    expect(prompt.mock.calls.length).toBe(1);
     expect(result.wrote).toBe(true);
     expect(result.path).toBe(join(homeConfigDir(), '.env'));
 
@@ -105,5 +106,46 @@ describe('ensureEnv', () => {
     } finally {
       process.chdir(originalCwd);
     }
+  });
+
+  it('honors requiredKeys in non-interactive mode', async () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const result = await ensureEnv({ interactive: false, requiredKeys: ['ANTHROPIC_API_KEY'] });
+
+    expect(result.wrote).toBe(false);
+    expect(result.missing).toEqual(['ANTHROPIC_API_KEY']);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Missing required API keys'));
+
+    logSpy.mockRestore();
+  });
+
+  it('prompts for each required key when interactive', async () => {
+    const tmpHome = await fs.mkdtemp(join(os.tmpdir(), 'vibe-env-required-'));
+    vi.spyOn(os, 'homedir').mockReturnValue(tmpHome);
+
+    const prompt = vi
+      .fn()
+      .mockImplementation(async (key: string) => (key === 'ANTHROPIC_API_KEY' ? 'anthropic-123' : 'openai-456'));
+
+    const result = await ensureEnv({
+      interactive: true,
+      requiredKeys: ['ANTHROPIC_API_KEY', 'OPENAI_API_KEY'],
+      prompt,
+    });
+
+    expect(prompt.mock.calls.map((call) => call[0])).toEqual([
+      'ANTHROPIC_API_KEY',
+      'OPENAI_API_KEY',
+    ]);
+    expect(result.wrote).toBe(true);
+    expect(result.path).toBe(join(homeConfigDir(), '.env'));
+
+    expect(process.env.ANTHROPIC_API_KEY).toBe('anthropic-123');
+    expect(process.env.OPENAI_API_KEY).toBe('openai-456');
+
+    const content = await fs.readFile(result.path as string, 'utf8');
+    expect(content).toContain('ANTHROPIC_API_KEY=anthropic-123');
+    expect(content).toContain('OPENAI_API_KEY=openai-456');
   });
 });

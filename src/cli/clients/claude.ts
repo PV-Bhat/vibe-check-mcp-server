@@ -73,7 +73,12 @@ const adapter: ClientAdapter = {
     return {
       name: 'Claude Desktop',
       pathHint: 'claude_desktop_config.json',
+      summary: 'Claude Desktop app integration for Windows, macOS, and Linux.',
+      transports: ['stdio'],
+      defaultTransport: 'stdio',
+      requiredEnvKeys: ['ANTHROPIC_API_KEY'],
       notes: 'Launch Claude Desktop once to generate the config file.',
+      docsUrl: 'https://docs.anthropic.com/en/docs/claude-desktop/model-context-protocol',
     };
   },
 };

@@ -8,10 +8,18 @@ import { checkNodeVersion, detectEnvFiles, portStatus, readEnvFile } from './doc
 import { ensureEnv, resolveEnvSources } from './env.js';
 import { formatUnifiedDiff } from './diff.js';
 import claudeAdapter from './clients/claude.js';
+import claudeCodeAdapter from './clients/claude-code.js';
 import cursorAdapter from './clients/cursor.js';
 import windsurfAdapter from './clients/windsurf.js';
 import vscodeAdapter from './clients/vscode.js';
-import { ClientAdapter, JsonRecord, MergeOpts, isRecord } from './clients/shared.js';
+import {
+  ClientAdapter,
+  ClientDescription,
+  JsonRecord,
+  MergeOpts,
+  TransportKind,
+  isRecord,
+} from './clients/shared.js';
 
 type PackageJson = {
   version?: string;
@@ -20,7 +28,7 @@ type PackageJson = {
   };
 };
 
-type Transport = 'http' | 'stdio';
+type Transport = TransportKind;
 
 type StartOptions = {
   stdio?: boolean;
@@ -57,10 +65,80 @@ const SENTINEL = 'vibe-check-mcp-cli';
 
 const CLIENT_ADAPTERS: Record<string, ClientAdapter> = {
   claude: claudeAdapter,
+  'claude-code': claudeCodeAdapter,
   cursor: cursorAdapter,
   windsurf: windsurfAdapter,
   vscode: vscodeAdapter,
 };
+
+type RegisteredClient = {
+  key: string;
+  adapter: ClientAdapter;
+  description: ClientDescription;
+};
+
+function collectRegisteredClients(): RegisteredClient[] {
+  return Object.entries(CLIENT_ADAPTERS)
+    .map(([key, adapter]) => ({ key, adapter, description: adapter.describe() }))
+    .sort((a, b) => a.key.localeCompare(b.key));
+}
+
+function formatTransportSummary(description: ClientDescription): string {
+  const transports = description.transports && description.transports.length > 0 ? description.transports : ['stdio'];
+  const defaultTransport = description.defaultTransport ?? transports[0];
+  return transports
+    .map((transport) => (transport === defaultTransport ? `${transport} (default)` : transport))
+    .join(', ');
+}
+
+function formatInstallHint(key: string, description: ClientDescription): string {
+  const transports = description.transports && description.transports.length > 0 ? description.transports : ['stdio'];
+  const defaultTransport = description.defaultTransport ?? transports[0];
+  const base = `npx @pv-bhat/vibe-check-mcp install --client ${key}`;
+
+  if (!defaultTransport) {
+    return base;
+  }
+
+  const extras = transports.filter((value) => value !== defaultTransport);
+  const hint = `${base} --${defaultTransport}`;
+
+  if (extras.length === 0) {
+    return hint;
+  }
+
+  const extraFlags = extras.map((value) => `--${value}`).join(', ');
+  return `${hint} (alternatives: ${extraFlags})`;
+}
+
+export function showAvailableClients(): void {
+  const clients = collectRegisteredClients();
+  console.log('Available MCP clients:\n');
+
+  for (const { key, description } of clients) {
+    console.log(`- ${key} (${description.name})`);
+    if (description.summary) {
+      console.log(`  Summary: ${description.summary}`);
+    }
+    console.log(`  Config: ${description.pathHint}`);
+    if (description.requiredEnvKeys?.length) {
+      console.log(`  API keys: ${description.requiredEnvKeys.join(', ')}`);
+    }
+    console.log(`  Transports: ${formatTransportSummary(description)}`);
+    console.log(`  Install: ${formatInstallHint(key, description)}`);
+    if (description.notes) {
+      console.log(`  Notes: ${description.notes}`);
+    }
+    if (description.docsUrl) {
+      console.log(`  Docs: ${description.docsUrl}`);
+    }
+    console.log('');
+  }
+
+  console.log('Template: npx @pv-bhat/vibe-check-mcp install --client <client> [--stdio|--http] [options]');
+  console.log('Hosted: smithery add @PV-Bhat/vibe-check-mcp-server');
+  console.log("Run 'npx @pv-bhat/vibe-check-mcp --help' for detailed usage.");
+}
 
 function readPackageJson(): PackageJson {
   const raw = readFileSync(packageJsonPath, 'utf8');
@@ -168,7 +246,12 @@ async function runInstallCommand(options: InstallOptions): Promise<void> {
   }
 
   const interactive = !options.nonInteractive;
-  const envResult = await ensureEnv({ interactive, local: Boolean(options.local) });
+  const description = adapter.describe();
+  const envResult = await ensureEnv({
+    interactive,
+    local: Boolean(options.local),
+    requiredKeys: description.requiredEnvKeys,
+  });
 
   if (envResult.missing?.length) {
     return;
@@ -209,7 +292,6 @@ async function runInstallCommand(options: InstallOptions): Promise<void> {
     }
   }
 
-  const description = adapter.describe();
   const configPath = await adapter.locate(options.config);
 
   if (!configPath) {
@@ -394,6 +476,22 @@ export function createCliProgram(): Command {
     .version(pkg.version ?? '0.0.0');
 
   program
+    .option('--list-clients', 'List supported MCP client integrations')
+    .addHelpText('afterAll', () => {
+      const clients = collectRegisteredClients();
+      if (clients.length === 0) {
+        return '';
+      }
+
+      const longestKey = Math.max(...clients.map((client) => client.key.length));
+      const lines = clients
+        .map((client) => `  ${client.key.padEnd(longestKey)}  ${client.description.name}`)
+        .join('\n');
+
+      return `\nSupported clients:\n${lines}\n\nRun 'npx @pv-bhat/vibe-check-mcp --list-clients' for details.\n`;
+    });
+
+  program
     .command('start')
     .description('Start the Vibe Check MCP server')
     .addOption(new Option('--stdio', 'Use STDIO transport').conflicts('http'))
@@ -444,6 +542,15 @@ export function createCliProgram(): Command {
         process.exitCode = 1;
       }
     });
+
+  program.action((options: { listClients?: boolean }, command: Command) => {
+    if (options.listClients) {
+      showAvailableClients();
+      return;
+    }
+
+    command.help({ error: false });
+  });
 
   return program;
 }
