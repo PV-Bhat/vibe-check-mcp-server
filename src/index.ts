@@ -9,6 +9,9 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { McpError, ErrorCode, ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import type { Server as HttpServer } from 'http';
+import type { AddressInfo } from 'net';
+import { fileURLToPath } from 'url';
 
 import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from './tools/vibeCheck.js';
 import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from './tools/vibeLearn.js';
@@ -23,7 +26,36 @@ if (USE_STDIO) {
   console.log = (...args) => console.error(...args);
 }
 
-async function main() {
+const SCRIPT_PATH = fileURLToPath(import.meta.url);
+
+export interface LoggerLike {
+  log: (...args: any[]) => void;
+  error: (...args: any[]) => void;
+}
+
+export interface HttpServerOptions {
+  port?: number;
+  corsOrigin?: string;
+  transport?: StreamableHTTPServerTransport;
+  server?: Server;
+  attachSignalHandlers?: boolean;
+  signals?: NodeJS.Signals[];
+  logger?: LoggerLike;
+}
+
+export interface HttpServerInstance {
+  app: express.Express;
+  listener: HttpServer;
+  transport: StreamableHTTPServerTransport;
+  close: () => Promise<void>;
+}
+
+export interface MainOptions {
+  createServer?: () => Promise<Server>;
+  startHttp?: (options: HttpServerOptions) => Promise<HttpServerInstance>;
+}
+
+export async function createMcpServer(): Promise<Server> {
   await loadHistory();
 
   const server = new Server(
@@ -279,54 +311,91 @@ async function main() {
     }
   });
 
+  return server;
+}
+
+export async function startHttpServer(options: HttpServerOptions = {}): Promise<HttpServerInstance> {
+  const logger = options.logger ?? console;
+  const allowedOrigin = options.corsOrigin ?? process.env.CORS_ORIGIN ?? '*';
+  const PORT = options.port ?? Number(process.env.MCP_HTTP_PORT || process.env.PORT || 3000);
+  const server = options.server ?? (await createMcpServer());
+  const transport = options.transport ?? new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+
+  await server.connect(transport);
+
   const app = express();
-  const allowedOrigin = process.env.CORS_ORIGIN || '*';
   app.use(cors({ origin: allowedOrigin }));
   app.use(express.json());
+
+  app.post('/mcp', async (req, res) => {
+    const started = Date.now();
+    const { id, method } = req.body ?? {};
+    const sessionId = req.body?.params?.sessionId || req.body?.params?.arguments?.sessionId;
+    logger.log('[MCP] request', { id, method, sessionId });
+    try {
+      await transport.handleRequest(req, res, req.body);
+    } catch (e: any) {
+      logger.error('[MCP] error', { err: e?.message, id });
+      if (!res.headersSent) {
+        res.status(500).json({ jsonrpc: '2.0', id: id ?? null, error: { code: -32603, message: 'Internal server error' } });
+      }
+    } finally {
+      logger.log('[MCP] handled', { id, ms: Date.now() - started });
+    }
+  });
+
+  app.get('/mcp', (_req, res) => {
+    res.status(405).json({ jsonrpc: '2.0', error: { code: -32000, message: 'Method not allowed' }, id: null });
+  });
+
+  app.get('/healthz', (_req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
+
+  const listener = app.listen(PORT, () => {
+    const addr = listener.address() as AddressInfo | string | null;
+    const actualPort = typeof addr === 'object' && addr ? addr.port : PORT;
+    logger.log(`[MCP] HTTP listening on :${actualPort}`);
+  });
+
+  const signals = options.signals ?? ['SIGTERM', 'SIGINT'];
+  const attachSignals = options.attachSignalHandlers ?? false;
+  const signalHandler = () => {
+    close().then(() => process.exit(0));
+  };
+
+  if (attachSignals) {
+    for (const signal of signals) {
+      process.on(signal, signalHandler);
+    }
+  }
+
+  const close = () =>
+    new Promise<void>((resolve) => {
+      listener.close(() => {
+        if (attachSignals) {
+          for (const signal of signals) {
+            process.off(signal, signalHandler);
+          }
+        }
+        resolve();
+      });
+    });
+
+  return { app, listener, transport, close };
+}
+
+export async function main(options: MainOptions = {}) {
+  const createServerFn = options.createServer ?? createMcpServer;
+  const startHttpFn = options.startHttp ?? startHttpServer;
+  const server = await createServerFn();
 
   if (USE_STDIO) {
     const transport = new StdioServerTransport();
     await server.connect(transport);
     console.error('[MCP] stdio transport connected');
   } else {
-    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
-    await server.connect(transport);
-
-    app.post('/mcp', async (req, res) => {
-      const started = Date.now();
-      const { id, method } = req.body ?? {};
-      const sessionId = req.body?.params?.sessionId || req.body?.params?.arguments?.sessionId;
-      console.log('[MCP] request', { id, method, sessionId });
-      try {
-        await transport.handleRequest(req, res, req.body);
-      } catch (e: any) {
-        console.error('[MCP] error', { err: e?.message, id });
-        if (!res.headersSent) {
-          res.status(500).json({ jsonrpc: '2.0', id: id ?? null, error: { code: -32603, message: 'Internal server error' } });
-        }
-      } finally {
-        console.log('[MCP] handled', { id, ms: Date.now() - started });
-      }
-    });
-
-    app.get('/mcp', (_req, res) => {
-      res.status(405).json({ jsonrpc: '2.0', error: { code: -32000, message: 'Method not allowed' }, id: null });
-    });
-
-    app.get('/healthz', (_req, res) => {
-      res.status(200).json({ status: 'ok' });
-    });
-
-    const PORT = Number(process.env.MCP_HTTP_PORT || process.env.PORT || 3000);
-    const listener = app.listen(PORT, () => {
-      const addr = listener.address();
-      const actualPort = typeof addr === 'object' && addr ? addr.port : PORT;
-      console.log(`[MCP] HTTP listening on :${actualPort}`);
-    });
-
-    const close = () => listener.close(() => process.exit(0));
-    process.on('SIGTERM', close);
-    process.on('SIGINT', close);
+    await startHttpFn({ server, attachSignalHandlers: true, logger: console });
   }
 }
 
@@ -359,7 +428,9 @@ function formatVibeLearnOutput(result: VibeLearnOutput): string {
   return output;
 }
 
-main().catch((error) => {
-  console.error('Server startup error:', error);
-  process.exit(1);
-});
+if (process.argv[1] === SCRIPT_PATH) {
+  main().catch((error) => {
+    console.error('Server startup error:', error);
+    process.exit(1);
+  });
+}
