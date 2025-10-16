@@ -83,16 +83,11 @@ Claude Desktop and Claude Code rely on Anthropic – the installer enforces `ANT
 (`OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`); the CLI resolves secrets from your shell first, then project/home
 `.env` files.
 
-Prefer a hosted runtime? Smithery ships an official build of this server:
+Prefer a hosted runtime? [Smithery](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server) ships an official build of this server
 
-```bash
-smithery add @PV-Bhat/vibe-check-mcp-server
-smithery run @PV-Bhat/vibe-check-mcp-server --client claude
-```
-
-### By the numbers (as of 13 Oct 2025)
-- PulseMCP: ~32.3k total installs; ~12.8k this week; featured on “Most Popular (This Week)” front page
-- Smithery.ai: Category leader in Smithery’s Developer Workflow Tools this week.
+### By the numbers (as of 16 Oct 2025)
+- PulseMCP: ~34.3k total installs; featured on “Most Popular (This Week)” front page
+- Smithery.ai: Category leader in Smithery’s Developer Workflow Tools.
 - Study: success 27→54%, harmful actions 83→42%, optimal CPI dosage ~10–20%
 
 [![Star History Chart](https://api.star-history.com/svg?repos=PV-Bhat/vibe-check-mcp-server&type=Date)](https://www.star-history.com/#PV-Bhat/vibe-check-mcp-server&Date)
@@ -102,7 +97,7 @@ smithery run @PV-Bhat/vibe-check-mcp-server --client claude
 - Listed in Anthropic’s official Model Context Protocol repo [🔗](https://github.com/modelcontextprotocol/servers?tab=readme-overview#-community-servers)
 - Discoverable in the official MCP Registry [🔗](https://registry.modelcontextprotocol.io/v0/servers?search=vibe-check-mcp)
 - Featured on Sean Kochel's Top 9 MCP servers for vibe coders [🔗](https://youtu.be/2wYO6sdQ9xc?si=mlVo4iHf_hPKghxc&t=1331)
-- 32.3k installs total across public MCP directories/clients
+- 35k installs total across public MCP directories/clients
 
 ## Table of Contents
 - [Quickstart (npx)](#quickstart-npx)
