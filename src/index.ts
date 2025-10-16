@@ -360,27 +360,30 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
 
   const signals = options.signals ?? ['SIGTERM', 'SIGINT'];
   const attachSignals = options.attachSignalHandlers ?? false;
-  const signalHandler = () => {
-    close().then(() => process.exit(0));
-  };
-
-  if (attachSignals) {
-    for (const signal of signals) {
-      process.on(signal, signalHandler);
-    }
-  }
+  let signalHandler: (() => void) | null = null;
 
   const close = () =>
     new Promise<void>((resolve) => {
       listener.close(() => {
         if (attachSignals) {
           for (const signal of signals) {
-            process.off(signal, signalHandler);
+            if (signalHandler) {
+              process.off(signal, signalHandler);
+            }
           }
         }
         resolve();
       });
     });
+
+  if (attachSignals) {
+    signalHandler = () => {
+      close().then(() => process.exit(0));
+    };
+    for (const signal of signals) {
+      process.on(signal, signalHandler);
+    }
+  }
 
   return { app, listener, transport, close };
 }
