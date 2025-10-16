@@ -543,13 +543,15 @@ export function createCliProgram(): Command {
       }
     });
 
-  program.action((options: { listClients?: boolean }, command: Command) => {
+  program.action(() => {
+    const options = program.opts<{ listClients?: boolean }>();
+
     if (options.listClients) {
       showAvailableClients();
       return;
     }
 
-    command.help({ error: false });
+    program.help();
   });
 
   return program;
