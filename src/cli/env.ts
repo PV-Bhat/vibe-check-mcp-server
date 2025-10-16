@@ -171,13 +171,19 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
         console.log(message);
       }
       const invalidKeys = [...invalidReasons.keys()];
+      // If we have at least one valid provider and no required keys, only report invalid keys
+      if (!requiredKeys && resolved.size > 0) {
+        return { wrote: false, missing: invalidKeys };
+      }
+      // Otherwise report both invalid and missing keys
       return { wrote: false, missing: [...new Set([...invalidKeys, ...missing])] };
     }
     if (!requiredKeys && resolved.size > 0) {
+      // At least one provider is configured and valid, we're good
       return { wrote: false };
     }
     if (requiredKeys) {
-      console.log(`Missing required API keys: ${requiredKeys.join(', ')}`);
+      console.log(`Missing required API keys: ${missing.join(', ')}`);
       return { wrote: false, missing: [...missing] };
     }
 
@@ -211,7 +217,8 @@ export async function ensureEnv(options: EnsureEnvOptions): Promise<EnsureEnvRes
   };
 
   const newEntries: Record<string, string> = {};
-  const promptedKeys = requiredKeys ?? missing;
+  const invalidKeys = [...invalidReasons.keys()];
+  const promptedKeys = requiredKeys ?? [...new Set([...invalidKeys, ...missing])];
   let providedAny = false;
 
   if (invalidReasons.size > 0) {
