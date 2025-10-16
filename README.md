@@ -232,11 +232,7 @@ Ensure `NPM_TOKEN` is configured under **Repository Settings → Secrets and var
 
 ### Provider keys
 
-Set whichever API key matches your provider — `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`. The installer requires at least one of these when running with `--non-interactive`.
-
-Claude-family installers (`--client claude` / `--client claude-code`) specifically validate `ANTHROPIC_API_KEY`. Provide it via your environment or `.env` before running in CI, otherwise the CLI will prompt interactively and persist the secret for you.
-
-Secrets default to `~/.vibe-check/.env` (created with `0600` permissions); pass `--local` to write to the current project's `.env`. Values are resolved in this order: shell environment → project `.env` → home config. The CLI never writes secrets to client config files – it references your environment instead.
+See [API Keys & Secret Management](./docs/api-keys.md) for supported providers, resolution order, storage locations, and security guidance. Claude installers (`--client claude` / `--client claude-code`) still require `ANTHROPIC_API_KEY`; configure it ahead of non-interactive runs to avoid prompts.
 
 ### Transport selection
 

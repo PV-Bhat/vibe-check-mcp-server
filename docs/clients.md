@@ -4,10 +4,7 @@ This document supplements the CLI installers documented in the [README](../READM
 
 > Tip: Run `npx @pv-bhat/vibe-check-mcp --list-clients` to see a quick summary of every supported integration.
 
-## API keys & secrets
-
-- Secrets resolve in this order: current shell → project `.env` → `~/.vibe-check/.env`. Interactive runs prompt once and persist new entries with `0600` permissions (use `--local` to target the project file).
-- Claude Desktop and Claude Code require `ANTHROPIC_API_KEY`; other clients accept whichever provider key you configure (`OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`). Non-interactive installs exit early if a required key is missing.
+For supported providers, secret resolution, and storage guidance, read [API Keys & Secret Management](./api-keys.md). The notes below cover only client-specific requirements and edge cases.
 
 ## Claude Desktop
 
