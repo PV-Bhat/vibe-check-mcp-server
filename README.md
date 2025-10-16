@@ -117,10 +117,9 @@ Prefer a hosted runtime? [Smithery](https://smithery.ai/server/@PV-Bhat/vibe-che
 - [Research & Philosophy](#research--philosophy)
 - [Security](#security)
 - [Roadmap](#roadmap)
-- [Contributing & Community](#contributing--community)
+- [Contributors & Community](#contributors--community)
 - [FAQ](#faq)
 - [Listed on](#find-vibe-check-mcp-on)
-- [Contributors](#contributors)
 - [Credits & License](#credits--license)
 ---
 ## What is Vibe Check MCP?
@@ -356,12 +355,12 @@ These initiatives are tracked as community-facing GitHub issues so contributors 
 - **CLI help polish:** Ensure every CLI subcommand prints a concise `--help` example aligned with the refreshed prompt guidance.
 - **Docs navigation cleanup:** Cross-link `docs/agent-prompting.md` and `docs/technical-reference.md` from the README section headers to reduce context switching for new contributors.
 
-## Contributing & Community
+## Contributors & Community
 Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-## FAQ
-- **Does it increase latency?** A single CPI call typically adds ~1 second depending on the provider.
-- **Can I disable logging?** Yes, `vibe_learn` is optional.
+<a href="https://github.com/PV-Bhat/vibe-check-mcp-server/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=PV-Bhat/vibe-check-mcp-server" alt="Contributors"/>
+</a> 
 
 ## Find Vibe Check MCP on
 * 🌐 [MSEEP](https://mseep.ai/app/pv-bhat-vibe-check-mcp-server)
@@ -372,13 +371,6 @@ Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 * 📘 [Playbooks.com](https://playbooks.com/mcp/pv-bhat-vibe-check)
 * 🧰 [MCPHub.tools](https://mcphub.tools/detail/PV-Bhat/vibe-check-mcp-server)
 * 📇 [MCP Directory](https://mcpdirectory.ai/mcpserver/2419/)
-* 🧙 [MagicSlides](https://www.magicslides.app/mcps/pv-bhat-vibe-check)
-* 🗃️ [AIAgentsList](https://aiagentslist.com/mcp-servers/vibe-check-mcp-server)
-
-## Contributors
-<a href="https://github.com/PV-Bhat/vibe-check-mcp-server/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=PV-Bhat/vibe-check-mcp-server" alt="Contributors"/>
-</a>
 
 ## Credits & License
 Vibe Check MCP is released under the [MIT License](LICENSE). Built for reliable, enterprise-ready AI agents.
