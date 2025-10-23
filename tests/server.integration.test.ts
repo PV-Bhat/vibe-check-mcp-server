@@ -2,6 +2,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
 import type { HttpServerInstance, HttpServerOptions, LoggerLike } from '../src/index.js';
 
@@ -9,6 +10,7 @@ let tempHome: string;
 let originalHome: string | undefined;
 
 let startHttpServer: (options?: HttpServerOptions) => Promise<HttpServerInstance>;
+let createMcpServerFn: typeof import('../src/index.js').createMcpServer;
 let llmModule: typeof import('../src/utils/llm.js');
 let vibeLearnModule: typeof import('../src/tools/vibeLearn.js');
 
@@ -22,7 +24,7 @@ beforeAll(async () => {
   tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-server-test-'));
   process.env.HOME = tempHome;
 
-  ({ startHttpServer } = await import('../src/index.js'));
+  ({ startHttpServer, createMcpServer: createMcpServerFn } = await import('../src/index.js'));
   llmModule = await import('../src/utils/llm.js');
   vibeLearnModule = await import('../src/tools/vibeLearn.js');
 });
@@ -54,6 +56,18 @@ async function readSSEBody(res: Response) {
     .map((line) => line.trim())
     .filter((line) => line.startsWith('data: '));
   return dataLines.map((line) => JSON.parse(line.slice(6)));
+}
+
+async function waitFor<T>(factory: () => T | undefined, timeoutMs = 5_000, intervalMs = 25): Promise<T> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const result = factory();
+    if (result !== undefined) {
+      return result;
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  throw new Error('Timed out waiting for condition');
 }
 
 describe('HTTP server integration', () => {
@@ -266,6 +280,59 @@ describe('HTTP server integration', () => {
     const events = await readSSEBody(res);
     const text = events.at(-1)?.result?.content?.[0]?.text ?? '';
     expect(text).toContain('Failed to log pattern');
+  });
+
+  it('responds to stdio vibe_check calls that include numeric ids', async () => {
+    const server = await createMcpServerFn();
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+
+    await server.connect(serverTransport);
+
+    const messages: any[] = [];
+    clientTransport.onmessage = (message) => {
+      messages.push(message);
+    };
+
+    await clientTransport.start();
+
+    const initializeRequest = {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2024-06-01',
+        capabilities: { tools: {} },
+        clientInfo: { name: 'integration-test', version: '0.0.0' },
+      },
+    } as const;
+
+    await clientTransport.send(initializeRequest);
+    await waitFor(() => messages.find((message) => message.id === initializeRequest.id));
+
+    await clientTransport.send({ jsonrpc: '2.0', method: 'notifications/initialized', params: {} });
+
+    const callRequestId = 2;
+    await clientTransport.send({
+      jsonrpc: '2.0',
+      id: callRequestId,
+      method: 'tools/call',
+      params: {
+        name: 'vibe_check',
+        arguments: {
+          goal: 'Verify stdio responses include content',
+          plan: 'Send a numeric id request and read the reply',
+          progress: 'integration test',
+        },
+      },
+    });
+
+    const response = await waitFor(() => messages.find((message) => message.id === callRequestId));
+    const content = response?.result?.content?.[0]?.text ?? '';
+    expect(typeof content).toBe('string');
+    expect(content.trim().length).toBeGreaterThan(0);
+
+    await clientTransport.close();
+    await server.close();
   });
 
   it('attaches and removes signal handlers when enabled', async () => {
