@@ -65,6 +65,28 @@ describe('JSON-RPC compatibility shim', () => {
     expect(response?.result).toBeDefined();
   });
 
+  it('wraps handlers assigned after compatibility wrapping', async () => {
+    const { wrapTransportForCompatibility } = await import('../src/utils/jsonRpcCompat.js');
+
+    const transport = wrapTransportForCompatibility(new MockTransport());
+    const handler = vi.fn();
+
+    transport.onmessage = handler;
+
+    const message = {
+      jsonrpc: '2.0',
+      method: 'tools/call',
+      params: { name: 'vibe_check', arguments: { goal: 'Ship safely' } },
+    };
+
+    transport.onmessage?.(message);
+
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler.mock.calls[0][0]).toMatchObject({
+      id: expect.stringContaining('compat-'),
+    });
+  });
+
   it('emits HTTP responses when the request id is missing', async () => {
     const stateModule = await import('../src/utils/state.js');
     vi.spyOn(stateModule, 'loadHistory').mockResolvedValue();

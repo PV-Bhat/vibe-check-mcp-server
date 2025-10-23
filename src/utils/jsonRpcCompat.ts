@@ -51,10 +51,35 @@ export interface TransportLike {
 }
 
 export function wrapTransportForCompatibility<T extends TransportLike>(transport: T): T {
-  const existingOnMessage = transport.onmessage;
-  transport.onmessage = (message: JsonRpcRequestLike, extra?: any) => {
-    applyJsonRpcCompatibility(message);
-    return existingOnMessage?.(message, extra);
+  const wrapHandler = (handler?: TransportLike['onmessage']) => {
+    if (!handler) {
+      return handler;
+    }
+
+    return (message: JsonRpcRequestLike, extra?: any) => {
+      applyJsonRpcCompatibility(message);
+      return handler(message, extra);
+    };
   };
+
+  let currentHandler = transport.onmessage;
+  let wrappedHandler = wrapHandler(currentHandler);
+
+  Object.defineProperty(transport, 'onmessage', {
+    configurable: true,
+    enumerable: true,
+    get() {
+      return wrappedHandler;
+    },
+    set(handler) {
+      currentHandler = handler;
+      wrappedHandler = wrapHandler(handler);
+    },
+  });
+
+  if (currentHandler) {
+    transport.onmessage = currentHandler;
+  }
+
   return transport;
 }
