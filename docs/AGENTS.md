@@ -27,7 +27,7 @@ The server supports Gemini, OpenAI and OpenRouter LLMs. History is maintained ac
 
 ## Testing
 
-Run unit tests with `npm test`. Example request generators are provided:
+Run unit tests with `npm test`. The JSON-RPC compatibility shim now lets the standard SDK client and Windsurf talk to the server without extra tooling. Example request generators are still provided if you want canned payloads for manual testing:
 
 - `alt-test-gemini.js`
 - `alt-test-openai.js`
