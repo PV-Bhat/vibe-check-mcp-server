@@ -5,6 +5,7 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import { readFileSync } from 'fs';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -27,6 +28,10 @@ if (USE_STDIO) {
 }
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
+const PACKAGE_JSON = JSON.parse(
+  readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
+) as { version?: string };
+const SERVER_VERSION = PACKAGE_JSON.version ?? '0.0.0';
 
 export interface LoggerLike {
   log: (...args: any[]) => void;
@@ -59,7 +64,7 @@ export async function createMcpServer(): Promise<Server> {
   await loadHistory();
 
   const server = new Server(
-    { name: 'vibe-check', version: '2.5.0' },
+    { name: 'vibe-check', version: SERVER_VERSION },
     { capabilities: { tools: {}, sampling: {} } }
   );
 
