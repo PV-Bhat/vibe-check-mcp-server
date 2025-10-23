@@ -35,6 +35,7 @@ The server now includes a JSON-RPC compatibility layer that backfills missing `i
 ## Troubleshooting
 
 - **No output after sending a request:** JSON-RPC notifications (requests without an `id`) do not receive responses by design. The compatibility shim synthesizes a stable identifier with a random nonce for `tools/call` payloads that omit `id`, but other methods still expect a proper identifier from the client. Ensure your integration includes an `id` if you need a response.
+- **HTTP mode confusion:** The HTTP transport now scopes JSON fallbacks to the current request. Legacy clients that only accept `application/json` receive a direct JSON response, while streaming clients continue to see Server-Sent Events. Concurrent traffic no longer causes response-mode leaks between requests.
 
 ## Unit Tests with Vitest
 

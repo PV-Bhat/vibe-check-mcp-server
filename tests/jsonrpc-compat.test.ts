@@ -227,6 +227,7 @@ describe('JSON-RPC compatibility shim', () => {
       });
 
       expect(res.status).toBe(200);
+      expect(res.headers.get('content-type')).toContain('application/json');
       const payload = await res.json();
       expect(payload).toMatchObject({
         jsonrpc: '2.0',
@@ -260,6 +261,7 @@ describe('JSON-RPC compatibility shim', () => {
       });
 
       expect(res.status).toBe(200);
+      expect(res.headers.get('content-type')).toContain('text/event-stream');
       const events = await readSSEBody(res);
       const message = events.at(-1);
       expect(message).toMatchObject({
@@ -267,6 +269,161 @@ describe('JSON-RPC compatibility shim', () => {
         id: expect.stringMatching(compatIdPattern),
       });
       expect(message?.result).toBeDefined();
+    } finally {
+      await serverInstance.close();
+    }
+  });
+
+  it('keeps JSON fallback request-scoped under concurrent traffic', async () => {
+    await stubState();
+
+    const { startHttpServer } = await import('../src/index.js');
+
+    const silentLogger = { log: vi.fn(), error: vi.fn() };
+    const serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+
+    try {
+      const address = serverInstance.listener.address();
+      const port = typeof address === 'object' && address ? address.port : 0;
+
+      for (let i = 0; i < 2; i++) {
+        const jsonPromise = fetch(`http://127.0.0.1:${port}/mcp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(buildToolsCall({ goal: `Ship safely ${i}` })),
+        }).then(async (res) => {
+          expect(res.status).toBe(200);
+          expect(res.headers.get('content-type')).toContain('application/json');
+          const payload = await res.json();
+          expect(payload).toMatchObject({
+            jsonrpc: '2.0',
+            id: expect.stringMatching(compatIdPattern),
+          });
+          return payload;
+        });
+
+        const ssePromise = fetch(`http://127.0.0.1:${port}/mcp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
+          },
+          body: JSON.stringify(buildToolsCall({ goal: `Stream safely ${i}` })),
+        }).then(async (res) => {
+          expect(res.status).toBe(200);
+          expect(res.headers.get('content-type')).toContain('text/event-stream');
+          const events = await readSSEBody(res);
+          const message = events.at(-1);
+          expect(message).toMatchObject({
+            jsonrpc: '2.0',
+            id: expect.stringMatching(compatIdPattern),
+          });
+          return events;
+        });
+
+        const [jsonPayload, sseEvents] = await Promise.all([jsonPromise, ssePromise]);
+        expect(jsonPayload?.result).toBeDefined();
+        expect(sseEvents.at(-1)?.result).toBeDefined();
+      }
+    } finally {
+      await serverInstance.close();
+    }
+  });
+
+  it('prefers streaming when both application/json and text/event-stream are accepted', async () => {
+    await stubState();
+
+    const { startHttpServer } = await import('../src/index.js');
+
+    const silentLogger = { log: vi.fn(), error: vi.fn() };
+    const serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+
+    try {
+      const address = serverInstance.listener.address();
+      const port = typeof address === 'object' && address ? address.port : 0;
+
+      const res = await fetch(`http://127.0.0.1:${port}/mcp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json, text/event-stream',
+        },
+        body: JSON.stringify(buildToolsCall()),
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get('content-type')).toContain('text/event-stream');
+      const events = await readSSEBody(res);
+      const message = events.at(-1);
+      expect(message).toMatchObject({
+        jsonrpc: '2.0',
+        id: expect.stringMatching(compatIdPattern),
+      });
+    } finally {
+      await serverInstance.close();
+    }
+  });
+
+  it('defaults to streaming when no Accept header is provided', async () => {
+    await stubState();
+
+    const { startHttpServer } = await import('../src/index.js');
+
+    const silentLogger = { log: vi.fn(), error: vi.fn() };
+    const serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+
+    try {
+      const address = serverInstance.listener.address();
+      const port = typeof address === 'object' && address ? address.port : 0;
+
+      const res = await fetch(`http://127.0.0.1:${port}/mcp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(buildToolsCall()),
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get('content-type')).toContain('text/event-stream');
+      const events = await readSSEBody(res);
+      expect(events.at(-1)).toMatchObject({
+        jsonrpc: '2.0',
+        id: expect.stringMatching(compatIdPattern),
+      });
+    } finally {
+      await serverInstance.close();
+    }
+  });
+
+  it('does not leave json fallback enabled on the transport after JSON responses', async () => {
+    await stubState();
+
+    const { startHttpServer } = await import('../src/index.js');
+
+    const silentLogger = { log: vi.fn(), error: vi.fn() };
+    const serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+
+    try {
+      const address = serverInstance.listener.address();
+      const port = typeof address === 'object' && address ? address.port : 0;
+
+      const res = await fetch(`http://127.0.0.1:${port}/mcp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(buildToolsCall()),
+      });
+
+      expect(res.status).toBe(200);
+      await res.json();
+
+      expect((serverInstance.transport as any)._enableJsonResponse).toBe(false);
     } finally {
       await serverInstance.close();
     }

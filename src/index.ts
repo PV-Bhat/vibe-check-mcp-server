@@ -5,6 +5,7 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -20,6 +21,7 @@ import { STANDARD_CATEGORIES, LearningType } from './utils/storage.js';
 import { loadHistory } from './utils/state.js';
 import { getPackageVersion } from './utils/version.js';
 import { applyJsonRpcCompatibility, wrapTransportForCompatibility } from './utils/jsonRpcCompat.js';
+import { createRequestScopedTransport, RequestScopeStore } from './utils/httpTransportWrapper.js';
 
 const IS_DISCOVERY = process.env.MCP_DISCOVERY_MODE === '1';
 const USE_STDIO = process.env.MCP_TRANSPORT === 'stdio';
@@ -320,7 +322,9 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
   const allowedOrigin = options.corsOrigin ?? process.env.CORS_ORIGIN ?? '*';
   const PORT = options.port ?? Number(process.env.MCP_HTTP_PORT || process.env.PORT || 3000);
   const server = options.server ?? (await createMcpServer());
-  const transport = options.transport ?? new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+  const requestScope = new AsyncLocalStorage<RequestScopeStore>();
+  const baseTransport = options.transport ?? new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+  const transport = createRequestScopedTransport(baseTransport, requestScope);
 
   await server.connect(transport);
 
@@ -360,35 +364,22 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
     }
     req.headers.accept = Array.from(normalizedTokens).join(', ');
 
-    const transportWithFlags = transport as StreamableHTTPServerTransport & { _enableJsonResponse?: boolean };
-    const originalEnableJson = (transportWithFlags as any)._enableJsonResponse;
     const forceJsonResponse = acceptsJson && !acceptsSse;
-    if (forceJsonResponse) {
-      (transportWithFlags as any)._enableJsonResponse = true;
-      const restoreJsonMode = () => {
-        (transportWithFlags as any)._enableJsonResponse = originalEnableJson;
-        res.off('finish', restoreJsonMode);
-        res.off('close', restoreJsonMode);
-      };
-      res.once('finish', restoreJsonMode);
-      res.once('close', restoreJsonMode);
-    }
 
     const { applied, id: syntheticId } = applyJsonRpcCompatibility(req.body);
     const { id, method } = req.body ?? {};
     const sessionId = req.body?.params?.sessionId || req.body?.params?.arguments?.sessionId;
     logger.log('[MCP] request', { id, method, sessionId, syntheticId: applied ? syntheticId : undefined });
     try {
-      await transport.handleRequest(req, res, req.body);
+      await requestScope.run({ forceJson: forceJsonResponse }, async () => {
+        await transport.handleRequest(req, res, req.body);
+      });
     } catch (e: any) {
       logger.error('[MCP] error', { err: e?.message, id });
       if (!res.headersSent) {
         res.status(500).json({ jsonrpc: '2.0', id: id ?? null, error: { code: -32603, message: 'Internal server error' } });
       }
     } finally {
-      if (!forceJsonResponse) {
-        (transportWithFlags as any)._enableJsonResponse = originalEnableJson;
-      }
       if (originalAcceptHeader === undefined) {
         delete req.headers.accept;
       } else {

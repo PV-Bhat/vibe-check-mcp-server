@@ -2,6 +2,10 @@
 
 For optimal metacognitive oversight, these advanced integration strategies leverage the full power of Vibe Check as a pattern interrupt system, recalibration mechanism, and self-improving feedback loop. Starting with v2.2, previous vibe_check output is automatically summarized and fed back into subsequent calls, so a `sessionId` is recommended for continuity.
 
+## HTTP Transport Negotiation
+
+The HTTP transport negotiates response modes per request. JSON fallbacks are now request-scoped, so a legacy client that only advertises `application/json` receives a direct JSON reply without mutating the transport for concurrent SSE subscribers. Streaming clients that include `text/event-stream` in `Accept` continue to receive live SSE frames even when JSON-only calls are running in parallel.
+
 ## Progressive Confidence Levels
 
 Start with lower confidence values (e.g., 0.5) during planning phases and increase confidence (e.g., 0.7-0.9) during implementation and review phases. This adjusts the intensity of pattern interrupts to match the current stage of development.
