@@ -18,6 +18,8 @@ import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from './tools/vibeLear
 import { updateConstitution, resetConstitution, getConstitution } from './tools/constitution.js';
 import { STANDARD_CATEGORIES, LearningType } from './utils/storage.js';
 import { loadHistory } from './utils/state.js';
+import { getPackageVersion } from './utils/version.js';
+import { applyJsonRpcCompatibility, wrapTransportForCompatibility } from './utils/jsonRpcCompat.js';
 
 const IS_DISCOVERY = process.env.MCP_DISCOVERY_MODE === '1';
 const USE_STDIO = process.env.MCP_TRANSPORT === 'stdio';
@@ -59,7 +61,7 @@ export async function createMcpServer(): Promise<Server> {
   await loadHistory();
 
   const server = new Server(
-    { name: 'vibe-check', version: '2.5.0' },
+    { name: 'vibe-check', version: getPackageVersion() },
     { capabilities: { tools: {}, sampling: {} } }
   );
 
@@ -215,10 +217,10 @@ export async function createMcpServer(): Promise<Server> {
         if (!args || typeof args.plan !== 'string') missing.push('plan');
         if (missing.length) {
           const example = '{"goal":"Ship CPI v2.5","plan":"1) tests 2) refactor 3) canary"}';
-          if (IS_DISCOVERY) {
-            return { content: [{ type: 'text', text: `discovery: missing [${missing.join(', ')}]; example: ${example}` }] };
-          }
-          throw new McpError(ErrorCode.InvalidParams, `Missing: ${missing.join(', ')}. Example: ${example}`);
+          const message = IS_DISCOVERY
+            ? `discovery: missing [${missing.join(', ')}]; example: ${example}`
+            : `Missing: ${missing.join(', ')}. Example: ${example}`;
+          throw new McpError(ErrorCode.InvalidParams, message);
         }
         const input: VibeCheckInput = {
           goal: args.goal,
@@ -240,10 +242,10 @@ export async function createMcpServer(): Promise<Server> {
         if (!args || typeof args.category !== 'string') missing.push('category');
         if (missing.length) {
           const example = '{"mistake":"Skipped tests","category":"Feature Creep"}';
-          if (IS_DISCOVERY) {
-            return { content: [{ type: 'text', text: `discovery: missing [${missing.join(', ')}]; example: ${example}` }] };
-          }
-          throw new McpError(ErrorCode.InvalidParams, `Missing: ${missing.join(', ')}. Example: ${example}`);
+          const message = IS_DISCOVERY
+            ? `discovery: missing [${missing.join(', ')}]; example: ${example}`
+            : `Missing: ${missing.join(', ')}. Example: ${example}`;
+          throw new McpError(ErrorCode.InvalidParams, message);
         }
         const input: VibeLearnInput = {
           mistake: args.mistake,
@@ -264,10 +266,10 @@ export async function createMcpServer(): Promise<Server> {
         if (!args || typeof args.rule !== 'string') missing.push('rule');
         if (missing.length) {
           const example = '{"sessionId":"123","rule":"Always write tests first"}';
-          if (IS_DISCOVERY) {
-            return { content: [{ type: 'text', text: `discovery: missing [${missing.join(', ')}]; example: ${example}` }] };
-          }
-          throw new McpError(ErrorCode.InvalidParams, `Missing: ${missing.join(', ')}. Example: ${example}`);
+          const message = IS_DISCOVERY
+            ? `discovery: missing [${missing.join(', ')}]; example: ${example}`
+            : `Missing: ${missing.join(', ')}. Example: ${example}`;
+          throw new McpError(ErrorCode.InvalidParams, message);
         }
         updateConstitution(args.sessionId, args.rule);
         console.log('[Constitution:update]', { sessionId: args.sessionId, count: getConstitution(args.sessionId).length });
@@ -280,10 +282,10 @@ export async function createMcpServer(): Promise<Server> {
         if (!args || !Array.isArray(args.rules)) missing.push('rules');
         if (missing.length) {
           const example = '{"sessionId":"123","rules":["Be kind","Avoid loops"]}';
-          if (IS_DISCOVERY) {
-            return { content: [{ type: 'text', text: `discovery: missing [${missing.join(', ')}]; example: ${example}` }] };
-          }
-          throw new McpError(ErrorCode.InvalidParams, `Missing: ${missing.join(', ')}. Example: ${example}`);
+          const message = IS_DISCOVERY
+            ? `discovery: missing [${missing.join(', ')}]; example: ${example}`
+            : `Missing: ${missing.join(', ')}. Example: ${example}`;
+          throw new McpError(ErrorCode.InvalidParams, message);
         }
         resetConstitution(args.sessionId, args.rules);
         console.log('[Constitution:reset]', { sessionId: args.sessionId, count: getConstitution(args.sessionId).length });
@@ -295,11 +297,10 @@ export async function createMcpServer(): Promise<Server> {
         if (!args || typeof args.sessionId !== 'string') missing.push('sessionId');
         if (missing.length) {
           const example = '{"sessionId":"123"}';
-          if (IS_DISCOVERY) {
-            return { content: [{ type: 'text', text: `discovery: missing [${missing.join(', ')}]; example: ${example}` }] };
-          }
-        
-          throw new McpError(ErrorCode.InvalidParams, `Missing: ${missing.join(', ')}. Example: ${example}`);
+          const message = IS_DISCOVERY
+            ? `discovery: missing [${missing.join(', ')}]; example: ${example}`
+            : `Missing: ${missing.join(', ')}. Example: ${example}`;
+          throw new McpError(ErrorCode.InvalidParams, message);
         }
         const rules = getConstitution(args.sessionId);
         console.log('[Constitution:check]', { sessionId: args.sessionId, count: rules.length });
@@ -329,9 +330,54 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
 
   app.post('/mcp', async (req, res) => {
     const started = Date.now();
+    const originalAcceptHeader = req.headers.accept;
+    const rawAcceptValues = Array.isArray(originalAcceptHeader)
+      ? originalAcceptHeader
+      : [originalAcceptHeader ?? ''];
+    const originalTokens: string[] = [];
+    for (const rawValue of rawAcceptValues) {
+      if (typeof rawValue !== 'string') continue;
+      for (const token of rawValue.split(',')) {
+        const trimmed = token.trim();
+        if (trimmed) {
+          originalTokens.push(trimmed);
+        }
+      }
+    }
+    const lowerTokens = originalTokens.map((value) => value.toLowerCase());
+    const acceptsJson = lowerTokens.some((value) => value.includes('application/json'));
+    const acceptsSse = lowerTokens.some((value) => value.includes('text/event-stream'));
+    const normalizedTokens = new Set(originalTokens);
+    if (!acceptsJson) {
+      normalizedTokens.add('application/json');
+    }
+    if (!acceptsSse) {
+      normalizedTokens.add('text/event-stream');
+    }
+    if (normalizedTokens.size === 0) {
+      normalizedTokens.add('application/json');
+      normalizedTokens.add('text/event-stream');
+    }
+    req.headers.accept = Array.from(normalizedTokens).join(', ');
+
+    const transportWithFlags = transport as StreamableHTTPServerTransport & { _enableJsonResponse?: boolean };
+    const originalEnableJson = (transportWithFlags as any)._enableJsonResponse;
+    const forceJsonResponse = acceptsJson && !acceptsSse;
+    if (forceJsonResponse) {
+      (transportWithFlags as any)._enableJsonResponse = true;
+      const restoreJsonMode = () => {
+        (transportWithFlags as any)._enableJsonResponse = originalEnableJson;
+        res.off('finish', restoreJsonMode);
+        res.off('close', restoreJsonMode);
+      };
+      res.once('finish', restoreJsonMode);
+      res.once('close', restoreJsonMode);
+    }
+
+    const { applied, id: syntheticId } = applyJsonRpcCompatibility(req.body);
     const { id, method } = req.body ?? {};
     const sessionId = req.body?.params?.sessionId || req.body?.params?.arguments?.sessionId;
-    logger.log('[MCP] request', { id, method, sessionId });
+    logger.log('[MCP] request', { id, method, sessionId, syntheticId: applied ? syntheticId : undefined });
     try {
       await transport.handleRequest(req, res, req.body);
     } catch (e: any) {
@@ -340,6 +386,14 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
         res.status(500).json({ jsonrpc: '2.0', id: id ?? null, error: { code: -32603, message: 'Internal server error' } });
       }
     } finally {
+      if (!forceJsonResponse) {
+        (transportWithFlags as any)._enableJsonResponse = originalEnableJson;
+      }
+      if (originalAcceptHeader === undefined) {
+        delete req.headers.accept;
+      } else {
+        req.headers.accept = originalAcceptHeader;
+      }
       logger.log('[MCP] handled', { id, ms: Date.now() - started });
     }
   });
@@ -394,7 +448,7 @@ export async function main(options: MainOptions = {}) {
   const server = await createServerFn();
 
   if (USE_STDIO) {
-    const transport = new StdioServerTransport();
+    const transport = wrapTransportForCompatibility(new StdioServerTransport());
     await server.connect(transport);
     console.error('[MCP] stdio transport connected');
   } else {
