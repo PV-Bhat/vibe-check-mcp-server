@@ -32,6 +32,8 @@ if (USE_STDIO) {
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 
+export const SUPPORTED_LLM_PROVIDERS = ['gemini', 'openai', 'openrouter', 'anthropic'] as const;
+
 export interface LoggerLike {
   log: (...args: any[]) => void;
   error: (...args: any[]) => void;
@@ -88,7 +90,7 @@ export async function createMcpServer(): Promise<Server> {
             modelOverride: {
               type: 'object',
               properties: {
-                provider: { type: 'string', enum: ['gemini', 'openai', 'openrouter'] },
+                provider: { type: 'string', enum: [...SUPPORTED_LLM_PROVIDERS] },
                 model: { type: 'string' }
               },
               required: [],

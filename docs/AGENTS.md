@@ -5,7 +5,7 @@ Vibe Check MCP is a lightweight oversight layer for AI agents. It exposes two to
 - **vibe_check** – prompts you with clarifying questions to prevent tunnel vision.
 - **vibe_learn** – optional logging of mistakes and successes for later review.
 
-The server supports Gemini, OpenAI and OpenRouter LLMs. History is maintained across requests when a `sessionId` is provided.
+The server supports Gemini, OpenAI, Anthropic, and OpenRouter LLMs. History is maintained across requests when a `sessionId` is provided.
 
 ## Setup
 
@@ -18,7 +18,11 @@ The server supports Gemini, OpenAI and OpenRouter LLMs. History is maintained ac
    - `GEMINI_API_KEY`
    - `OPENAI_API_KEY`
    - `OPENROUTER_API_KEY`
-   - `DEFAULT_LLM_PROVIDER` (gemini | openai | openrouter)
+   - `ANTHROPIC_API_KEY` *(official Anthropic deployments)*
+   - `ANTHROPIC_AUTH_TOKEN` *(Anthropic-compatible proxies)*
+   - `ANTHROPIC_BASE_URL` *(optional; defaults to https://api.anthropic.com)*
+   - `ANTHROPIC_VERSION` *(optional; defaults to 2023-06-01)*
+   - `DEFAULT_LLM_PROVIDER` (gemini | openai | openrouter | anthropic)
    - `DEFAULT_MODEL` (e.g., gemini-2.5-pro)
 3. Start the server:
    ```bash
