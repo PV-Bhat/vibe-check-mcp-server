@@ -18,6 +18,8 @@ import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from './tools/vibeLear
 import { updateConstitution, resetConstitution, getConstitution } from './tools/constitution.js';
 import { STANDARD_CATEGORIES, LearningType } from './utils/storage.js';
 import { loadHistory } from './utils/state.js';
+import { getPackageVersion } from './utils/version.js';
+import { applyJsonRpcCompatibility, wrapTransportForCompatibility } from './utils/jsonRpcCompat.js';
 
 const IS_DISCOVERY = process.env.MCP_DISCOVERY_MODE === '1';
 const USE_STDIO = process.env.MCP_TRANSPORT === 'stdio';
@@ -59,7 +61,7 @@ export async function createMcpServer(): Promise<Server> {
   await loadHistory();
 
   const server = new Server(
-    { name: 'vibe-check', version: '2.5.0' },
+    { name: 'vibe-check', version: getPackageVersion() },
     { capabilities: { tools: {}, sampling: {} } }
   );
 
@@ -329,9 +331,10 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
 
   app.post('/mcp', async (req, res) => {
     const started = Date.now();
+    const { applied, id: syntheticId } = applyJsonRpcCompatibility(req.body);
     const { id, method } = req.body ?? {};
     const sessionId = req.body?.params?.sessionId || req.body?.params?.arguments?.sessionId;
-    logger.log('[MCP] request', { id, method, sessionId });
+    logger.log('[MCP] request', { id, method, sessionId, syntheticId: applied ? syntheticId : undefined });
     try {
       await transport.handleRequest(req, res, req.body);
     } catch (e: any) {
@@ -394,7 +397,7 @@ export async function main(options: MainOptions = {}) {
   const server = await createServerFn();
 
   if (USE_STDIO) {
-    const transport = new StdioServerTransport();
+    const transport = wrapTransportForCompatibility(new StdioServerTransport());
     await server.connect(transport);
     console.error('[MCP] stdio transport connected');
   } else {

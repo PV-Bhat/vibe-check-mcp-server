@@ -1,6 +1,6 @@
 # Testing Guide
 
-Due to a bug in the `@modelcontextprotocol/sdk` client, the standard `test-client.js` script will not work. Use the alternative test scripts to generate JSON requests and pipe them to the server's standard input.
+The server now includes a JSON-RPC compatibility layer that backfills missing `id` fields on `tools/call` requests. This allows the stock `@modelcontextprotocol/sdk` client and Windsurf to work out of the box again—no custom request generators required. Clients should still send their own identifiers as required by JSON-RPC 2.0, but the shim keeps legacy integrations functional while they update.
 
 ## Running Tests
 
@@ -8,8 +8,8 @@ Due to a bug in the `@modelcontextprotocol/sdk` client, the standard `test-clien
     ```bash
     npm run build
     ```
-2.  **Generate the requests:**
-    Three helper scripts create example requests for each provider.
+2.  **Generate optional sample requests:**
+    The legacy helper scripts are still available if you want ready-made payloads for manual testing, but they are no longer required for Windsurf or the SDK client.
     - `alt-test.js` (OpenRouter) writes `request1.json` and `request2.json` for history testing.
     - `alt-test-openai.js` generates `request.json` targeting the OpenAI provider.
     - `alt-test-gemini.js` generates `request.json` using the default Gemini provider.
@@ -18,8 +18,8 @@ Due to a bug in the `@modelcontextprotocol/sdk` client, the standard `test-clien
     node alt-test-openai.js     # OpenAI example
     node alt-test-gemini.js     # Gemini example
     ```
-3.  **Run the server with the requests:**
-    Pipe the contents of each generated file to the server.
+3.  **Run the server with the requests (optional):**
+    Pipe the contents of each generated file to the server if you are using the helper scripts.
 
     **History test (OpenRouter):**
     ```bash
