@@ -1,5 +1,6 @@
 import { getLearningContextText } from './storage.js';
 import { getConstitution } from '../tools/constitution.js';
+import { resolveAnthropicConfig, buildAnthropicHeaders } from './anthropic.js';
 
 // API Clients - Use 'any' to support dynamic import
 let genAI: any = null;
@@ -68,6 +69,7 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
 
   const contextSection = `CONTEXT:\nHistory Context: ${input.historySummary || 'None'}\n${learningContext ? `Learning Context:\n${learningContext}` : ''}\nGoal: ${input.goal}\nPlan: ${input.plan}\nProgress: ${input.progress || 'None'}\nUncertainties: ${input.uncertainties?.join(', ') || 'None'}\nTask Context: ${input.taskContext || 'None'}\nUser Prompt: ${input.userPrompt || 'None'}${constitutionBlock}`;
   const fullPrompt = `${systemPrompt}\n\n${contextSection}`;
+  const compiledPrompt = contextSection;
 
   let responseText = '';
 
@@ -109,6 +111,13 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
       messages: [{ role: 'system', content: fullPrompt }],
     }, { headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, 'HTTP-Referer': 'http://localhost', 'X-Title': 'Vibe Check MCP Server' } });
     responseText = response.data.choices[0].message.content || '';
+  } else if (provider === 'anthropic') {
+    const anthropicModel = model || 'claude-3-5-sonnet-20241022';
+    responseText = await callAnthropic({
+      model: anthropicModel,
+      compiledPrompt,
+      systemPrompt,
+    });
   } else {
     throw new Error(`Invalid provider specified: ${provider}`);
   }
@@ -138,3 +147,94 @@ export const __testing = {
   getGenAI() { return genAI; },
   getOpenAIClient() { return openaiClient; }
 };
+
+interface AnthropicCallOptions {
+  model: string;
+  compiledPrompt: string;
+  systemPrompt?: string;
+  maxTokens?: number;
+  temperature?: number;
+}
+
+async function callAnthropic({
+  model,
+  compiledPrompt,
+  systemPrompt,
+  maxTokens = 1024,
+  temperature = 0.2,
+}: AnthropicCallOptions): Promise<string> {
+  if (!model) {
+    throw new Error('Anthropic provider requires a model to be specified in the tool call or DEFAULT_MODEL.');
+  }
+
+  const { baseUrl, apiKey, authToken, version } = resolveAnthropicConfig();
+  const headers = buildAnthropicHeaders({ apiKey, authToken, version });
+  const url = `${baseUrl}/v1/messages`;
+
+  const body: Record<string, unknown> = {
+    model,
+    max_tokens: maxTokens,
+    temperature,
+    messages: [
+      {
+        role: 'user',
+        content: compiledPrompt,
+      },
+    ],
+  };
+
+  if (systemPrompt) {
+    body.system = systemPrompt;
+  }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  const rawText = await response.text();
+  let parsedBody: any;
+  if (rawText) {
+    try {
+      parsedBody = JSON.parse(rawText);
+    } catch {
+      parsedBody = undefined;
+    }
+  }
+
+  if (!response.ok) {
+    const requestId = response.headers.get('anthropic-request-id') || response.headers.get('x-request-id');
+    const retryAfter = response.headers.get('retry-after');
+    const requestSuffix = requestId ? ` (request id: ${requestId})` : '';
+    const errorMessage =
+      typeof parsedBody?.error?.message === 'string'
+        ? parsedBody.error.message
+        : typeof parsedBody?.message === 'string'
+          ? parsedBody.message
+          : rawText?.trim();
+
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(
+        `Anthropic authentication failed with status ${response.status}${requestSuffix}. Verify ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN.`
+      );
+    }
+
+    if (response.status === 429) {
+      const retryMessage = retryAfter ? ` Retry after ${retryAfter} seconds if provided.` : '';
+      throw new Error(`Anthropic rate limit exceeded (status 429)${requestSuffix}.${retryMessage}`);
+    }
+
+    const detail = errorMessage ? ` ${errorMessage}` : '';
+    throw new Error(`Anthropic request failed with status ${response.status}${requestSuffix}.${detail}`.trim());
+  }
+
+  const content = Array.isArray(parsedBody?.content) ? parsedBody.content : [];
+  const firstTextBlock = content.find((block: any) => block?.type === 'text' && typeof block?.text === 'string');
+  if (firstTextBlock) {
+    return firstTextBlock.text;
+  }
+
+  const fallbackText = content[0]?.text;
+  return typeof fallbackText === 'string' ? fallbackText : '';
+}

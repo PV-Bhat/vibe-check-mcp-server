@@ -143,7 +143,7 @@ Large language models can confidently follow flawed plans. Without an external n
 | Feature | Description | Benefits |
 |---------|-------------|----------|
 | **CPI Adaptive Interrupts** | Phase-aware prompts that challenge assumptions | alignment, robustness |
-| **Multi-provider LLM** | Gemini, OpenAI and OpenRouter support | flexibility |
+| **Multi-provider LLM** | Gemini, OpenAI, Anthropic, and OpenRouter support | flexibility |
 | **History Continuity** | Summarizes prior advice when `sessionId` is supplied | context retention |
 | **Optional vibe_learn** | Log mistakes and fixes for future reflection | self-improvement |
 
@@ -177,13 +177,39 @@ Create a `.env` file with the API keys you plan to use:
 ```bash
 # Gemini (default)
 GEMINI_API_KEY=your_gemini_api_key
-# Optional providers
+# Optional providers / Anthropic-compatible endpoints
 OPENAI_API_KEY=your_openai_api_key
 OPENROUTER_API_KEY=your_openrouter_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key
+ANTHROPIC_AUTH_TOKEN=your_proxy_bearer_token
+ANTHROPIC_BASE_URL=https://api.anthropic.com
+ANTHROPIC_VERSION=2023-06-01
 # Optional overrides
+# DEFAULT_LLM_PROVIDER accepts gemini | openai | openrouter | anthropic
 DEFAULT_LLM_PROVIDER=gemini
 DEFAULT_MODEL=gemini-2.5-pro
 ```
+
+#### Anthropic configuration examples
+
+Official Anthropic deployment:
+
+```bash
+DEFAULT_LLM_PROVIDER=anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+DEFAULT_MODEL=claude-sonnet-4-20250514
+```
+
+Anthropic-compatible proxy (e.g., z.ai, Bedrock, or on-prem gateways):
+
+```bash
+DEFAULT_LLM_PROVIDER=anthropic
+ANTHROPIC_BASE_URL=https://<your-compatible-endpoint>/api/anthropic
+ANTHROPIC_AUTH_TOKEN=...
+DEFAULT_MODEL=claude-sonnet-4-20250514
+```
+
+Endpoints that advertise Anthropic compatibility only need a base URL + bearer token swap — no code changes required.
 Start the server:
 ```bash
 npm start
