@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Vibe Check MCP Prompt Configuration",
+  "description": "Configuration file for managing prompts used in the Vibe Check MCP system",
+  "prompts": {
+    "metaMentorSystem": {
+      "path": "config/prompts/meta-mentor-system.md",
+      "description": "Main system prompt for the meta-mentor LLM",
+      "version": "1.0.0",
+      "lastModified": "2025-10-29"
+    },
+    "fallbackQuestionsLLM": {
+      "path": "config/prompts/fallback-questions-llm.md",
+      "description": "Fallback questions when LLM API fails",
+      "version": "1.0.0",
+      "lastModified": "2025-10-29"
+    },
+    "fallbackQuestionsTool": {
+      "path": "config/prompts/fallback-questions-tool.md",
+      "description": "Fallback questions when vibe_check tool encounters an error",
+      "version": "1.0.0",
+      "lastModified": "2025-10-29"
+    }
+  },
+  "settings": {
+    "enablePromptValidation": true,
+    "allowPromptOverride": false,
+    "logPromptUsage": false
+  }
+}
