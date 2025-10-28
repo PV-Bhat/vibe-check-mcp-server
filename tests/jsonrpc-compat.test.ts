@@ -439,7 +439,9 @@ describe('JSON-RPC compatibility shim', () => {
 
     // Mock StdioServerTransport to prevent it from reading from process.stdin, which would hang the test.
     vi.doMock('@modelcontextprotocol/sdk/server/stdio.js', () => ({
-      StdioServerTransport: class MockStdioTransport {},
+      StdioServerTransport: class MockStdioTransport {
+        start = vi.fn(async () => {});
+      },
     }));
     await stubState(); // main() calls createMcpServer which calls loadHistory()
 
