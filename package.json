@@ -21,7 +21,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "security-check": "node scripts/security-check.cjs",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "sync-version": "node scripts/sync-version.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.17.1",
