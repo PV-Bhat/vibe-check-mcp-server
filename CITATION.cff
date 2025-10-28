@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use VibeCheck MCP in your research, cite this repository."
 title: "VibeCheck MCP"
-version: "2.7.3"
+version: "2.7.4"
 authors:
   - family-names: Bhat
     given-names: Pruthvi

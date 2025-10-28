@@ -437,14 +437,26 @@ describe('JSON-RPC compatibility shim', () => {
     const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     let errorSpy: ReturnType<typeof vi.spyOn> | null = null;
 
+    // Mock StdioServerTransport to prevent it from reading from process.stdin, which would hang the test.
+    vi.doMock('@modelcontextprotocol/sdk/server/stdio.js', () => ({
+      StdioServerTransport: class MockStdioTransport {
+        start = vi.fn(async () => {});
+      },
+    }));
+    await stubState(); // main() calls createMcpServer which calls loadHistory()
+
     try {
-      await import('../src/index.js');
+      const { main } = await import('../src/index.js');
+      // The console redirection happens inside main().
+      await main();
+
       errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       console.log('shim-log');
       expect(errorSpy).toHaveBeenCalledWith('shim-log');
       expect(stdoutSpy).not.toHaveBeenCalled();
     } finally {
       errorSpy?.mockRestore();
+      stdoutSpy.mockRestore();
       console.log = originalLog;
       console.error = originalError;
     }

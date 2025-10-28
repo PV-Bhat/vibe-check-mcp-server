@@ -72,6 +72,10 @@ const main = async () => {
     { pattern: /## v\d+\.\d+\.\d+ -/, value: `## v${newVersion} -` }
   ]);
 
+  await replaceInFile('CITATION.cff', [
+    { pattern: /version: "\d+\.\d+\.\d+"/, value: `version: "${newVersion}"` }
+  ]);
+
   console.log(`Synchronized project files to version ${newVersion}`);
 };
 
