@@ -24,11 +24,7 @@ import { applyJsonRpcCompatibility, wrapTransportForCompatibility } from './util
 import { createRequestScopedTransport, RequestScopeStore } from './utils/httpTransportWrapper.js';
 
 const IS_DISCOVERY = process.env.MCP_DISCOVERY_MODE === '1';
-const USE_STDIO = process.env.MCP_TRANSPORT === 'stdio';
-
-if (USE_STDIO) {
-  console.log = (...args) => console.error(...args);
-}
+const useStdio = () => process.env.MCP_TRANSPORT === 'stdio';
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 
@@ -436,11 +432,14 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
 }
 
 export async function main(options: MainOptions = {}) {
+  if (useStdio()) {
+    console.log = (...args) => console.error(...args);
+  }
   const createServerFn = options.createServer ?? createMcpServer;
   const startHttpFn = options.startHttp ?? startHttpServer;
   const server = await createServerFn();
 
-  if (USE_STDIO) {
+  if (useStdio()) {
     const transport = wrapTransportForCompatibility(new StdioServerTransport());
     await server.connect(transport);
     console.error('[MCP] stdio transport connected');
