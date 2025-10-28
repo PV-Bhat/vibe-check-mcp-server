@@ -1,10 +1,10 @@
 # 🧠 Vibe Check MCP v2.7.1
 
-<p align="center"><b>KISS overzealous agents goodbye — stop over-engineering; ship the minimal viable path first.</b></p>
+<p align="center"><b>KISS overzealous agents goodbye. Plug & play agent oversight tool.</b></p>
 
 <p align="center">
   <b>Based on research</b><br/>
-  In our study agents calling Vibe Check improved success (27 → 54%) and halved harmful actions (83 → 42%).
+  In our study agents calling Vibe Check improved success **+27%** and halved harmful actions **-41%**
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <sub>32.3k installs on PulseMCP • 12.8k this week • featured on “Most Popular (This Week)” • 2k+ monthly calls on Smithery.ai • research-backed oversight • STDIO + streamable HTTP transport</sub>
+  <sub> featured on PulseMCP “Most Popular (This Week)” • 5k+ monthly calls on Smithery.ai • research-backed oversight • STDIO + streamable HTTP transport</sub>
 </p>
 
 <img width="500" height="300" alt="Gemini_Generated_Image_kvdvp4kvdvp4kvdv" src="https://github.com/user-attachments/assets/ff4d9efa-2142-436d-b1df-2a711a28c34e" />
@@ -80,11 +80,6 @@ For client integrations (like Claude Desktop or Cursor), add this entry to your 
 
 The server will be downloaded and run on-demand. For detailed client setup and other commands like `install` and `doctor`, see the full documentation below.
 
-### By the numbers (as of 16 Oct 2025)
-- PulseMCP: ~34.3k total installs; featured on “Most Popular (This Week)” front page
-- Smithery.ai: Category leader in Smithery’s Developer Workflow Tools.
-- Study: success 27→54%, harmful actions 83→42%, optimal CPI dosage ~10–20%
-
 [![Star History Chart](https://api.star-history.com/svg?repos=PV-Bhat/vibe-check-mcp-server&type=Date)](https://www.star-history.com/#PV-Bhat/vibe-check-mcp-server&Date)
 
 ### Recognition
@@ -92,7 +87,6 @@ The server will be downloaded and run on-demand. For detailed client setup and o
 - Listed in Anthropic’s official Model Context Protocol repo [🔗](https://github.com/modelcontextprotocol/servers?tab=readme-overview#-community-servers)
 - Discoverable in the official MCP Registry [🔗](https://registry.modelcontextprotocol.io/v0/servers?search=vibe-check-mcp)
 - Featured on Sean Kochel's Top 9 MCP servers for vibe coders [🔗](https://youtu.be/2wYO6sdQ9xc?si=mlVo4iHf_hPKghxc&t=1331)
-- 35k installs total across public MCP directories/clients
 
 ## Table of Contents
 - [Quickstart (npx)](#quickstart-npx)
@@ -166,7 +160,7 @@ npm ci
 npm run build
 npm test
 ```
-Use **npm** for all workflows (`npm ci`, `npm run build`, `npm test`). This project targets Node **>=20**. If you see a TypeScript error about a duplicate `require` declaration when building with Node 20.19.3, ensure your dependencies are up to date (`npm ci`) or use the Docker setup below which handles the build automatically.
+Use **npm** for all workflows (`npm ci`, `npm run build`, `npm test`). This project targets Node **>=20**. 
 
 Create a `.env` file with the API keys you plan to use:
 ```bash
@@ -192,7 +186,7 @@ Official Anthropic deployment:
 ```bash
 DEFAULT_LLM_PROVIDER=anthropic
 ANTHROPIC_API_KEY=sk-ant-...
-DEFAULT_MODEL=claude-sonnet-4-20250514
+DEFAULT_MODEL=claude-sonnet-4.5
 ```
 
 Anthropic-compatible proxy (e.g., z.ai, Bedrock, or on-prem gateways):
@@ -201,13 +195,7 @@ Anthropic-compatible proxy (e.g., z.ai, Bedrock, or on-prem gateways):
 DEFAULT_LLM_PROVIDER=anthropic
 ANTHROPIC_BASE_URL=https://<your-compatible-endpoint>/api/anthropic
 ANTHROPIC_AUTH_TOKEN=...
-DEFAULT_MODEL=claude-sonnet-4-20250514
-```
-
-Endpoints that advertise Anthropic compatibility only need a base URL + bearer token swap — no code changes required.
-Start the server:
-```bash
-npm start
+DEFAULT_MODEL=...
 ```
 See [docs/TESTING.md](./docs/TESTING.md) for instructions on how to run tests.
 
@@ -216,34 +204,7 @@ The repository includes a helper script for one-command setup. It builds the ima
 ```bash
 bash scripts/docker-setup.sh
 ```
-This script:
-- Creates `~/vibe-check-mcp` for persistent data
-- Builds the Docker image and sets up `docker-compose.yml`
-- Prompts for your API key and writes `~/vibe-check-mcp/.env`
-- Installs a systemd service (Linux) or LaunchAgent (macOS) so the container starts at login
-- Generates `vibe-check-tcp-wrapper.sh` which proxies Cursor IDE to the server
-After running it, open Cursor IDE → **Settings** → **MCP** and add a new server of type **Command** pointing to:
-```bash
-~/vibe-check-mcp/vibe-check-tcp-wrapper.sh
-```
 See [Automatic Docker Setup](./docs/docker-automation.md) for full details.
-If you prefer to run the commands manually:
-```bash
-docker build -t vibe-check-mcp .
-docker run -e GEMINI_API_KEY=your_gemini_api_key -p 3000:3000 vibe-check-mcp
-```
-
-## Release
-
-Cut a new version by tagging the repository with [semantic versioning](https://semver.org/) (e.g., `v2.6.0`). The release workflow will:
-
-1. build the project with Node 20 via `npm ci` and `npm run build`,
-2. enforce coverage with `npm run test:coverage`,
-3. run CLI smoke checks (`doctor`, `start --stdio --dry-run`, `start --http --port 2091 --dry-run`, `install --client claude --dry-run`),
-4. publish the package to npmjs using the `NPM_TOKEN` repository secret, and
-5. verify the published tarball by running `npx @pv-bhat/vibe-check-mcp@<version> --help` on the freshly released build.
-
-Ensure `NPM_TOKEN` is configured under **Repository Settings → Secrets and variables → Actions** before tagging.
 
 ### Provider keys
 
@@ -273,7 +234,7 @@ Each installer is idempotent and tags entries with `"managedBy": "vibe-check-mcp
 #### Windsurf (Cascade)
 
 - Config path: legacy `~/.codeium/windsurf/mcp_config.json`, new builds use `~/.codeium/mcp_config.json`.
-- Stdio is the default; pass `--http` to emit an entry with `serverUrl` for Windsurf’s HTTP client.
+- Pass `--http` to emit an entry with `serverUrl` for Windsurf’s HTTP client.
 - Existing sentinel-managed `serverUrl` entries are preserved and updated in place.
 
 #### Visual Studio Code
@@ -281,13 +242,11 @@ Each installer is idempotent and tags entries with `"managedBy": "vibe-check-mcp
 - Workspace config lives at `.vscode/mcp.json`; profiles also store `mcp.json` in your VS Code user data directory.
 - Provide `--config <path>` to target a workspace file. Without `--config`, the CLI prints a JSON snippet and a `vscode:mcp/install?...` link you can open directly from the terminal.
 - VS Code supports optional dev fields; pass `--dev-watch` and/or `--dev-debug <value>` to populate `dev.watch`/`dev.debug`.
-- Requires VS Code **v1.102** or later for MCP discovery in the UI.
 
 ### Uninstall & rollback
 
 - Restore the backup generated during installation (the newest `*.bak` next to your config) to revert immediately.
 - To remove the server manually, delete the `vibe-check-mcp` entry under `mcpServers` (Claude/Windsurf/Cursor) or `servers` (VS Code) as long as it is still tagged with `"managedBy": "vibe-check-mcp-cli"`.
-- After removal or rollback, restart your client to drop the MCP connection.
 
 ## Research & Philosophy
 
@@ -298,16 +257,6 @@ Each installer is idempotent and tags entries with `"managedBy": "vibe-check-mcp
 - 📘 **CPI Reference Implementation (GitHub)**: https://github.com/PV-Bhat/cpi
 - 📚 **MURST Zenodo DOI (RSRC archival)**: https://doi.org/10.5281/zenodo.14851363
 
-## Usage Examples
-```ts
-import { vibe_check } from 'vibe-check-mcp';
-const result = await vibe_check({
-  goal: 'Write unit tests',
-  plan: 'Use vitest for coverage',
-  sessionId: 'demo1'
-});
-console.log(result.questions);
-```
 ```mermaid
 flowchart TD
   A[Agent Phase] --> B{Monitor Progress}
@@ -315,11 +264,6 @@ flowchart TD
   C --> D[Reflect & Adjust]
   B -- smooth --> E[Continue]
 ```
-
-## Adaptive Metacognitive Interrupts (CPI)
-<details><summary>Advanced CPI Details</summary>
-The CPI architecture monitors planning, implementation and review phases. When uncertainty spikes, Vibe Check pauses execution, poses clarifying questions and resumes once the agent acknowledges the feedback.
-</details>
 
 ## Agent Prompting Essentials
 In your agent's system prompt, make it clear that `vibe_check` is a mandatory tool for reflection. Always pass the full user request and other relevant context. After correcting a mistake, you can optionally log it with `vibe_learn` to build a history for future analysis.
@@ -354,10 +298,7 @@ As an autonomous agent you will:
 ## Security
 This repository includes a CI-based security scan that runs on every pull request. It checks dependencies with `npm audit` and scans the source for risky patterns. See [SECURITY.md](./SECURITY.md) for details and how to report issues.
 
-## Roadmap
-
-### Community Signals: What Builders Are Asking For
-GitHub issues, PulseMCP reviews, and Discord discussions keep surfacing the same needs: turn the validated research prototype into a dependable day-to-day tool, make the mentor's output easier to wire into automations, and provide lightweight guardrails so solo builders can adopt CPI without heavy lift.
+## Roadmap (New PRs welcome)
 
 ### Priority 1 – Builder Experience & Guidance
 - **Structured output for `vibe_check`:** Return a JSON envelope such as `{ advice, riskScore, traits }` so downstream agents can reason deterministically while preserving readable reflections.
@@ -383,15 +324,15 @@ Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
   <img src="https://contrib.rocks/image?repo=PV-Bhat/vibe-check-mcp-server" alt="Contributors"/>
 </a> 
 
-## Find Vibe Check MCP on
-* 🌐 [MSEEP](https://mseep.ai/app/pv-bhat-vibe-check-mcp-server)
-* 📡 [MCP Servers](https://mcpservers.org/servers/PV-Bhat/vibe-check-mcp-server)
-* 🧠 [MCP.so](https://mcp.so/server/vibe-check-mcp-server/PV-Bhat)
-* 🛠️ [Creati.ai](https://creati.ai/mcp/vibe-check-mcp-server/)
-* 💡 [Pulse MCP](https://www.pulsemcp.com/servers/pv-bhat-vibe-check)
-* 📘 [Playbooks.com](https://playbooks.com/mcp/pv-bhat-vibe-check)
-* 🧰 [MCPHub.tools](https://mcphub.tools/detail/PV-Bhat/vibe-check-mcp-server)
-* 📇 [MCP Directory](https://mcpdirectory.ai/mcpserver/2419/)
+## Links
+* [MSEEP](https://mseep.ai/app/pv-bhat-vibe-check-mcp-server)
+* [MCP Servers](https://mcpservers.org/servers/PV-Bhat/vibe-check-mcp-server)
+* [MCP.so](https://mcp.so/server/vibe-check-mcp-server/PV-Bhat)
+* [Creati.ai](https://creati.ai/mcp/vibe-check-mcp-server/)
+* [Pulse MCP](https://www.pulsemcp.com/servers/pv-bhat-vibe-check)
+* [Playbooks.com](https://playbooks.com/mcp/pv-bhat-vibe-check)
+* [MCPHub.tools](https://mcphub.tools/detail/PV-Bhat/vibe-check-mcp-server)
+* [MCP Directory](https://mcpdirectory.ai/mcpserver/2419/)
 
 ## Credits & License
 Vibe Check MCP is released under the [MIT License](LICENSE). Built for reliable, enterprise-ready AI agents.
