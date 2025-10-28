@@ -4,7 +4,6 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Command, Option } from 'commander';
 import { execa } from 'execa';
-import { main as startServer } from '../index.js';
 import { checkNodeVersion, detectEnvFiles, portStatus, readEnvFile } from './doctor.js';
 import { ensureEnv, resolveEnvSources } from './env.js';
 import { formatUnifiedDiff } from './diff.js';
@@ -210,7 +209,8 @@ async function runStartCommand(options: StartOptions): Promise<void> {
     // For stdio, we must run the server in the same process as the CLI
     // to allow the client to communicate with it directly.
     Object.assign(process.env, spawnEnv);
-    await startServer();
+    const { main } = await import('../index.js');
+    await main();
   } else {
     // For HTTP, spawning a child process is acceptable.
     await execa(process.execPath, [entrypoint], {
