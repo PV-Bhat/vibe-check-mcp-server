@@ -1,4 +1,4 @@
-# 🧠 Vibe Check MCP v2.7.1
+# Vibe Check MCP
 
 <p align="center"><b>KISS overzealous agents goodbye. Plug & play agent oversight tool.</b></p>
 
@@ -27,7 +27,7 @@
 
 <img width="500" height="300" alt="Gemini_Generated_Image_kvdvp4kvdvp4kvdv" src="https://github.com/user-attachments/assets/ff4d9efa-2142-436d-b1df-2a711a28c34e" />
 
-[![Version](https://img.shields.io/badge/version-2.7.1-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Version](https://img.shields.io/badge/version-2.7.2-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
 [![Security 4.3★/5 on MSEEP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
@@ -94,7 +94,7 @@ The server will be downloaded and run on-demand. For detailed client setup and o
 - [Overview](#overview)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
-- [What's New](#whats-new-in-v270)
+- [What's New](#whats-new-in-v272)
 - [Development Setup](#development-setup)
 - [Release](#release)
 - [Usage Examples](#usage-examples)
@@ -133,7 +133,7 @@ Large language models can confidently follow flawed plans. Without an external n
 | **History Continuity** | Summarizes prior advice when `sessionId` is supplied | context retention |
 | **Optional vibe_learn** | Log mistakes and fixes for future reflection | self-improvement |
 
-## What's New in v2.7.1
+## What's New in v2.7.2
 
 - `install --client` now supports Cursor, Windsurf, and Visual Studio Code with idempotent merges, atomic writes, and `.bak` rollbacks.
 - HTTP-aware installers preserve `serverUrl` entries for Windsurf and emit VS Code workspace snippets plus a `vscode:mcp/install` link when no config is provided.
