@@ -1,5 +1,6 @@
 import { getMetacognitiveQuestions } from '../utils/llm.js';
 import { addToHistory, getHistorySummary } from '../utils/state.js';
+import { getPrompt } from '../utils/prompts.js';
 
 // Vibe Check tool handler
 export interface VibeCheckInput {
@@ -64,12 +65,5 @@ export async function vibeCheckTool(input: VibeCheckInput): Promise<VibeCheckOut
  * Generate adaptive fallback questions when API fails
  */
 function generateFallbackQuestions(userRequest: string, plan: string): string {
-    return `
-I can see you're thinking through your approach, which shows thoughtfulness:
-
-1. Does this plan directly address what the user requested, or might it be solving a different problem?
-2. Is there a simpler approach that would meet the user's needs?
-3. What unstated assumptions might be limiting the thinking here?
-4. How does this align with the user's original intent?
-`;
+    return getPrompt('fallbackQuestionsTool');
 }
