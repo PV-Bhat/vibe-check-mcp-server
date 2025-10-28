@@ -58,32 +58,27 @@
 
 ## Quickstart (npx)
 
+Run the server directly from npm without a local installation. Requires Node **>=20**.
+
 ```bash
-# Try it (Claude-friendly)
-npx @pv-bhat/vibe-check-mcp start --stdio
-
-# Install to a client
-npx @pv-bhat/vibe-check-mcp install --client claude
-npx @pv-bhat/vibe-check-mcp install --client claude-code
-npx @pv-bhat/vibe-check-mcp install --client cursor
-npx @pv-bhat/vibe-check-mcp install --client windsurf
-npx @pv-bhat/vibe-check-mcp install --client vscode --config ./.vscode/mcp.json
-
-# Discover supported clients
-npx @pv-bhat/vibe-check-mcp --list-clients
-
-# Doctor
-npx @pv-bhat/vibe-check-mcp doctor
+# Start the server with stdio transport
+npx -y @pv-bhat/vibe-check-mcp start --stdio
 ```
 
-Requires Node **>=20**. These commands install straight from npm, build the CLI on demand, and work on any machine with `npx`.
+For client integrations (like Claude Desktop or Cursor), add this entry to your MCP configuration:
 
-Claude Desktop and Claude Code rely on Anthropic – the installer enforces `ANTHROPIC_API_KEY` and will prompt to store it in
-`~/.vibe-check/.env` (or the project `.env` when you pass `--local`). Other clients can run on any supported provider key
-(`OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`); the CLI resolves secrets from your shell first, then project/home
-`.env` files.
+```json
+{
+  "mcpServers": {
+    "vibe-check-mcp": {
+      "command": "npx",
+      "args": ["-y", "@pv-bhat/vibe-check-mcp", "start", "--stdio"]
+    }
+  }
+}
+```
 
-Prefer a hosted runtime? [Smithery](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server) ships an official build of this server
+The server will be downloaded and run on-demand. For detailed client setup and other commands like `install` and `doctor`, see the full documentation below.
 
 ### By the numbers (as of 16 Oct 2025)
 - PulseMCP: ~34.3k total installs; featured on “Most Popular (This Week)” front page
@@ -107,7 +102,7 @@ Prefer a hosted runtime? [Smithery](https://smithery.ai/server/@PV-Bhat/vibe-che
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
 - [What's New](#whats-new-in-v270)
-- [Quickstart & Installation](#quickstart--installation)
+- [Development Setup](#development-setup)
 - [Release](#release)
 - [Usage Examples](#usage-examples)
 - [Adaptive Metacognitive Interrupts (CPI)](#adaptive-metacognitive-interrupts-cpi)
@@ -162,7 +157,7 @@ Use a lightweight “constitution” to enforce rules per `sessionId` that CPI w
 - `reset_constitution({ sessionId })` → clears session rules
 - `check_constitution({ sessionId })` → returns effective rules for the session
 
-## Quickstart & Installation
+## Development Setup
 ```bash
 # Clone and install
 git clone https://github.com/PV-Bhat/vibe-check-mcp-server.git
