@@ -205,10 +205,19 @@ async function runStartCommand(options: StartOptions): Promise<void> {
     return;
   }
 
-  await execa(process.execPath, [entrypoint], {
-    stdio: 'inherit',
-    env: spawnEnv,
-  });
+  if (transport === 'stdio') {
+    // For stdio, we must run the server in the same process as the CLI
+    // to allow the client to communicate with it directly.
+    Object.assign(process.env, spawnEnv);
+    const { main } = await import('../index.js');
+    await main();
+  } else {
+    // For HTTP, spawning a child process is acceptable.
+    await execa(process.execPath, [entrypoint], {
+      stdio: 'inherit',
+      env: spawnEnv,
+    });
+  }
 }
 
 async function runDoctorCommand(options: DoctorOptions): Promise<void> {
