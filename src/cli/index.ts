@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, promises as fsPromises } from 'node:fs';
+import { readFileSync, promises as fsPromises, realpathSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Command, Option } from 'commander';
@@ -55,7 +55,8 @@ type InstallOptions = {
   devDebug?: string;
 };
 
-const cliDir = dirname(fileURLToPath(import.meta.url));
+const realPath = realpathSync(fileURLToPath(import.meta.url));
+const cliDir = dirname(realPath);
 const projectRoot = resolve(cliDir, '..', '..');
 const entrypoint = resolve(projectRoot, 'build', 'index.js');
 const packageJsonPath = resolve(projectRoot, 'package.json');
