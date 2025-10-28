@@ -3,32 +3,32 @@
 <p align="center"><b>KISS overzealous agents goodbye. Plug & play agent oversight tool.</b></p>
 
 <p align="center">
-  <b>Based on research</b><br/>
-  In our study agents calling Vibe Check improved success **+27%** and halved harmful actions **-41%**
+  <b>Based on research:</b><br/>
+  In our study agents calling Vibe Check improved success +27% and halved harmful actions -41%
 </p>
 
 <p align="center">
   <a href="https://www.researchgate.net/publication/394946231_Do_AI_Agents_Need_Mentors_Evaluating_Chain-Pattern_Interrupt_CPI_for_Oversight_and_Reliability?channel=doi&linkId=68ad6178ca495d76982ff192&showFulltext=true">
-    <img src="https://img.shields.io/badge/Research-CPI%20%28MURST%29-blue?style=flat-square" alt="CPI (MURST) Research">
+    <img src="https://img.shields.io/badge/Research-CPI%20%28MURST%29-blue?style=flat-square" alt="CPI Research">
   </a>
-  <a href="https://github.com/modelcontextprotocol/servers"><img src="https://img.shields.io/badge/Anthropic%20MCP-listed-111?labelColor=111&color=555&style=flat-square" alt="Anthropic MCP: listed"></a>
-  <a href="https://registry.modelcontextprotocol.io/"><img src="https://img.shields.io/badge/MCP%20Registry-discoverable-555?labelColor=111&style=flat-square" alt="MCP Registry: discoverable"></a>
+  <a href="https://github.com/modelcontextprotocol/servers"><img src="https://img.shields.io/badge/Anthropic%20MCP-featured-111?labelColor=111&color=555&style=flat-square" alt="Anthropic MCP: listed"></a>
+  <a href="https://registry.modelcontextprotocol.io/"><img src="https://img.shields.io/badge/MCP%20Registry-listed-555?labelColor=111&style=flat-square" alt="MCP Registry"></a>
   <a href="https://www.pulsemcp.com/servers/pv-bhat-vibe-check">
-    <img src="https://img.shields.io/badge/PulseMCP-Most%20Popular%20(this%20week)-0b7285?style=flat-square" alt="PulseMCP: Most Popular (this week)">
+    <img src="https://img.shields.io/badge/PulseMCP-Most%20Popular%20(Oct 2025)-0b7285?style=flat-square" alt="PulseMCP: Most Popular (this week)">
   </a>
-  <a href="https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml"><img src="https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml"><img src="https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml/badge.svg" alt="CI passing"></a>
+  <a href="https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server"><img src="https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server" alt="Smithery Badge"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0b7285?style=flat-square" alt="MIT License"></a>
 </p>
 
 <p align="center">
-  <sub> featured on PulseMCP “Most Popular (This Week)” • 5k+ monthly calls on Smithery.ai • research-backed oversight • STDIO + streamable HTTP transport</sub>
+  <sub> Featured on PulseMCP “Most Popular (This Week)” • 5k+ monthly calls on Smithery.ai • research-backed oversight • STDIO + streamable HTTP transport</sub>
 </p>
 
 <img width="500" height="300" alt="Gemini_Generated_Image_kvdvp4kvdvp4kvdv" src="https://github.com/user-attachments/assets/ff4d9efa-2142-436d-b1df-2a711a28c34e" />
 
 [![Version](https://img.shields.io/badge/version-2.7.1-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
-[![smithery badge](https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server)](https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server)
 [![Security 4.3★/5 on MSEEP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
 
@@ -53,7 +53,7 @@
 </div>
 
 <div align="center">
-  <em>Trusted by developers across major MCP platforms and registries</em>
+  <em>Trusted by developers across MCP platforms and registries</em>
 </div>
 
 ## Quickstart (npx)
@@ -92,7 +92,6 @@ The server will be downloaded and run on-demand. For detailed client setup and o
 - [Quickstart (npx)](#quickstart-npx)
 - [What is Vibe Check MCP?](#what-is-vibe-check-mcp)
 - [Overview](#overview)
-- [Architecture](#architecture)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
 - [What's New](#whats-new-in-v270)
@@ -119,9 +118,7 @@ Vibe Check MCP keeps agents on the minimal viable path and escalates complexity 
 
 Vibe Check MCP pairs a metacognitive signal layer with CPI so agents can pause when risk spikes. Vibe Check surfaces traits, uncertainty, and risk scores; CPI consumes those triggers and enforces an intervention policy before the agent resumes. See the [CPI integration guide](./docs/integrations/cpi.md) and the CPI repo at https://github.com/PV-Bhat/cpi for wiring details.
 
-## Architecture
-
-Vibe Check runs alongside your agent workflow, emitting signals that downstream overseers like CPI or human reviewers can act on. The high-level component map lives in [docs/architecture.md](./docs/architecture.md), while the CPI handoff diagram and example shim are captured in [docs/integrations/cpi.md](./docs/integrations/cpi.md).
+Vibe Check invokes a second LLM to give meta-cognitive feedback to your main agent. Integrating vibe_check calls into agent system prompts and instructing tool calls before irreversible actions significantly improves agent alignment and common-sense. The high-level component map: [docs/architecture.md](./docs/architecture.md), while the CPI handoff diagram and example shim are captured in [docs/integrations/cpi.md](./docs/integrations/cpi.md).
 
 ## The Problem: Pattern Inertia & Reasoning Lock-In
 
@@ -144,7 +141,7 @@ Large language models can confidently follow flawed plans. Without an external n
 
 ## Session Constitution (per-session rules)
 
-Use a lightweight “constitution” to enforce rules per `sessionId` that CPI will honor. Typical uses: “no external network calls,” “prefer unit tests before refactors,” “never write secrets to disk.”
+Use a lightweight “constitution” to enforce rules per `sessionId` that CPI will honor. Eg. constitution rules: “no external network calls,” “prefer unit tests before refactors,” “never write secrets to disk.”
 
 **API (tools):**
 - `update_constitution({ sessionId, rules })` → merges/sets rule set for the session
@@ -179,28 +176,12 @@ DEFAULT_LLM_PROVIDER=gemini
 DEFAULT_MODEL=gemini-2.5-pro
 ```
 
-#### Anthropic configuration examples
+#### Configuration 
 
-Official Anthropic deployment:
-
-```bash
-DEFAULT_LLM_PROVIDER=anthropic
-ANTHROPIC_API_KEY=sk-ant-...
-DEFAULT_MODEL=claude-sonnet-4.5
-```
-
-Anthropic-compatible proxy (e.g., z.ai, Bedrock, or on-prem gateways):
-
-```bash
-DEFAULT_LLM_PROVIDER=anthropic
-ANTHROPIC_BASE_URL=https://<your-compatible-endpoint>/api/anthropic
-ANTHROPIC_AUTH_TOKEN=...
-DEFAULT_MODEL=...
-```
-See [docs/TESTING.md](./docs/TESTING.md) for instructions on how to run tests.
+See [docs/TESTING.md]() for instructions on how to run tests.
 
 ### Docker
-The repository includes a helper script for one-command setup. It builds the image, saves your `GEMINI_API_KEY` and configures the container to start automatically whenever you log in:
+The repository includes a helper script for one-command setup.
 ```bash
 bash scripts/docker-setup.sh
 ```
@@ -208,7 +189,7 @@ See [Automatic Docker Setup](./docs/docker-automation.md) for full details.
 
 ### Provider keys
 
-See [API Keys & Secret Management](./docs/api-keys.md) for supported providers, resolution order, storage locations, and security guidance. Claude installers (`--client claude` / `--client claude-code`) still require `ANTHROPIC_API_KEY`; configure it ahead of non-interactive runs to avoid prompts.
+See [API Keys & Secret Management](./docs/api-keys.md) for supported providers, resolution order, storage locations, and security guidance.
 
 ### Transport selection
 
