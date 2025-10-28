@@ -625,8 +625,9 @@ async function createBackup(path: string, contents: string): Promise<string> {
   return backupPath;
 }
 
-const executedFile = process.argv[1] ? pathToFileURL(process.argv[1]).href : undefined;
-if (executedFile === import.meta.url) {
+const executedFile = process.argv[1] ? realpathSync(fileURLToPath(pathToFileURL(process.argv[1]))) : undefined;
+const thisFile = realpathSync(fileURLToPath(import.meta.url));
+if (executedFile === thisFile) {
   createCliProgram()
     .parseAsync(process.argv)
     .catch((error: unknown) => {
