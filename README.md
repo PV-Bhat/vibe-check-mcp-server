@@ -157,7 +157,7 @@ npm ci
 npm run build
 npm test
 ```
-Use **npm** for all workflows (`npm ci`, `npm run build`, `npm test`). This project targets Node **>=20**. 
+Use **npm** for all workflows (`npm ci`, `npm run build`, `npm test`). This project targets Node **>=20**.
 
 Create a `.env` file with the API keys you plan to use:
 ```bash
