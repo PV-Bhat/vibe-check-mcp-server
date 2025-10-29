@@ -6,4 +6,5 @@
 - [Advanced Integration](./advanced-integration.md)
 - [Technical Reference](./technical-reference.md)
 - [Agent Prompting](./agent-prompting.md)
+- [Prompt Verification & Security](./prompt-verification.md)
 - [Release & Versioning](./release-workflows.md)
