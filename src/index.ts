@@ -7,12 +7,14 @@ import express from 'express';
 import cors from 'cors';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { instrumentServer } from '@shinzolabs/instrumentation-mcp';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { McpError, ErrorCode, ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import type { Server as HttpServer } from 'http';
 import type { AddressInfo } from 'net';
 import { fileURLToPath } from 'url';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp';
 
 import { vibeCheckTool, VibeCheckInput, VibeCheckOutput } from './tools/vibeCheck.js';
 import { vibeLearnTool, VibeLearnInput, VibeLearnOutput } from './tools/vibeLearn.js';
@@ -61,13 +63,75 @@ export interface MainOptions {
   startHttp?: (options: HttpServerOptions) => Promise<HttpServerInstance>;
 }
 
+type ToolHandler = (args: unknown) => Promise<{ content: any[] }> | { content: any[] };
+
+interface InstrumentedToolRegistrar {
+  tool: (name: string, ...rest: any[]) => { dispose: () => void };
+}
+
 export async function createMcpServer(): Promise<Server> {
   await loadHistory();
 
+  const serverVersion = getPackageVersion();
   const server = new Server(
-    { name: 'vibe-check', version: getPackageVersion() },
+    { name: 'vibe-check', version: serverVersion },
     { capabilities: { tools: {}, sampling: {} } }
   );
+
+  const toolHandlers = new Map<string, ToolHandler>();
+
+  const instrumentationFacade: InstrumentedToolRegistrar = {
+    tool: (name: string, ...rest: any[]) => {
+      const handler = rest[rest.length - 1];
+      if (typeof handler !== 'function') {
+        throw new Error(`Tool handler for ${name} must be a function`);
+      }
+      toolHandlers.set(name, handler);
+      return {
+        dispose: () => {
+          toolHandlers.delete(name);
+        }
+      };
+    }
+  };
+
+  instrumentServer(instrumentationFacade as unknown as McpServer, {
+    serverName: 'vibe-check',
+    serverVersion,
+    exporterEndpoint: 'https://api.app.shinzo.ai/telemetry/ingest_http',
+    exporterAuth: {
+      type: 'bearer',
+      token: '2cc801222ab9c6576ff09be76d33af6e'
+    }
+  });
+
+  instrumentationFacade.tool('vibe_check', async (input: VibeCheckInput) => {
+    const result = await vibeCheckTool(input);
+    return { content: [{ type: 'text', text: formatVibeCheckOutput(result) }] };
+  });
+
+  instrumentationFacade.tool('vibe_learn', async (input: VibeLearnInput) => {
+    const result = await vibeLearnTool(input);
+    return { content: [{ type: 'text', text: formatVibeLearnOutput(result) }] };
+  });
+
+  instrumentationFacade.tool('update_constitution', async (args: { sessionId: string; rule: string }) => {
+    updateConstitution(args.sessionId, args.rule);
+    console.log('[Constitution:update]', { sessionId: args.sessionId, count: getConstitution(args.sessionId).length });
+    return { content: [{ type: 'text', text: '✅ Constitution updated' }] };
+  });
+
+  instrumentationFacade.tool('reset_constitution', async (args: { sessionId: string; rules: string[] }) => {
+    resetConstitution(args.sessionId, args.rules);
+    console.log('[Constitution:reset]', { sessionId: args.sessionId, count: getConstitution(args.sessionId).length });
+    return { content: [{ type: 'text', text: '✅ Constitution reset' }] };
+  });
+
+  instrumentationFacade.tool('check_constitution', async (args: { sessionId: string }) => {
+    const rules = getConstitution(args.sessionId);
+    console.log('[Constitution:check]', { sessionId: args.sessionId, count: rules.length });
+    return { content: [{ type: 'json', json: { rules } }] };
+  });
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: [
@@ -212,6 +276,10 @@ export async function createMcpServer(): Promise<Server> {
 
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
     const { name, arguments: raw } = req.params;
+    const handler = toolHandlers.get(name);
+    if (!handler) {
+      throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
+    }
     const args: any = raw;
 
     switch (name) {
@@ -236,8 +304,7 @@ export async function createMcpServer(): Promise<Server> {
           taskContext: typeof args.taskContext === 'string' ? args.taskContext : undefined,
           sessionId: typeof args.sessionId === 'string' ? args.sessionId : undefined,
         };
-        const result = await vibeCheckTool(input);
-        return { content: [{ type: 'text', text: formatVibeCheckOutput(result) }] };
+        return handler(input);
       }
 
       case 'vibe_learn': {
@@ -260,8 +327,7 @@ export async function createMcpServer(): Promise<Server> {
             : undefined,
           sessionId: typeof args.sessionId === 'string' ? args.sessionId : undefined
         };
-        const result = await vibeLearnTool(input);
-        return { content: [{ type: 'text', text: formatVibeLearnOutput(result) }] };
+        return handler(input);
       }
 
       case 'update_constitution': {
@@ -275,9 +341,7 @@ export async function createMcpServer(): Promise<Server> {
             : `Missing: ${missing.join(', ')}. Example: ${example}`;
           throw new McpError(ErrorCode.InvalidParams, message);
         }
-        updateConstitution(args.sessionId, args.rule);
-        console.log('[Constitution:update]', { sessionId: args.sessionId, count: getConstitution(args.sessionId).length });
-        return { content: [{ type: 'text', text: '✅ Constitution updated' }] };
+        return handler({ sessionId: args.sessionId, rule: args.rule });
       }
 
       case 'reset_constitution': {
@@ -291,9 +355,7 @@ export async function createMcpServer(): Promise<Server> {
             : `Missing: ${missing.join(', ')}. Example: ${example}`;
           throw new McpError(ErrorCode.InvalidParams, message);
         }
-        resetConstitution(args.sessionId, args.rules);
-        console.log('[Constitution:reset]', { sessionId: args.sessionId, count: getConstitution(args.sessionId).length });
-        return { content: [{ type: 'text', text: '✅ Constitution reset' }] };
+        return handler({ sessionId: args.sessionId, rules: args.rules });
       }
 
       case 'check_constitution': {
@@ -306,9 +368,7 @@ export async function createMcpServer(): Promise<Server> {
             : `Missing: ${missing.join(', ')}. Example: ${example}`;
           throw new McpError(ErrorCode.InvalidParams, message);
         }
-        const rules = getConstitution(args.sessionId);
-        console.log('[Constitution:check]', { sessionId: args.sessionId, count: rules.length });
-        return { content: [{ type: 'json', json: { rules } }] };
+        return handler({ sessionId: args.sessionId });
       }
 
       default:
