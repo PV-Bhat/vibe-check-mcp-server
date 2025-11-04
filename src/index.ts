@@ -444,6 +444,38 @@ export async function main(options: MainOptions = {}) {
     const transport = wrapTransportForCompatibility(new StdioServerTransport());
     await server.connect(transport);
     console.error('[MCP] stdio transport connected');
+
+    if (typeof process.stdin.resume === 'function') {
+      process.stdin.resume();
+    }
+
+    await new Promise<void>((resolve) => {
+      const previousOnClose = server.onclose;
+      const previousOnError = server.onerror;
+      let settled = false;
+
+      const finalize = () => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        server.onclose = previousOnClose;
+        server.onerror = previousOnError;
+        resolve();
+      };
+
+      server.onclose = () => {
+        previousOnClose?.();
+        finalize();
+      };
+
+      server.onerror = (error) => {
+        console.error('[MCP] stdio transport error', error);
+        previousOnError?.(error);
+        finalize();
+      };
+    });
+    return;
   } else {
     await startHttpFn({ server, attachSignalHandlers: true, logger: console });
   }
