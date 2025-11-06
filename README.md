@@ -58,14 +58,17 @@
 
 ## Quickstart (npx)
 
-Run the server directly from npm without a local installation. Requires Node **>=20**.
+Run the server directly from npm without a local installation. Requires Node **>=20**. Choose a transport:
+
+### Option 1 – MCP client over STDIO
 
 ```bash
-# Start the server with stdio transport
 npx -y @pv-bhat/vibe-check-mcp start --stdio
 ```
 
-For client integrations (like Claude Desktop or Cursor), add this entry to your MCP configuration:
+- Launch from an MCP-aware client (Claude Desktop, Cursor, Windsurf, etc.).
+- `[MCP] stdio transport connected` indicates the process is waiting for the client.
+- Add this block to your client config so it spawns the command:
 
 ```json
 {
@@ -78,7 +81,16 @@ For client integrations (like Claude Desktop or Cursor), add this entry to your 
 }
 ```
 
-The server will be downloaded and run on-demand. For detailed client setup and other commands like `install` and `doctor`, see the full documentation below.
+### Option 2 – Manual HTTP inspection
+
+```bash
+npx -y @pv-bhat/vibe-check-mcp start --http --port 2091
+```
+
+- `curl http://127.0.0.1:2091/health` to confirm the service is live.
+- Send JSON-RPC requests to `http://127.0.0.1:2091/rpc`.
+
+npx downloads the package on demand for both options. For detailed client setup and other commands like `install` and `doctor`, see the documentation below.
 
 [![Star History Chart](https://api.star-history.com/svg?repos=PV-Bhat/vibe-check-mcp-server&type=Date)](https://www.star-history.com/#PV-Bhat/vibe-check-mcp-server&Date)
 
