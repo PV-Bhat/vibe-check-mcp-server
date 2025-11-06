@@ -1,5 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+const ORIGINAL_GEMINI_KEY = process.env.GEMINI_API_KEY;
+
+function clearGeminiKey() {
+  delete process.env.GEMINI_API_KEY;
+}
+
+function restoreGeminiKey() {
+  if (ORIGINAL_GEMINI_KEY === undefined) {
+    delete process.env.GEMINI_API_KEY;
+  } else {
+    process.env.GEMINI_API_KEY = ORIGINAL_GEMINI_KEY;
+  }
+}
+
 class MockTransport {
   onmessage?: (message: any, extra?: any) => void;
   onclose?: () => void;
@@ -49,10 +63,12 @@ describe('JSON-RPC compatibility shim', () => {
     vi.resetModules();
     delete process.env.MCP_TRANSPORT;
     delete process.env.MCP_DISCOVERY_MODE;
+    clearGeminiKey();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    restoreGeminiKey();
   });
 
   it('synthesizes ids for stdio tools/call requests', async () => {
