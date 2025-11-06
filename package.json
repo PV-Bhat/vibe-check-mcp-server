@@ -1,7 +1,7 @@
 {
   "name": "@pv-bhat/vibe-check-mcp",
   "mcpName": "io.github.PV-Bhat/vibe-check-mcp-server",
-  "version": "2.7.5",
+  "version": "2.7.6",
   "description": "Metacognitive AI agent oversight: adaptive CPI interrupts for alignment, reflection and safety",
   "main": "build/index.js",
   "type": "module",
