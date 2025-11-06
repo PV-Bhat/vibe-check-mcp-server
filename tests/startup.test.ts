@@ -25,6 +25,7 @@ async function runStartupTest(envVar: 'MCP_HTTP_PORT' | 'PORT' | 'BOTH') {
 
   const mainPort = await getPort();
   const env: NodeJS.ProcessEnv = { ...process.env };
+  delete env.GEMINI_API_KEY;
 
   if (envVar === 'MCP_HTTP_PORT') {
     env.MCP_HTTP_PORT = String(mainPort);

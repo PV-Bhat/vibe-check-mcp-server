@@ -7,6 +7,19 @@ import type { HttpServerInstance, HttpServerOptions, LoggerLike } from '../src/i
 
 let tempHome: string;
 let originalHome: string | undefined;
+const originalGeminiKey = process.env.GEMINI_API_KEY;
+
+function clearGeminiKey() {
+  delete process.env.GEMINI_API_KEY;
+}
+
+function restoreGeminiKey() {
+  if (originalGeminiKey === undefined) {
+    delete process.env.GEMINI_API_KEY;
+  } else {
+    process.env.GEMINI_API_KEY = originalGeminiKey;
+  }
+}
 
 let startHttpServer: (options?: HttpServerOptions) => Promise<HttpServerInstance>;
 let llmModule: typeof import('../src/utils/llm.js');
@@ -21,6 +34,7 @@ beforeAll(async () => {
   originalHome = process.env.HOME;
   tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-server-test-'));
   process.env.HOME = tempHome;
+  clearGeminiKey();
 
   ({ startHttpServer } = await import('../src/index.js'));
   llmModule = await import('../src/utils/llm.js');
@@ -30,6 +44,7 @@ beforeAll(async () => {
 afterAll(() => {
   process.env.HOME = originalHome;
   fs.rmSync(tempHome, { recursive: true, force: true });
+  restoreGeminiKey();
 });
 
 let serverInstance: HttpServerInstance | undefined;
