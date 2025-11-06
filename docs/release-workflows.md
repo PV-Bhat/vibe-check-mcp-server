@@ -3,7 +3,7 @@
 ## Source of truth
 
 - `version.json` stores the canonical semantic version for the project. Update this file first when preparing a release.
-- `scripts/sync-version.mjs` reads `version.json` and synchronizes `package.json`, `package-lock.json`, `README.md`, and the primary `CHANGELOG.md` headers.
+- `scripts/sync-version.mjs` reads `version.json` and synchronizes `package.json`, `package-lock.json`, `README.md`, `CITATION.cff`, and the primary `CHANGELOG.md` headers.
 
 ## Syncing metadata
 
@@ -24,10 +24,18 @@
 - `npm publish` should only be executed after the sync step so the registry receives the correct version number.
 - Use `npm pack` or `npm publish --dry-run` to verify the release contents locally when iterating on the workflow.
 
+## GitHub Release Automation
+
+- When a git tag matching `v*.*.*` is pushed, the `create-release.yml` workflow automatically creates a GitHub release.
+- The release notes are extracted from `CHANGELOG.md` for that version.
+- The `release.yml` workflow automatically publishes to npm.
+
 ## Checklist
 
 - [ ] Update `version.json`
 - [ ] `npm run sync-version`
 - [ ] Update changelog entries (`CHANGELOG.md`, optional `docs/changelog.md`)
 - [ ] `npm test` (or relevant verification)
-- [ ] `npm publish` (after confirming `npm run prepublishOnly` completes successfully)
+- [ ] Commit all changes
+- [ ] Create and push a git tag (e.g., `git tag v2.x.x && git push origin v2.x.x`)
+- [ ] GitHub Actions will automatically create the release and publish to npm
