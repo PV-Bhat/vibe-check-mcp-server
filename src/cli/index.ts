@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, promises as fsPromises } from 'node:fs';
+import { readFileSync, realpathSync, promises as fsPromises } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Command, Option } from 'commander';
@@ -624,12 +624,24 @@ async function createBackup(path: string, contents: string): Promise<string> {
   return backupPath;
 }
 
-const executedFile = process.argv[1] ? pathToFileURL(process.argv[1]).href : undefined;
-if (executedFile === import.meta.url) {
-  createCliProgram()
-    .parseAsync(process.argv)
-    .catch((error: unknown) => {
-      console.error((error as Error).message);
-      process.exitCode = 1;
-    });
+const executedArg = process.argv[1];
+if (executedArg) {
+  let executedFileUrl: string;
+
+  try {
+    const resolved = realpathSync(executedArg);
+    executedFileUrl = pathToFileURL(resolved).href;
+  } catch (error) {
+    console.warn(`Failed to resolve CLI entrypoint: ${(error as Error).message}`);
+    executedFileUrl = pathToFileURL(executedArg).href;
+  }
+
+  if (executedFileUrl === import.meta.url) {
+    createCliProgram()
+      .parseAsync(process.argv)
+      .catch((error: unknown) => {
+        console.error((error as Error).message);
+        process.exitCode = 1;
+      });
+  }
 }
