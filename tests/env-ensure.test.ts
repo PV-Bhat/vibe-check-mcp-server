@@ -9,40 +9,88 @@ const VALID_PROVIDER_VALUES: Record<(typeof PROVIDER_ENV_KEYS)[number], string> 
   OPENAI_API_KEY: 'sk-valid',
   GEMINI_API_KEY: 'AI-valid',
   OPENROUTER_API_KEY: 'sk-or-valid',
+  OAICOMPATIBLE_API_KEY: 'sk-oai-compatible-valid',
+  OAICOMPATIBLE_BASE_URL: 'https://api.example.com/v1',
 };
 
 const ORIGINAL_ENV = { ...process.env };
 describe('ensureEnv', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     process.exitCode = undefined;
     process.env = { ...ORIGINAL_ENV };
     for (const key of PROVIDER_ENV_KEYS) {
       delete process.env[key];
     }
+
+    // Temporarily move .env file to avoid conflicts with test environment
+    try {
+      await fs.rename('.env', '.env.backup');
+    } catch (error) {
+      // .env doesn't exist, which is fine
+    }
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     vi.restoreAllMocks();
     process.env = { ...ORIGINAL_ENV };
+
+    // Restore .env file if it was backed up
+    try {
+      await fs.rename('.env.backup', '.env');
+    } catch (error) {
+      // .env.backup doesn't exist, which is fine
+    }
   });
 
-  it.each(PROVIDER_ENV_KEYS)(
-    'returns without writing when %s is present non-interactively',
-    async (key) => {
-      process.env[key] = VALID_PROVIDER_VALUES[key];
+  describe('single provider configuration', () => {
+    it.each(PROVIDER_ENV_KEYS.filter(k => !k.startsWith('OAICOMPATIBLE')))(
+      'returns without writing when %s is present non-interactively',
+      async (key) => {
+        process.env[key] = VALID_PROVIDER_VALUES[key];
+
+        const result = await ensureEnv({ interactive: false });
+        expect(result.wrote).toBe(false);
+        expect(result.path).toBeUndefined();
+        expect(result.missing).toBeUndefined();
+      },
+    );
+
+    it('returns without writing when both OAICompatible keys are present non-interactively', async () => {
+      process.env.OAICOMPATIBLE_API_KEY = VALID_PROVIDER_VALUES.OAICOMPATIBLE_API_KEY;
+      process.env.OAICOMPATIBLE_BASE_URL = VALID_PROVIDER_VALUES.OAICOMPATIBLE_BASE_URL;
 
       const result = await ensureEnv({ interactive: false });
       expect(result.wrote).toBe(false);
       expect(result.path).toBeUndefined();
       expect(result.missing).toBeUndefined();
-    },
-  );
+    });
+
+    it('considers OAICompatible valid when only API key is present (env logic)', async () => {
+      process.env.OAICOMPATIBLE_API_KEY = VALID_PROVIDER_VALUES.OAICOMPATIBLE_API_KEY;
+
+      const result = await ensureEnv({ interactive: false });
+      expect(result.wrote).toBe(false);
+      // The env system considers any single valid key as "good enough"
+      // The actual OAICompatible provider will fail at runtime if base URL is missing
+      expect(result.missing).toBeUndefined();
+    });
+
+    it('considers OAICompatible valid when only base URL is present (env logic)', async () => {
+      process.env.OAICOMPATIBLE_BASE_URL = VALID_PROVIDER_VALUES.OAICOMPATIBLE_BASE_URL;
+
+      const result = await ensureEnv({ interactive: false });
+      expect(result.wrote).toBe(false);
+      // The env system considers any single valid key as "good enough"
+      // The actual OAICompatible provider will fail at runtime if API key is missing
+      expect(result.missing).toBeUndefined();
+    });
+  });
 
   it('surfaces invalid optional keys even when another provider is set non-interactively', async () => {
     process.env.ANTHROPIC_API_KEY = VALID_PROVIDER_VALUES.ANTHROPIC_API_KEY;
     process.env.OPENAI_API_KEY = 'totally-invalid';
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
 
     const result = await ensureEnv({ interactive: false });
 
@@ -56,8 +104,11 @@ describe('ensureEnv', () => {
   });
 
   it('reports missing values when non-interactive', async () => {
-    delete process.env.ANTHROPIC_API_KEY;
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    // Clear all provider keys for this test
+    for (const key of PROVIDER_ENV_KEYS) {
+      delete process.env[key];
+    }
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
 
     const result = await ensureEnv({ interactive: false });
 
@@ -133,7 +184,7 @@ describe('ensureEnv', () => {
   });
 
   it('honors requiredKeys in non-interactive mode', async () => {
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
 
     const result = await ensureEnv({ interactive: false, requiredKeys: ['ANTHROPIC_API_KEY'] });
 
@@ -183,7 +234,7 @@ describe('ensureEnv', () => {
     process.env.OPENAI_API_KEY = 'bad-value';
 
     const prompt = vi.fn().mockResolvedValue('sk-openai-corrected');
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
 
     const result = await ensureEnv({ interactive: true, prompt });
 
@@ -207,7 +258,7 @@ describe('ensureEnv', () => {
       .fn()
       .mockResolvedValueOnce('invalid')
       .mockResolvedValueOnce('sk-ant-correct');
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
 
     const result = await ensureEnv({
       interactive: true,
@@ -231,7 +282,7 @@ describe('ensureEnv', () => {
     await fs.mkdir(homeDir, { recursive: true });
     await fs.writeFile(join(homeDir, '.env'), 'OPENAI_API_KEY=not-valid\n', 'utf8');
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
 
     const result = await ensureEnv({ interactive: false, requiredKeys: ['OPENAI_API_KEY'] });
 

@@ -32,7 +32,7 @@ if (USE_STDIO) {
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 
-export const SUPPORTED_LLM_PROVIDERS = ['gemini', 'openai', 'openrouter', 'anthropic'] as const;
+export const SUPPORTED_LLM_PROVIDERS = ['gemini', 'openai', 'openrouter', 'anthropic', 'oai-compatible'] as const;
 
 export interface LoggerLike {
   log: (...args: any[]) => void;

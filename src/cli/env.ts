@@ -24,6 +24,10 @@ const PROVIDER_VALIDATIONS: Record<string, { regex: RegExp; message: string }> =
     regex: /^sk-or-/,
     message: 'must start with "sk-or-".',
   },
+  OAICOMPATIBLE_BASE_URL: {
+    regex: /^https?:\/\/.+/,
+    message: 'must be a valid HTTP/HTTPS URL.',
+  },
 };
 
 export const PROVIDER_ENV_KEYS = [
@@ -31,6 +35,8 @@ export const PROVIDER_ENV_KEYS = [
   'OPENAI_API_KEY',
   'GEMINI_API_KEY',
   'OPENROUTER_API_KEY',
+  'OAICOMPATIBLE_API_KEY',
+  'OAICOMPATIBLE_BASE_URL',
 ] as const;
 
 type EnsureEnvOptions = {

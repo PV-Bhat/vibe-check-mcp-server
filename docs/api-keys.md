@@ -8,8 +8,20 @@ Vibe Check MCP works with multiple LLM providers. Use this guide to decide which
 - **Google Gemini** – `GEMINI_API_KEY`
 - **OpenAI** – `OPENAI_API_KEY`
 - **OpenRouter** – `OPENROUTER_API_KEY`
+- **OAICompatible** – `OAICOMPATIBLE_API_KEY` and `OAICOMPATIBLE_BASE_URL`
 
 Only one key is required to run the server, but you can set more than one to enable provider switching.
+
+### OAICompatible Provider Requirements
+
+The OAICompatible provider requires **both** environment variables:
+- `OAICOMPATIBLE_API_KEY` - API key for your OpenAI-compatible endpoint
+- `OAICOMPATIBLE_BASE_URL` - Base URL for your OpenAI-compatible API endpoint
+
+This provider is ideal for:
+- Local models (Ollama, LM Studio)
+- Proxy services with OpenAI-compatible endpoints
+- Alternative providers offering OpenAI-compatible APIs
 
 ## Secret resolution order
 
