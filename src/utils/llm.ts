@@ -5,6 +5,14 @@ import { resolveAnthropicConfig, buildAnthropicHeaders } from './anthropic.js';
 // API Clients - Use 'any' to support dynamic import
 let genAI: any = null;
 let openaiClient: any = null;
+let oaiCompatibleClient: any = null;
+
+// OAI-Compatible Configuration Interface (following AnthropicConfig pattern)
+interface OAICompatibleConfig {
+  apiKey: string;
+  baseURL: string;
+  timeout?: number;
+}
 
 // OpenRouter Constants
 const openrouterBaseUrl = 'https://openrouter.ai/api/v1';
@@ -13,6 +21,7 @@ const openrouterBaseUrl = 'https://openrouter.ai/api/v1';
 export async function initializeLLMs() {
   await ensureGemini();
   await ensureOpenAI();
+  await ensureOAICompatible();
 }
 
 async function ensureGemini() {
@@ -28,6 +37,54 @@ async function ensureOpenAI() {
     const { OpenAI } = await import('openai');
     openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     console.log('OpenAI API client initialized dynamically');
+  }
+}
+
+// Configuration builder function (following AnthropicConfig pattern)
+function buildOAICompatibleConfig(): OAICompatibleConfig | null {
+  const apiKey = process.env.OAICOMPATIBLE_API_KEY;
+  const baseURL = process.env.OAICOMPATIBLE_BASE_URL;
+
+  if (!apiKey || !baseURL) {
+    return null;
+  }
+
+  const config: OAICompatibleConfig = {
+    apiKey,
+    baseURL,
+    timeout: process.env.OAICOMPATIBLE_TIMEOUT ?
+      parseInt(process.env.OAICOMPATIBLE_TIMEOUT) : undefined,
+  };
+
+  return config;
+}
+
+/**
+ * Validate model name for OAI-compatible provider
+ * Supports organization/model format (e.g., 'z-ai/glm-4.6') and versioned models (e.g., 'model:version')
+ */
+function validateOAICompatibleModel(model: string): boolean {
+  // Updated regex to support forward slashes and colons for complex model names
+  const validModelNameRegex = /^[\w.\/:-]+$/;
+  return validModelNameRegex.test(model);
+}
+
+async function ensureOAICompatible() {
+  if (!oaiCompatibleClient && process.env.OAICOMPATIBLE_API_KEY && process.env.OAICOMPATIBLE_BASE_URL) {
+    const { OpenAI } = await import('openai');
+
+    // Simple validation following existing patterns
+    const baseURL = process.env.OAICOMPATIBLE_BASE_URL;
+    if (!baseURL.startsWith('http://') && !baseURL.startsWith('https://')) {
+      throw new Error('Invalid OAICOMPATIBLE_BASE_URL: must start with http:// or https://');
+    }
+
+    const clientConfig = buildOAICompatibleConfig();
+
+    if (clientConfig) {
+      console.log(`OAICompatible provider initialized with base URL: ${baseURL}`);
+      oaiCompatibleClient = new OpenAI(clientConfig);
+    }
   }
 }
 
@@ -118,6 +175,35 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
       compiledPrompt,
       systemPrompt,
     });
+  } else if (provider === 'oai-compatible') {
+    await ensureOAICompatible();
+    if (!oaiCompatibleClient) throw new Error('OAICompatible API key or base URL missing. Set both OAICOMPATIBLE_API_KEY and OAICOMPATIBLE_BASE_URL environment variables.');
+    const oaiCompatibleModel = model || process.env.OAICOMPATIBLE_MODEL || 'glm-4.6';
+
+    // Validate the model name
+    if (!validateOAICompatibleModel(oaiCompatibleModel)) {
+      throw new Error(`Invalid model name: "${oaiCompatibleModel}". Model names can contain letters, numbers, dots, hyphens, forward slashes, and colons.`);
+    }
+
+    console.log(`Using OAICompatible model: ${oaiCompatibleModel}`);
+    const response = await oaiCompatibleClient.chat.completions.create({
+      model: oaiCompatibleModel,
+      messages: [{ role: 'system', content: fullPrompt }],
+    });
+    if (!response.choices || response.choices.length === 0) {
+      throw new Error(`OAICompatible API returned no choices. Response: ${JSON.stringify(response)}`);
+    }
+
+    if (!response.choices[0]?.message) {
+      throw new Error(`OAICompatible API returned invalid message structure. Response: ${JSON.stringify(response)}`);
+    }
+
+    const content = response.choices[0].message.content;
+    if (content === null || content === undefined) {
+      throw new Error(`OAICompatible API returned null/undefined content. Response: ${JSON.stringify(response)}`);
+    }
+
+    responseText = content;
   } else {
     throw new Error(`Invalid provider specified: ${provider}`);
   }
@@ -144,8 +230,11 @@ export async function getMetacognitiveQuestions(input: QuestionInput): Promise<Q
 export const __testing = {
   setGenAI(client: any) { genAI = client; },
   setOpenAIClient(client: any) { openaiClient = client; },
+  setOAICompatibleClient(client: any) { oaiCompatibleClient = client; },
   getGenAI() { return genAI; },
-  getOpenAIClient() { return openaiClient; }
+  getOpenAIClient() { return openaiClient; },
+  getOAICompatibleClient() { return oaiCompatibleClient; },
+  validateOAICompatibleModel
 };
 
 interface AnthropicCallOptions {
