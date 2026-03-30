@@ -17,9 +17,13 @@ export function createRequestScopedTransport(
     return transport;
   }
 
-  let storedValue = (transport as any)._enableJsonResponse ?? false;
+  // SDK >=1.26 delegates to an inner _webStandardTransport; the
+  // _enableJsonResponse flag lives there, not on the outer wrapper.
+  const target = (transport as any)._webStandardTransport ?? transport;
 
-  Object.defineProperty(transport, '_enableJsonResponse', {
+  let storedValue = target._enableJsonResponse ?? false;
+
+  Object.defineProperty(target, '_enableJsonResponse', {
     configurable: true,
     enumerable: false,
     get() {

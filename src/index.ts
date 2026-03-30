@@ -66,7 +66,7 @@ export async function createMcpServer(): Promise<Server> {
 
   const server = new Server(
     { name: 'vibe-check', version: getPackageVersion() },
-    { capabilities: { tools: {}, sampling: {} } }
+    { capabilities: { tools: {} } }
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -308,7 +308,7 @@ export async function createMcpServer(): Promise<Server> {
         }
         const rules = getConstitution(args.sessionId);
         console.log('[Constitution:check]', { sessionId: args.sessionId, count: rules.length });
-        return { content: [{ type: 'json', json: { rules } }] };
+        return { content: [{ type: 'text', text: JSON.stringify({ rules }, null, 2) }] };
       }
 
       default:
@@ -337,6 +337,8 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
   app.post('/mcp', async (req, res) => {
     const started = Date.now();
     const originalAcceptHeader = req.headers.accept;
+    const originalRawIdx = req.rawHeaders.findIndex((h: string) => h.toLowerCase() === 'accept');
+    const originalRawAccept = originalRawIdx >= 0 ? req.rawHeaders[originalRawIdx + 1] : undefined;
     const rawAcceptValues = Array.isArray(originalAcceptHeader)
       ? originalAcceptHeader
       : [originalAcceptHeader ?? ''];
@@ -364,7 +366,16 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
       normalizedTokens.add('application/json');
       normalizedTokens.add('text/event-stream');
     }
-    req.headers.accept = Array.from(normalizedTokens).join(', ');
+    const normalizedAccept = Array.from(normalizedTokens).join(', ');
+    req.headers.accept = normalizedAccept;
+    // MCP SDK >=1.26 converts Node requests to web-standard Requests via Hono,
+    // which reads rawHeaders instead of the parsed headers object.
+    const rawIdx = req.rawHeaders.findIndex((h: string) => h.toLowerCase() === 'accept');
+    if (rawIdx >= 0) {
+      req.rawHeaders[rawIdx + 1] = normalizedAccept;
+    } else {
+      req.rawHeaders.push('Accept', normalizedAccept);
+    }
 
     const forceJsonResponse = acceptsJson && !acceptsSse;
 
@@ -386,6 +397,13 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
         delete req.headers.accept;
       } else {
         req.headers.accept = originalAcceptHeader;
+      }
+      // Restore rawHeaders to match
+      const restoreIdx = req.rawHeaders.findIndex((h: string) => h.toLowerCase() === 'accept');
+      if (originalRawAccept === undefined && restoreIdx >= 0) {
+        req.rawHeaders.splice(restoreIdx, 2);
+      } else if (originalRawAccept !== undefined && restoreIdx >= 0) {
+        req.rawHeaders[restoreIdx + 1] = originalRawAccept;
       }
       logger.log('[MCP] handled', { id, ms: Date.now() - started });
     }
