@@ -1,5 +1,7 @@
 # Vibe Check MCP
 
+> **This project is no longer actively maintained.** v2.8.0 is the final release, which includes security patches and bug fixes. The server remains fully functional. Community forks and contributions are welcome under the MIT license.
+
 <p align="center"><b>KISS overzealous agents goodbye. Plug & play agent oversight tool.</b></p>
 
 <p align="center">
@@ -27,7 +29,7 @@
 
 <img width="500" height="300" alt="Gemini_Generated_Image_kvdvp4kvdvp4kvdv" src="https://github.com/user-attachments/assets/ff4d9efa-2142-436d-b1df-2a711a28c34e" />
 
-[![Version](https://img.shields.io/badge/version-2.7.4-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Version](https://img.shields.io/badge/version-2.8.0-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
 [![Security 4.3★/5 on MSEEP](https://mseep.ai/badge.svg)](https://mseep.ai/app/a2954e62-a3f8-45b8-9a03-33add8b92599)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
@@ -106,7 +108,7 @@ npx downloads the package on demand for both options. For detailed client setup 
 - [Overview](#overview)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
-- [What's New](#whats-new-in-v274)
+- [What's New](#whats-new-in-v280-final-maintenance-release)
 - [Development Setup](#development-setup)
 - [Release](#release)
 - [Usage Examples](#usage-examples)
@@ -145,11 +147,13 @@ Large language models can confidently follow flawed plans. Without an external n
 | **History Continuity** | Summarizes prior advice when `sessionId` is supplied | context retention |
 | **Optional vibe_learn** | Log mistakes and fixes for future reflection | self-improvement |
 
-## What's New in v2.7.4
+## What's New in v2.8.0 (Final Maintenance Release)
 
-- `install --client` now supports Cursor, Windsurf, and Visual Studio Code with idempotent merges, atomic writes, and `.bak` rollbacks.
-- HTTP-aware installers preserve `serverUrl` entries for Windsurf and emit VS Code workspace snippets plus a `vscode:mcp/install` link when no config is provided.
-- Documentation now consolidates provider keys, transport selection, uninstall guidance, and dedicated client docs at [docs/clients.md](./docs/clients.md).
+> **Maintenance Notice:** This project is no longer actively maintained. It remains fully functional and available under the MIT license. Community forks are welcome. For details, see the [Changelog](./docs/changelog.md).
+
+- **Bug fix:** `check_constitution` now returns valid MCP content types (fixes #84)
+- **Security:** All dependencies updated — resolves 14 npm audit vulnerabilities (axios, MCP SDK, diff, express, and transitive deps)
+- **MCP SDK 1.26:** Updated to latest SDK with critical cross-client data leakage fix; HTTP transport adapter updated for compatibility
 
 ## Session Constitution (per-session rules)
 
@@ -291,24 +295,14 @@ As an autonomous agent you will:
 ## Security
 This repository includes a CI-based security scan that runs on every pull request. It checks dependencies with `npm audit` and scans the source for risky patterns. See [SECURITY.md](./SECURITY.md) for details and how to report issues.
 
-## Roadmap (New PRs welcome)
+## Roadmap
 
-### Priority 1 – Builder Experience & Guidance
-- **Structured output for `vibe_check`:** Return a JSON envelope such as `{ advice, riskScore, traits }` so downstream agents can reason deterministically while preserving readable reflections.
-- **Agent prompt starter kit:** Publish a plug-and-play system prompt snippet that teaches the CPI dosage principle (10–20% of steps), calls out risk inflection points, and reminds agents to include the last 5–10 tool calls in `taskContext`.
-- **Documentation refresh:** Highlight the new prompt template and context requirements throughout the README and integration guides.
+> **Note:** This project has reached its final maintenance release (v2.8.0). The roadmap below is preserved for community forks that may wish to continue development.
 
-### Priority 2 – Core Reliability Requests
-- **LLM resilience:** Wrap `generateResponse` in `src/utils/llm.ts` with retries and exponential backoff, with a follow-up circuit breaker once the basics land.
-- **Input sanitization:** Validate and cleanse tool arguments in `src/index.ts` to mitigate prompt-injection vectors.
-- **State stewardship:** Add TTL-based cleanup in `src/utils/state.ts` and switch `src/utils/storage.ts` file writes to `fs.promises` to avoid blocking the event loop.
-
-These initiatives are tracked as community-facing GitHub issues so contributors can grab them and see progress in the open.
-
-### Additional Follow-On Ideas & Good First Issues
-- **Telemetry sanity checks:** Add a lint-style CI step that verifies `docs/` examples compile (e.g., TypeScript snippet type-check) to catch drift between docs and code.
-- **CLI help polish:** Ensure every CLI subcommand prints a concise `--help` example aligned with the refreshed prompt guidance.
-- **Docs navigation cleanup:** Cross-link `docs/agent-prompting.md` and `docs/technical-reference.md` from the README section headers to reduce context switching for new contributors.
+- **Structured output for `vibe_check`:** Return a JSON envelope such as `{ advice, riskScore, traits }` so downstream agents can reason deterministically.
+- **LLM resilience:** Wrap `generateResponse` with retries and exponential backoff.
+- **Input sanitization:** Validate and cleanse tool arguments to mitigate prompt-injection vectors.
+- **Prompt externalization:** Move hardcoded prompts to configuration files for transparency and auditability (see PR #71).
 
 ## Contributors & Community
 Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
