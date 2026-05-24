@@ -19,7 +19,6 @@
     <img src="https://img.shields.io/badge/PulseMCP-Most%20Popular%20(Oct 2025)-0b7285?style=flat-square" alt="PulseMCP: Most Popular (this week)">
   </a>
   <a href="https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml"><img src="https://github.com/PV-Bhat/vibe-check-mcp-server/actions/workflows/ci.yml/badge.svg" alt="CI passing"></a>
-  <a href="https://smithery.ai/server/@PV-Bhat/vibe-check-mcp-server"><img src="https://smithery.ai/badge/@PV-Bhat/vibe-check-mcp-server" alt="Smithery Badge"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0b7285?style=flat-square" alt="MIT License"></a>
 </p>
 
