@@ -1,6 +1,6 @@
 # Vibe Check MCP
 
-> **This project is no longer actively maintained.** v2.8.0 is the final release, which includes security patches and bug fixes. The server remains fully functional. Community forks and contributions are welcome under the MIT license.
+> **This project is in maintenance mode.** Active feature development has ended; only maintenance patches (security and bug fixes) are published. v2.8.1 is the latest maintenance release. The server remains fully functional. Community forks and contributions are welcome under the MIT license.
 
 <p align="center"><b>KISS overzealous agents goodbye. Plug & play agent oversight tool.</b></p>
 
@@ -28,7 +28,7 @@
 
 <img width="500" height="300" alt="Gemini_Generated_Image_kvdvp4kvdvp4kvdv" src="https://github.com/user-attachments/assets/ff4d9efa-2142-436d-b1df-2a711a28c34e" />
 
-[![Version](https://img.shields.io/badge/version-2.8.0-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Version](https://img.shields.io/badge/version-2.8.1-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
 
@@ -106,7 +106,7 @@ npx downloads the package on demand for both options. For detailed client setup 
 - [Overview](#overview)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
-- [What's New](#whats-new-in-v280-final-maintenance-release)
+- [What's New](#whats-new-in-v281-maintenance-release)
 - [Development Setup](#development-setup)
 - [Release](#release)
 - [Usage Examples](#usage-examples)
@@ -145,13 +145,15 @@ Large language models can confidently follow flawed plans. Without an external n
 | **History Continuity** | Summarizes prior advice when `sessionId` is supplied | context retention |
 | **Optional vibe_learn** | Log mistakes and fixes for future reflection | self-improvement |
 
-## What's New in v2.8.0 (Final Maintenance Release)
+## What's New in v2.8.1 (Maintenance Release)
 
-> **Maintenance Notice:** This project is no longer actively maintained. It remains fully functional and available under the MIT license. Community forks are welcome. For details, see the [Changelog](./docs/changelog.md).
+> **Maintenance Notice:** This project is in maintenance mode and is no longer under active feature development. It remains fully functional and available under the MIT license. Community forks are welcome. For details, see the [Changelog](./docs/changelog.md).
 
-- **Bug fix:** `check_constitution` now returns valid MCP content types (fixes #84)
-- **Security:** All dependencies updated — resolves 14 npm audit vulnerabilities (axios, MCP SDK, diff, express, and transitive deps)
-- **MCP SDK 1.26:** Updated to latest SDK with critical cross-client data leakage fix; HTTP transport adapter updated for compatibility
+- **npm release:** v2.8.0 was never published to npm; v2.8.1 ships all of its fixes to the registry, including everything below
+- **Bug fix (v2.8.0):** `check_constitution` now returns valid MCP content types (fixes #84)
+- **Security (v2.8.0):** All dependencies updated — resolves 14 npm audit vulnerabilities (axios, MCP SDK, diff, express, and transitive deps)
+- **MCP SDK 1.26 (v2.8.0):** Updated to latest SDK with critical cross-client data leakage fix; HTTP transport adapter updated for compatibility
+- **Housekeeping:** registry metadata (`server.json`, `smithery.yaml`, `CITATION.cff`) re-synced to the release version, dev-only vitest advisory cleared, GitHub Releases automated on tag push
 
 ## Session Constitution (per-session rules)
 
@@ -295,7 +297,7 @@ This repository includes a CI-based security scan that runs on every pull reques
 
 ## Roadmap
 
-> **Note:** This project has reached its final maintenance release (v2.8.0). The roadmap below is preserved for community forks that may wish to continue development.
+> **Note:** This project is in maintenance mode (latest maintenance release: v2.8.1). The roadmap below is preserved for community forks that may wish to continue development.
 
 - **Structured output for `vibe_check`:** Return a JSON envelope such as `{ advice, riskScore, traits }` so downstream agents can reason deterministically.
 - **LLM resilience:** Wrap `generateResponse` with retries and exponential backoff.

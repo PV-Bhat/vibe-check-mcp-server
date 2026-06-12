@@ -7,24 +7,45 @@
     "url": "https://github.com/PV-Bhat/vibe-check-mcp-server",
     "source": "github"
   },
-  "version": "1.0.0",
+  "version": "2.8.1",
   "packages": [
-  {
-    "registry_type": "npm",
-    "identifier": "@pv-bhat/vibe-check-mcp",
-    "version": "2.5.1",
-    "transport": {
-      "type": "stdio"
-    },
-    "environment_variables": [
-      {
-        "description": "Your API key for the service",
-        "is_required": true,
-        "format": "string",
-        "is_secret": true,
-        "name": "YOUR_API_KEY"
-      }
-    ]
-  }
+    {
+      "registry_type": "npm",
+      "identifier": "@pv-bhat/vibe-check-mcp",
+      "version": "2.8.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environment_variables": [
+        {
+          "description": "Gemini API key (default provider; at least one provider key is required)",
+          "is_required": false,
+          "format": "string",
+          "is_secret": true,
+          "name": "GEMINI_API_KEY"
+        },
+        {
+          "description": "OpenAI API key (optional provider)",
+          "is_required": false,
+          "format": "string",
+          "is_secret": true,
+          "name": "OPENAI_API_KEY"
+        },
+        {
+          "description": "OpenRouter API key (optional provider)",
+          "is_required": false,
+          "format": "string",
+          "is_secret": true,
+          "name": "OPENROUTER_API_KEY"
+        },
+        {
+          "description": "Anthropic API key (optional provider)",
+          "is_required": false,
+          "format": "string",
+          "is_secret": true,
+          "name": "ANTHROPIC_API_KEY"
+        }
+      ]
+    }
   ]
 }

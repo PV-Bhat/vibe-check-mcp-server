@@ -2,7 +2,7 @@
 
 # Metadata for discoverability and registry listing
 name: vibe-check-mcp
-version: 2.5.0
+version: 2.8.1
 description: Metacognitive AI agent oversight tool implementing CPI-driven interrupts for alignment and safety.
 author: PV-Bhat
 repository: https://github.com/PV-Bhat/vibe-check-mcp-server
@@ -32,7 +32,7 @@ requirements:
 
 # Installation options
 installation:
-  npm: "@mseep/vibe-check-mcp"  # For manual npm install
+  npm: "@pv-bhat/vibe-check-mcp"  # For manual npm install
 
 startCommand:
   type: http

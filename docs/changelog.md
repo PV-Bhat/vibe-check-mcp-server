@@ -1,5 +1,21 @@
 # Changelog
 
+## v2.8.1 — 2026-06-12 (Maintenance Release)
+
+**Note:** The project remains in maintenance mode: no active feature development, but maintenance patches like this one are still published.
+
+### Release & Packaging
+- Publish the v2.8.0 fixes to npm: v2.8.0 was tagged in `package.json` only — no `v2.8.0` git tag was pushed, so the npm publish workflow never ran and the registry stayed at 2.7.6. v2.8.1 ships everything from v2.8.0 plus the items below.
+- Add `.github/workflows/create-release.yml` — GitHub Releases are now created automatically (with auto-generated notes) when a `v*` tag is pushed.
+
+### Bug Fixes
+- `smithery.yaml` pointed npm installs at the wrong package scope (`@mseep/vibe-check-mcp`); corrected to `@pv-bhat/vibe-check-mcp`.
+- `server.json` now declares the real provider environment variables (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `ANTHROPIC_API_KEY`, all optional/secret) instead of a `YOUR_API_KEY` placeholder.
+- `scripts/sync-version.mjs` now also syncs `server.json`, `CITATION.cff`, and `smithery.yaml` (previously stranded at 2.5.1, 2.7.3, and 2.5.0 respectively), and no longer rewrites the most recent `CHANGELOG.md` release heading (which could mislabel an older release) — it warns when the new version's entry is missing instead.
+
+### Security
+- **vitest / @vitest/coverage-v8** 3.2.4 → 3.2.6 (devDependencies) — clears GHSA-5xrq-8626-4rwp (arbitrary file read/execute via the Vitest UI server). Production dependency tree was already clean; `npm audit` is now fully clean again.
+
 ## v2.8.0 — 2026-03-30 (Final Maintenance Release)
 
 **Note:** This is the final maintenance release. The project is no longer actively maintained but remains available for use under the MIT license. Community forks and contributions are welcome.

@@ -62,15 +62,51 @@ const main = async () => {
     }
   }
 
+  try {
+    const { filePath: serverJsonPath, data: serverJson } = await loadJson('server.json');
+    let updatedServerJson = false;
+    if (serverJson.version !== newVersion) {
+      serverJson.version = newVersion;
+      updatedServerJson = true;
+    }
+    for (const pkg of serverJson.packages ?? []) {
+      if (pkg.version !== newVersion) {
+        pkg.version = newVersion;
+        updatedServerJson = true;
+      }
+    }
+    if (updatedServerJson) {
+      await writeJson(serverJsonPath, serverJson);
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+
+  await replaceInFile('CITATION.cff', [
+    { pattern: /^version: "\d+\.\d+\.\d+"$/m, value: `version: "${newVersion}"` }
+  ]);
+
+  await replaceInFile('smithery.yaml', [
+    { pattern: /^version: \d+\.\d+\.\d+$/m, value: `version: ${newVersion}` }
+  ]);
+
+  const anchorVersion = newVersion.replace(/\./g, '');
   await replaceInFile('README.md', [
     { pattern: /Vibe Check MCP v\d+\.\d+\.\d+/, value: `Vibe Check MCP v${newVersion}` },
     { pattern: /version-\d+\.\d+\.\d+-purple/, value: `version-${newVersion}-purple` },
-    { pattern: /## What's New in v\d+\.\d+\.\d+/, value: `## What's New in v${newVersion}` }
+    { pattern: /## What's New in v\d+\.\d+\.\d+/, value: `## What's New in v${newVersion}` },
+    { pattern: /#whats-new-in-v\d+/, value: `#whats-new-in-v${anchorVersion}` }
   ]);
 
-  await replaceInFile('CHANGELOG.md', [
-    { pattern: /## v\d+\.\d+\.\d+ -/, value: `## v${newVersion} -` }
-  ]);
+  const changelogContents = await readFile(resolvePath('CHANGELOG.md'), 'utf8');
+  if (!changelogContents.includes(`## v${newVersion} -`)) {
+    console.warn(
+      `Warning: CHANGELOG.md has no "## v${newVersion} -" entry. Add one manually; ` +
+        'sync-version no longer rewrites older release headings.'
+    );
+  }
 
   console.log(`Synchronized project files to version ${newVersion}`);
 };
