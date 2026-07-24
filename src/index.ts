@@ -321,7 +321,7 @@ export async function createMcpServer(): Promise<Server> {
 
 export async function startHttpServer(options: HttpServerOptions = {}): Promise<HttpServerInstance> {
   const logger = options.logger ?? console;
-  const allowedOrigin = options.corsOrigin ?? process.env.CORS_ORIGIN ?? '*';
+  const allowedOrigin = options.corsOrigin ?? process.env.CORS_ORIGIN ?? 'http://localhost:*';
   const PORT = options.port ?? Number(process.env.MCP_HTTP_PORT || process.env.PORT || 3000);
   const server = options.server ?? (await createMcpServer());
   const requestScope = new AsyncLocalStorage<RequestScopeStore>();
@@ -332,7 +332,7 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
 
   const app = express();
   app.use(cors({ origin: allowedOrigin }));
-  app.use(express.json());
+  app.use(express.json({ limit: '100kb' }));
 
   app.post('/mcp', async (req, res) => {
     const started = Date.now();
