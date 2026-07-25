@@ -22,6 +22,8 @@ import { loadHistory } from './utils/state.js';
 import { getPackageVersion } from './utils/version.js';
 import { applyJsonRpcCompatibility, wrapTransportForCompatibility } from './utils/jsonRpcCompat.js';
 import { createRequestScopedTransport, RequestScopeStore } from './utils/httpTransportWrapper.js';
+import { SUPPORTED_LLM_PROVIDERS, DEFAULT_MODELS, listModelIds } from './utils/models.js';
+import { resolveCorsOptions, resolveAllowedHosts, resolveBodyLimit, isHostAllowed } from './utils/httpSecurity.js';
 
 const IS_DISCOVERY = process.env.MCP_DISCOVERY_MODE === '1';
 const USE_STDIO = process.env.MCP_TRANSPORT === 'stdio';
@@ -32,7 +34,7 @@ if (USE_STDIO) {
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 
-export const SUPPORTED_LLM_PROVIDERS = ['gemini', 'openai', 'openrouter', 'anthropic'] as const;
+export { SUPPORTED_LLM_PROVIDERS };
 
 export interface LoggerLike {
   log: (...args: any[]) => void;
@@ -41,7 +43,12 @@ export interface LoggerLike {
 
 export interface HttpServerOptions {
   port?: number;
+  /** Comma-separated origin allowlist, or `*`. Defaults to `CORS_ORIGIN`, then loopback-only. */
   corsOrigin?: string;
+  /** Comma-separated `Host` allowlist, or `*` to disable DNS-rebinding checks. */
+  allowedHosts?: string;
+  /** JSON body size cap. Defaults to `MCP_MAX_BODY_SIZE`, then 100kb. */
+  maxBodySize?: string;
   transport?: StreamableHTTPServerTransport;
   server?: Server;
   attachSignalHandlers?: boolean;
@@ -89,12 +96,20 @@ export async function createMcpServer(): Promise<Server> {
             },
             modelOverride: {
               type: 'object',
+              description: `Override the configured provider/model. Defaults: ${Object.entries(DEFAULT_MODELS)
+                .map(([p, m]) => `${p}=${m}`)
+                .join(', ')}; openrouter requires an explicit model.`,
               properties: {
                 provider: { type: 'string', enum: [...SUPPORTED_LLM_PROVIDERS] },
-                model: { type: 'string' }
+                model: {
+                  type: 'string',
+                  description: `Any model ID the provider accepts. Suggested: ${listModelIds('gemini')
+                    .concat(listModelIds('anthropic'), listModelIds('openai'))
+                    .join(', ')}`
+                }
               },
               required: [],
-              examples: [{ provider: 'gemini', model: 'gemini-2.5-pro' }]
+              examples: [{ provider: 'gemini', model: DEFAULT_MODELS.gemini }]
             },
             userPrompt: {
               type: 'string',
@@ -321,7 +336,9 @@ export async function createMcpServer(): Promise<Server> {
 
 export async function startHttpServer(options: HttpServerOptions = {}): Promise<HttpServerInstance> {
   const logger = options.logger ?? console;
-  const allowedOrigin = options.corsOrigin ?? process.env.CORS_ORIGIN ?? '*';
+  const corsOptions = resolveCorsOptions(options.corsOrigin);
+  const allowedHosts = resolveAllowedHosts(options.allowedHosts);
+  const bodyLimit = resolveBodyLimit(options.maxBodySize);
   const PORT = options.port ?? Number(process.env.MCP_HTTP_PORT || process.env.PORT || 3000);
   const server = options.server ?? (await createMcpServer());
   const requestScope = new AsyncLocalStorage<RequestScopeStore>();
@@ -331,8 +348,22 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
   await server.connect(transport);
 
   const app = express();
-  app.use(cors({ origin: allowedOrigin }));
-  app.use(express.json());
+  app.disable('x-powered-by');
+  // DNS-rebinding protection: an attacker-controlled hostname that resolves to
+  // this server is same-origin, so CORS alone will not stop it. This runs ahead
+  // of cors() so a disallowed Host cannot even get a preflight answered — the
+  // cors middleware terminates allowed-origin preflights without calling next().
+  app.use((req, res, next) => {
+    if (isHostAllowed(req.headers.host, allowedHosts)) return next();
+    logger.error('[MCP] rejected request for disallowed Host', { host: req.headers.host });
+    res.status(403).json({
+      jsonrpc: '2.0',
+      id: null,
+      error: { code: -32000, message: 'Forbidden: Host header not allowed. Set MCP_ALLOWED_HOSTS to permit it.' },
+    });
+  });
+  app.use(cors(corsOptions));
+  app.use(express.json({ limit: bodyLimit }));
 
   app.post('/mcp', async (req, res) => {
     const started = Date.now();
@@ -415,6 +446,40 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
 
   app.get('/healthz', (_req, res) => {
     res.status(200).json({ status: 'ok' });
+  });
+
+  // Unknown routes: answer in JSON-RPC shape rather than Express's HTML 404,
+  // which MCP clients cannot parse.
+  app.use((_req, res) => {
+    res.status(404).json({ jsonrpc: '2.0', id: null, error: { code: -32601, message: 'Not found' } });
+  });
+
+  // Body-parser rejections (oversized or malformed JSON) would likewise render
+  // as HTML by default.
+  app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (res.headersSent) return next(err);
+    const status = typeof err?.status === 'number' ? err.status : 500;
+    let code = -32603; // Internal error
+    let message = 'Internal server error';
+    if (err?.type === 'entity.too.large') {
+      code = -32600; // Invalid Request
+      message = `Request body exceeds the ${bodyLimit} limit.`;
+    } else if (err?.type === 'entity.parse.failed') {
+      code = -32700; // Parse error
+      message = 'Malformed JSON request body.';
+    } else if (status >= 400 && status < 500) {
+      code = -32600;
+      message = typeof err?.message === 'string' && err.message ? err.message : 'Invalid request.';
+    }
+    // Keep the cause on the server side: the client only ever sees the
+    // sanitised message above, so this is the operator's sole diagnostic.
+    logger.error('[MCP] request rejected', {
+      status,
+      type: err?.type,
+      err: err?.message,
+      stack: err?.stack,
+    });
+    res.status(status).json({ jsonrpc: '2.0', id: null, error: { code, message } });
   });
 
   const listener = app.listen(PORT, () => {

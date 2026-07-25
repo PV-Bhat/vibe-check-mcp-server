@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import fs from 'fs';
+import http from 'node:http';
 import os from 'os';
 import path from 'path';
 
@@ -60,6 +61,71 @@ afterEach(async () => {
 function getPort(instance: HttpServerInstance): number {
   const address = instance.listener.address();
   return typeof address === 'object' && address ? address.port : 0;
+}
+
+/**
+ * POST to the server with an arbitrary Host header.
+ * `fetch` treats Host as a forbidden header and silently drops it, so the
+ * DNS-rebinding checks have to be exercised through the raw http client.
+ */
+function postWithHost(port: number, host: string, payload: unknown): Promise<{ status: number; body: string }> {
+  const body = JSON.stringify(payload);
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      {
+        host: '127.0.0.1',
+        port,
+        path: '/mcp',
+        method: 'POST',
+        headers: {
+          Host: host,
+          'Content-Type': 'application/json',
+          Accept: 'application/json, text/event-stream',
+          'Content-Length': Buffer.byteLength(body),
+        },
+      },
+      (res) => {
+        let data = '';
+        res.setEncoding('utf8');
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+        res.on('end', () => resolve({ status: res.statusCode ?? 0, body: data }));
+      }
+    );
+    req.on('error', reject);
+    req.end(body);
+  });
+}
+
+/** Preflight with an arbitrary Host header (see postWithHost for why raw http). */
+function optionsWithHost(
+  port: number,
+  host: string,
+  origin: string
+): Promise<{ status: number; headers: http.IncomingHttpHeaders }> {
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      {
+        host: '127.0.0.1',
+        port,
+        path: '/mcp',
+        method: 'OPTIONS',
+        headers: {
+          Host: host,
+          Origin: origin,
+          'Access-Control-Request-Method': 'POST',
+          'Access-Control-Request-Headers': 'content-type',
+        },
+      },
+      (res) => {
+        res.resume();
+        res.on('end', () => resolve({ status: res.statusCode ?? 0, headers: res.headers }));
+      }
+    );
+    req.on('error', reject);
+    req.end();
+  });
 }
 
 async function readSSEBody(res: Response) {
@@ -281,6 +347,197 @@ describe('HTTP server integration', () => {
     const events = await readSSEBody(res);
     const text = events.at(-1)?.result?.content?.[0]?.text ?? '';
     expect(text).toContain('Failed to log pattern');
+  });
+
+  it('rejects requests whose Host header is not allowlisted', async () => {
+    serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+    const port = getPort(serverInstance);
+
+    // Simulates DNS rebinding: the connection lands on loopback, but the browser
+    // believes it is talking to attacker.example and so applies no CORS policy.
+    const res = await postWithHost(port, 'attacker.example', { jsonrpc: '2.0', id: 7, method: 'tools/list', params: {} });
+
+    expect(res.status).toBe(403);
+    expect(JSON.parse(res.body)).toMatchObject({ error: { code: -32000 } });
+  });
+
+  it('accepts a non-loopback Host when explicitly allowlisted', async () => {
+    serverInstance = await startHttpServer({
+      port: 0,
+      attachSignalHandlers: false,
+      allowedHosts: 'mcp.internal',
+      logger: silentLogger,
+    });
+    const port = getPort(serverInstance);
+
+    const res = await postWithHost(port, 'mcp.internal', { jsonrpc: '2.0', id: 8, method: 'tools/list', params: {} });
+
+    expect(res.status).toBe(200);
+  });
+
+  it('rejects oversized request bodies with a JSON-RPC error', async () => {
+    serverInstance = await startHttpServer({
+      port: 0,
+      attachSignalHandlers: false,
+      maxBodySize: '1kb',
+      logger: silentLogger,
+    });
+    const port = getPort(serverInstance);
+
+    const res = await fetch(`http://127.0.0.1:${port}/mcp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json, text/event-stream',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 9,
+        method: 'tools/call',
+        params: { name: 'vibe_check', arguments: { goal: 'x'.repeat(4096), plan: 'p' } },
+      }),
+    });
+
+    expect(res.status).toBe(413);
+    expect(res.headers.get('content-type')).toContain('application/json');
+    expect(await res.json()).toMatchObject({ jsonrpc: '2.0', error: { code: -32600 } });
+  });
+
+  it('does not grant CORS to a non-loopback origin by default', async () => {
+    serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+    const port = getPort(serverInstance);
+
+    const res = await fetch(`http://127.0.0.1:${port}/mcp`, {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'https://evil.example',
+        'Access-Control-Request-Method': 'POST',
+        'Access-Control-Request-Headers': 'content-type',
+      },
+    });
+
+    expect(res.headers.get('access-control-allow-origin')).toBeNull();
+  });
+
+  it('grants CORS to a loopback origin by default', async () => {
+    serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+    const port = getPort(serverInstance);
+
+    const res = await fetch(`http://127.0.0.1:${port}/mcp`, {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'http://localhost:5173',
+        'Access-Control-Request-Method': 'POST',
+        'Access-Control-Request-Headers': 'content-type',
+      },
+    });
+
+    expect(res.headers.get('access-control-allow-origin')).toBe('http://localhost:5173');
+    expect(res.headers.get('access-control-allow-credentials')).toBeNull();
+  });
+
+  it('honours CORS_ORIGIN from the environment', async () => {
+    process.env.CORS_ORIGIN = 'https://trusted.example';
+    try {
+      serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+      const port = getPort(serverInstance);
+
+      const allowed = await fetch(`http://127.0.0.1:${port}/mcp`, {
+        method: 'OPTIONS',
+        headers: { Origin: 'https://trusted.example', 'Access-Control-Request-Method': 'POST' },
+      });
+      expect(allowed.headers.get('access-control-allow-origin')).toBe('https://trusted.example');
+
+      // An explicit allowlist replaces the loopback default rather than extending it.
+      const rejected = await fetch(`http://127.0.0.1:${port}/mcp`, {
+        method: 'OPTIONS',
+        headers: { Origin: 'http://localhost:5173', 'Access-Control-Request-Method': 'POST' },
+      });
+      expect(rejected.headers.get('access-control-allow-origin')).toBeNull();
+    } finally {
+      delete process.env.CORS_ORIGIN;
+    }
+  });
+
+  it('does not answer a CORS preflight for a disallowed Host', async () => {
+    serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+    const port = getPort(serverInstance);
+
+    // The Host check must run before cors(), which otherwise terminates an
+    // allowed-origin preflight itself and never reaches the Host middleware.
+    const res = await optionsWithHost(port, 'attacker.example', 'http://localhost:5173');
+
+    expect(res.status).toBe(403);
+    expect(res.headers['access-control-allow-origin']).toBeUndefined();
+  });
+
+  it('honours MCP_ALLOWED_HOSTS from the environment, including a port', async () => {
+    process.env.MCP_ALLOWED_HOSTS = 'mcp.internal:8080';
+    try {
+      serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+      const port = getPort(serverInstance);
+
+      const res = await postWithHost(port, 'mcp.internal:8080', {
+        jsonrpc: '2.0',
+        id: 10,
+        method: 'tools/list',
+        params: {},
+      });
+      expect(res.status).toBe(200);
+    } finally {
+      delete process.env.MCP_ALLOWED_HOSTS;
+    }
+  });
+
+  it('honours MCP_MAX_BODY_SIZE from the environment', async () => {
+    process.env.MCP_MAX_BODY_SIZE = '1kb';
+    try {
+      serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+      const port = getPort(serverInstance);
+
+      const res = await fetch(`http://127.0.0.1:${port}/mcp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 11, method: 'tools/list', params: { pad: 'x'.repeat(4096) } }),
+      });
+
+      expect(res.status).toBe(413);
+    } finally {
+      delete process.env.MCP_MAX_BODY_SIZE;
+    }
+  });
+
+  it('returns a JSON-RPC parse error for malformed JSON', async () => {
+    serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+    const port = getPort(serverInstance);
+
+    const res = await fetch(`http://127.0.0.1:${port}/mcp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: '{"jsonrpc": "2.0", ',
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.headers.get('content-type')).toContain('application/json');
+    expect(await res.json()).toMatchObject({ error: { code: -32700 } });
+  });
+
+  it('returns JSON rather than HTML for unknown routes', async () => {
+    serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+    const port = getPort(serverInstance);
+
+    const res = await fetch(`http://127.0.0.1:${port}/nope`);
+    expect(res.status).toBe(404);
+    expect(res.headers.get('content-type')).toContain('application/json');
+    expect(await res.json()).toMatchObject({ jsonrpc: '2.0', error: { code: -32601 } });
+  });
+
+  it('does not advertise the Express runtime', async () => {
+    serverInstance = await startHttpServer({ port: 0, attachSignalHandlers: false, logger: silentLogger });
+    const port = getPort(serverInstance);
+
+    const res = await fetch(`http://127.0.0.1:${port}/healthz`);
+    expect(res.headers.get('x-powered-by')).toBeNull();
   });
 
   it('attaches and removes signal handlers when enabled', async () => {

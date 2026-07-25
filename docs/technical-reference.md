@@ -85,7 +85,7 @@ Solution: "Refocused on core functionality requested by user"
 
 ### Gemini API Integration
 
-Vibe Check uses the Gemini API for enhanced metacognitive questioning. The system attempts to use the `learnlm-2.0-flash-experimental` model and will fall back to `gemini-2.5-flash` or `gemini-2.0-flash` if needed. These models provide a 1M token context window, allowing vibe_check to incorporate a rich history of learning context. The system sends a structured prompt that includes the agent's plan, user request, and other context information to generate insightful questions and observations.
+Vibe Check talks to Gemini natively through Google AI Studio (the Gemini Developer API) via the unified `@google/genai` SDK. The default model is `gemini-3.6-flash`, with a single retry against `gemini-3.5-flash-lite` if the primary model errors. Their 1M token context window lets vibe_check carry a rich history of learning context. The system sends a structured prompt that includes the agent's plan, user request, and other context information to generate insightful questions and observations.
 
 Example Gemini prompt structure:
 
@@ -99,10 +99,14 @@ CONTEXT:
 [Current Plan/Thinking]: I'll create a complex object-oriented architecture with...
 ```
 
-Other providers such as OpenAI and OpenRouter can be selected by passing
-`modelOverride: { provider: 'openai', model: 'gpt-4o' }` or the appropriate
-OpenRouter model. LLM clients are lazily initialized the first time they are
-used so that listing tools does not require API keys.
+Other providers are selected by passing `modelOverride`, e.g.
+`{ provider: 'openai', model: 'gpt-5.6-terra' }`,
+`{ provider: 'anthropic', model: 'claude-opus-5' }`, or an OpenRouter slug such
+as `{ provider: 'openrouter', model: 'google/gemini-3.6-flash' }`. The supported
+providers, their defaults and the suggested model IDs live in a single registry
+(`src/utils/models.ts`); any model ID the upstream provider accepts still works.
+LLM clients are lazily initialized the first time they are used so that listing
+tools does not require API keys.
 
 ### Storage System
 

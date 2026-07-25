@@ -1,6 +1,6 @@
 # Vibe Check MCP
 
-> **This project is in maintenance mode.** Active feature development has ended; only maintenance patches (security and bug fixes) are published. v2.8.1 is the latest maintenance release. The server remains fully functional. Community forks and contributions are welcome under the MIT license.
+> **This project is in maintenance mode.** Active feature development has ended; only maintenance patches (security and bug fixes) are published. v2.9.0 is the latest maintenance release. The server remains fully functional. Community forks and contributions are welcome under the MIT license.
 
 <p align="center"><b>KISS overzealous agents goodbye. Plug & play agent oversight tool.</b></p>
 
@@ -28,7 +28,7 @@
 
 <img width="500" height="300" alt="Gemini_Generated_Image_kvdvp4kvdvp4kvdv" src="https://github.com/user-attachments/assets/ff4d9efa-2142-436d-b1df-2a711a28c34e" />
 
-[![Version](https://img.shields.io/badge/version-2.8.1-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
+[![Version](https://img.shields.io/badge/version-2.9.0-purple)](https://github.com/PV-Bhat/vibe-check-mcp-server)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/PV-Bhat/vibe-check-mcp-server)](https://archestra.ai/mcp-catalog/pv-bhat__vibe-check-mcp-server)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet)](CONTRIBUTING.md)
 
@@ -87,8 +87,8 @@ npx -y @pv-bhat/vibe-check-mcp start --stdio
 npx -y @pv-bhat/vibe-check-mcp start --http --port 2091
 ```
 
-- `curl http://127.0.0.1:2091/health` to confirm the service is live.
-- Send JSON-RPC requests to `http://127.0.0.1:2091/rpc`.
+- `curl http://127.0.0.1:2091/healthz` to confirm the service is live.
+- Send JSON-RPC requests to `http://127.0.0.1:2091/mcp`.
 
 npx downloads the package on demand for both options. For detailed client setup and other commands like `install` and `doctor`, see the documentation below.
 
@@ -106,7 +106,7 @@ npx downloads the package on demand for both options. For detailed client setup 
 - [Overview](#overview)
 - [The Problem: Pattern Inertia & Reasoning Lock-In](#the-problem-pattern-inertia--reasoning-lock-in)
 - [Key Features](#key-features)
-- [What's New](#whats-new-in-v281-maintenance-release)
+- [What's New](#whats-new-in-v290-security--model-refresh)
 - [Development Setup](#development-setup)
 - [Release](#release)
 - [Usage Examples](#usage-examples)
@@ -141,19 +141,19 @@ Large language models can confidently follow flawed plans. Without an external n
 | Feature | Description | Benefits |
 |---------|-------------|----------|
 | **CPI Adaptive Interrupts** | Phase-aware prompts that challenge assumptions | alignment, robustness |
-| **Multi-provider LLM** | Gemini, OpenAI, Anthropic, and OpenRouter support | flexibility |
+| **Multi-provider LLM** | Gemini 3.6, Claude 5, GPT-5.6, and OpenRouter support | flexibility |
 | **History Continuity** | Summarizes prior advice when `sessionId` is supplied | context retention |
 | **Optional vibe_learn** | Log mistakes and fixes for future reflection | self-improvement |
 
-## What's New in v2.8.1 (Maintenance Release)
+## What's New in v2.9.0 (Security & Model Refresh)
 
 > **Maintenance Notice:** This project is in maintenance mode and is no longer under active feature development. It remains fully functional and available under the MIT license. Community forks are welcome. For details, see the [Changelog](./docs/changelog.md).
 
-- **npm release:** v2.8.0 was never published to npm; v2.8.1 ships all of its fixes to the registry, including everything below
-- **Bug fix (v2.8.0):** `check_constitution` now returns valid MCP content types (fixes #84)
-- **Security (v2.8.0):** All dependencies updated — resolves 14 npm audit vulnerabilities (axios, MCP SDK, diff, express, and transitive deps)
-- **MCP SDK 1.26 (v2.8.0):** Updated to latest SDK with critical cross-client data leakage fix; HTTP transport adapter updated for compatibility
-- **Housekeeping:** registry metadata (`server.json`, `smithery.yaml`, `CITATION.cff`) re-synced to the release version, dev-only vitest advisory cleared, GitHub Releases automated on tag push
+- **Current models:** Gemini 3.6 Flash, Claude Sonnet 5 / Opus 5 / Fable 5, and GPT-5.6 Sol / Terra / Luna are now the supported defaults, defined in one registry (`src/utils/models.ts`)
+- **Native Google AI Studio:** migrated from the retired `@google/generative-ai` package to the unified `@google/genai` SDK
+- **HTTP hardening:** CORS now defaults to loopback origins instead of `*`, `Host` headers are validated to block DNS rebinding, and the JSON body cap is explicit and validated
+- **Security:** `npm audit` is clean — 10 advisories resolved across axios, the MCP SDK's Hono stack, form-data, fast-uri, postcss and the test toolchain
+- **Dependencies:** MCP SDK 1.29, axios 1.18, OpenAI SDK 6.x, vitest 4.x; the unused `body-parser` direct dependency was dropped
 
 ## Session Constitution (per-session rules)
 
@@ -189,8 +189,40 @@ ANTHROPIC_VERSION=2023-06-01
 # Optional overrides
 # DEFAULT_LLM_PROVIDER accepts gemini | openai | openrouter | anthropic
 DEFAULT_LLM_PROVIDER=gemini
-DEFAULT_MODEL=gemini-2.5-pro
+# Leave DEFAULT_MODEL unset to use each provider's default (see table below)
+# DEFAULT_MODEL=gemini-3.6-flash
 ```
+
+### Providers and models
+
+Gemini runs natively against **Google AI Studio** (the Gemini Developer API) through the unified `@google/genai` SDK. Any model ID the provider accepts will work — the table lists the defaults and the suggestions surfaced to agents in the `vibe_check` tool schema.
+
+| Provider | Default model | Also supported |
+|---|---|---|
+| `gemini` | `gemini-3.6-flash` | `gemini-3.5-flash`, `gemini-3.5-flash-lite`, `gemini-2.5-pro`, `gemini-2.5-flash` |
+| `anthropic` | `claude-sonnet-5` | `claude-opus-5`, `claude-fable-5`, `claude-haiku-4-5-20251001` |
+| `openai` | `gpt-5.6-terra` | `gpt-5.6-sol`, `gpt-5.6-luna` |
+| `openrouter` | *(none — required)* | any OpenRouter slug, e.g. `google/gemini-3.6-flash` |
+
+Set the default globally with `DEFAULT_LLM_PROVIDER` / `DEFAULT_MODEL`, or per call with `modelOverride`. `DEFAULT_MODEL` names a model of `DEFAULT_LLM_PROVIDER`; a call that overrides the provider without naming a model falls through to that provider's default rather than reusing it.
+
+```json
+{ "goal": "...", "plan": "...", "modelOverride": { "provider": "anthropic", "model": "claude-opus-5" } }
+```
+
+If a Gemini call fails, the server retries once against `gemini-3.5-flash-lite` before falling back to static questions.
+
+### HTTP transport hardening
+
+These apply only to `--http` mode; stdio is unaffected.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `CORS_ORIGIN` | loopback origins only | Comma-separated browser origin allowlist. `*` restores the pre-2.9 wildcard. |
+| `MCP_ALLOWED_HOSTS` | `localhost`, `127.0.0.1`, `::1` | `Host` header allowlist (DNS-rebinding protection). `*` disables the check. |
+| `MCP_MAX_BODY_SIZE` | `100kb` | JSON body cap. Unparseable values are ignored rather than silently disabling enforcement. |
+
+> **Upgrading to v2.9.0 over HTTP:** if you serve Vibe Check on a non-loopback hostname (Docker, a reverse proxy, a hosted deployment), set `MCP_ALLOWED_HOSTS` to that hostname — or `*` — or requests will be rejected with HTTP 403.
 
 #### Configuration 
 
@@ -297,7 +329,7 @@ This repository includes a CI-based security scan that runs on every pull reques
 
 ## Roadmap
 
-> **Note:** This project is in maintenance mode (latest maintenance release: v2.8.1). The roadmap below is preserved for community forks that may wish to continue development.
+> **Note:** This project is in maintenance mode (latest maintenance release: v2.9.0). The roadmap below is preserved for community forks that may wish to continue development.
 
 - **Structured output for `vibe_check`:** Return a JSON envelope such as `{ advice, riskScore, traits }` so downstream agents can reason deterministically.
 - **LLM resilience:** Wrap `generateResponse` with retries and exponential backoff.

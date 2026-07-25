@@ -33,3 +33,14 @@ After running the script, configure Cursor IDE:
 4. Save and refresh.
 
 Vibe Check MCP will now launch automatically whenever you log in and be available to Cursor without additional manual steps.
+
+## Host allowlisting (v2.9.0+)
+
+The HTTP transport validates the `Host` header to block DNS rebinding, and by default only accepts `localhost`, `127.0.0.1` and `::1`. The generated `docker-compose.yml` therefore also allows the compose service name:
+
+```yaml
+environment:
+  - MCP_ALLOWED_HOSTS=${MCP_ALLOWED_HOSTS:-vibe-check-mcp,localhost,127.0.0.1,::1}
+```
+
+If you rename the service, reach the container through a different hostname, or put a reverse proxy in front of it, add that hostname to `MCP_ALLOWED_HOSTS` (comma-separated) — or set it to `*` to disable the check. Requests with a hostname that is not allowed are rejected with HTTP 403. Browser clients on a non-loopback origin additionally need `CORS_ORIGIN` set; see [Security Policy](../SECURITY.md).

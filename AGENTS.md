@@ -23,7 +23,7 @@ The server supports Gemini, OpenAI, Anthropic, and OpenRouter LLMs. History is m
    - `ANTHROPIC_BASE_URL` *(optional; defaults to https://api.anthropic.com)*
    - `ANTHROPIC_VERSION` *(optional; defaults to 2023-06-01)*
    - `DEFAULT_LLM_PROVIDER` (gemini | openai | openrouter | anthropic)
-   - `DEFAULT_MODEL` (e.g., gemini-2.5-pro)
+   - `DEFAULT_MODEL` (e.g., gemini-3.6-flash; leave unset for the provider default)
 3. Start the server:
    ```bash
    npm start
