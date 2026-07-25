@@ -1,6 +1,7 @@
 import { getLearningContextText } from './storage.js';
 import { getConstitution } from '../tools/constitution.js';
 import { resolveAnthropicConfig, buildAnthropicHeaders } from './anthropic.js';
+import { DEFAULT_MODELS, GEMINI_FALLBACK_MODEL, DEFAULT_LLM_PROVIDER } from './models.js';
 
 // API Clients - Use 'any' to support dynamic import
 let genAI: any = null;
@@ -17,8 +18,9 @@ export async function initializeLLMs() {
 
 async function ensureGemini() {
   if (!genAI && process.env.GEMINI_API_KEY) {
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    // Unified Google Gen AI SDK, talking to Google AI Studio (Gemini Developer API).
+    const { GoogleGenAI } = await import('@google/genai');
+    genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     console.log('Gemini API client initialized dynamically');
   }
 }
@@ -53,8 +55,13 @@ interface QuestionOutput {
 
 // Main dispatcher function to generate responses from the selected LLM provider
 export async function generateResponse(input: QuestionInput): Promise<QuestionOutput> {
-  const provider = input.modelOverride?.provider || process.env.DEFAULT_LLM_PROVIDER || 'gemini';
-  const model = input.modelOverride?.model || process.env.DEFAULT_MODEL;
+  const configuredProvider = process.env.DEFAULT_LLM_PROVIDER || DEFAULT_LLM_PROVIDER;
+  const provider = input.modelOverride?.provider || configuredProvider;
+  // DEFAULT_MODEL names a model of the *configured* provider. When a caller
+  // switches provider without naming a model, fall through to that provider's
+  // registry default instead of sending e.g. a Gemini model ID to Anthropic.
+  const envModel = provider === configuredProvider ? process.env.DEFAULT_MODEL : undefined;
+  const model = input.modelOverride?.model || envModel;
 
   // The system prompt remains the same as it's core to the vibe-check philosophy
   const systemPrompt = `You are a meta-mentor. You're an experienced feedback provider that specializes in understanding intent, dysfunctional patterns in AI agents, and in responding in ways that further the goal. You need to carefully reason and process the information provided, to determine your output.\n\nYour tone needs to always be a mix of these traits based on the context of which pushes the message in the most appropriate affect: Gentle & Validating, Unafraid to push many questions but humble enough to step back, Sharp about problems and eager to help about problem-solving & giving tips and/or advice, stern and straightforward when spotting patterns & the agent being stuck in something that could derail things.\n\nHere's what you need to think about (Do not output the full thought process, only what is explicitly requested):\n1. What's going on here? What's the nature of the problem is the agent tackling? What's the approach, situation and goal? Is there any prior context that clarifies context further? \n2. What does the agent need to hear right now: Are there any clear patterns, loops, or unspoken assumptions being missed here? Or is the agent doing fine - in which case should I interrupt it or provide soft encouragement and a few questions? What is the best response I can give right now?\n3. In case the issue is technical - I need to provide guidance and help. In case I spot something that's clearly not accounted for/ assumed/ looping/ or otherwise could be out of alignment with the user or agent stated goals - I need to point out what I see gently and ask questions on if the agent agrees. If I don't see/ can't interpret an explicit issue - what intervention would provide valuable feedback here - questions, guidance, validation, or giving a soft go-ahead with reminders of best practices?\n4. In case the plan looks to be accurate - based on the context, can I remind the agent of how to continue, what not to forget, or should I soften and step back for the agent to continue its work? What's the most helpful thing I can do right now?`;
@@ -76,25 +83,20 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
   if (provider === 'gemini') {
     await ensureGemini();
     if (!genAI) throw new Error('Gemini API key missing.');
-    const geminiModel = model || 'gemini-2.5-pro';
-    const fallbackModel = 'gemini-2.5-flash';
+    const geminiModel = model || DEFAULT_MODELS.gemini!;
+    const fallbackModel = GEMINI_FALLBACK_MODEL;
     try {
       console.log(`Attempting to use Gemini model: ${geminiModel}`);
-      // console.error('Full Prompt:', fullPrompt); // Keep this commented out for now
-      const modelInstance = genAI.getGenerativeModel({ model: geminiModel });
-      const result = await modelInstance.generateContent(fullPrompt);
-      responseText = result.response.text();
+      responseText = await callGemini(geminiModel, fullPrompt);
     } catch (error) {
+      if (geminiModel === fallbackModel) throw error;
       console.error(`Gemini model ${geminiModel} failed. Trying fallback ${fallbackModel}.`, error);
-      // console.error('Full Prompt:', fullPrompt); // Keep this commented out for now
-      const fallbackModelInstance = genAI.getGenerativeModel({ model: fallbackModel });
-      const result = await fallbackModelInstance.generateContent(fullPrompt);
-      responseText = result.response.text();
+      responseText = await callGemini(fallbackModel, fullPrompt);
     }
   } else if (provider === 'openai') {
     await ensureOpenAI();
     if (!openaiClient) throw new Error('OpenAI API key missing.');
-    const openaiModel = model || 'o4-mini';
+    const openaiModel = model || DEFAULT_MODELS.openai!;
     console.log(`Using OpenAI model: ${openaiModel}`);
     const response = await openaiClient.chat.completions.create({
       model: openaiModel,
@@ -112,7 +114,7 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
     }, { headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, 'HTTP-Referer': 'http://localhost', 'X-Title': 'Vibe Check MCP Server' } });
     responseText = response.data.choices[0].message.content || '';
   } else if (provider === 'anthropic') {
-    const anthropicModel = model || 'claude-3-5-sonnet-20241022';
+    const anthropicModel = model || DEFAULT_MODELS.anthropic!;
     responseText = await callAnthropic({
       model: anthropicModel,
       compiledPrompt,
@@ -125,6 +127,29 @@ export async function generateResponse(input: QuestionInput): Promise<QuestionOu
   return {
     questions: responseText,
   };
+}
+
+/**
+ * Single Gemini generate call through the unified `@google/genai` client.
+ *
+ * `response.text` is a getter that returns `undefined` rather than throwing when
+ * the candidate was safety-blocked, carries no parts, or is thought-only. The
+ * retired `@google/generative-ai` package threw in those cases, and the retry +
+ * static-fallback chain above depends on an exception, so turn an empty result
+ * back into one instead of letting a blank vibe check reach the agent.
+ */
+async function callGemini(model: string, prompt: string): Promise<string> {
+  const response = await genAI.models.generateContent({ model, contents: prompt });
+  const text = response?.text;
+  if (typeof text === 'string' && text.trim().length > 0) {
+    return text;
+  }
+
+  const reason =
+    response?.promptFeedback?.blockReason ??
+    response?.candidates?.[0]?.finishReason ??
+    'no text content';
+  throw new Error(`Gemini model ${model} returned no usable text (${reason}).`);
 }
 
 // The exported function is now a wrapper around the dispatcher

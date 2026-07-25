@@ -1,5 +1,46 @@
 # Changelog
 
+## v2.9.0 — 2026-07-25 (Security & Model Refresh)
+
+**Note:** The project remains in maintenance mode: no active feature development, but maintenance patches like this one are still published.
+
+### Models & Providers
+- Added `src/utils/models.ts`, a single registry that defines the supported providers, their default model and the suggested model IDs. The LLM dispatcher and the `vibe_check` tool schema now read from it instead of repeating hard-coded strings, and the docs are written against it.
+- `DEFAULT_MODEL` is now scoped to `DEFAULT_LLM_PROVIDER`. Previously a call that overrode only the provider (`modelOverride: { provider: 'anthropic' }`) still sent the configured `DEFAULT_MODEL` — typically a Gemini model ID — to that provider and got a 404. It now falls through to the target provider's registry default.
+- **Gemini:** default is now `gemini-3.6-flash` (was `gemini-2.5-pro`), served natively from Google AI Studio. The retry model is `gemini-3.5-flash-lite` (was `gemini-2.5-flash`). `gemini-3.5-flash` and the 2.5 models remain selectable.
+- **Anthropic:** default is now `claude-sonnet-5` (was `claude-3-5-sonnet-20241022`). `claude-opus-5`, `claude-fable-5` and `claude-haiku-4-5-20251001` are listed as supported.
+- **OpenAI:** default is now `gpt-5.6-terra` (was `o4-mini`), with `gpt-5.6-sol` and `gpt-5.6-luna` listed as supported.
+- **OpenRouter** still requires an explicit fully-qualified slug; the registry carries examples only.
+- Migrated from the retired `@google/generative-ai` package (deprecated Nov 2025, unmaintained) to the unified `@google/genai` SDK. The dispatcher now calls `ai.models.generateContent({ model, contents })` and reads `response.text`.
+- The Gemini fallback no longer retries when the failing model *is* the fallback — that case previously issued a duplicate doomed request.
+- A blocked or empty Gemini response is now treated as a failure. `@google/genai` exposes `text` as a getter that returns `undefined` — rather than throwing, as the retired package did — when a candidate is safety-blocked, has no parts, or is thought-only. Left as-is that returned an empty string, so neither the model retry nor the static-question fallback fired and the agent received a blank vibe check.
+
+### Security
+- **CORS no longer defaults to `*`.** Unset `CORS_ORIGIN` now means "loopback origins only, any port", which is what local MCP clients use. A comma-separated allowlist or `*` restores broader access. Credentialed CORS is never enabled.
+- **DNS-rebinding protection.** The `Host` header is validated against `localhost` / `127.0.0.1` / `::1` by default; `MCP_ALLOWED_HOSTS` accepts a list or `*`. Rebinding makes an attacker's page same-origin, so CORS alone does not stop it.
+- **Explicit, validated body cap.** JSON bodies are limited to 100kb, configurable via `MCP_MAX_BODY_SIZE`. Unparseable values fall back to the default instead of being passed to body-parser, which silently disables enforcement for limits it cannot parse (GHSA on `body-parser`).
+- The `Host` check runs ahead of the CORS middleware, so a disallowed host cannot get a preflight answered — `cors` terminates allowed-origin preflights itself without calling the next handler.
+- `MCP_ALLOWED_HOSTS` entries are normalised the same way incoming `Host` headers are, so an entry written with a port (`mcp.internal:8080` — the literal value an operator reads off a request) matches instead of rejecting every request. `Host` values are also shape-checked, so `localhost:80@evil.example` no longer reduces to `localhost`.
+- Body-parser rejections and unknown routes now return JSON-RPC errors rather than Express's HTML pages, with the correct codes (`-32700` for malformed JSON, `-32600` for oversized bodies, `-32601` for unknown routes). The underlying error message and stack are logged server-side; the client only sees the sanitised message. `X-Powered-By` is disabled.
+- `MCP_MAX_BODY_SIZE` accepts the `tb`/`pb` units the `bytes` parser understands, and rejects `0`, which would have 413'd every request.
+- `scripts/security-check.cjs` no longer flags method calls such as `regex.exec(...)` as process execution; real `child_process` use is still caught (verified with a probe file).
+- Adopts the intent of community PR #99 with a working implementation: `cors({ origin: 'http://localhost:*' })` as proposed is not a pattern the `cors` package expands, so it would have matched only that literal string, and `express.json({ limit: '100kb' })` restates body-parser's existing default.
+- `npm audit` is clean (0 advisories, was 10 including 6 high): axios 1.13.5 → 1.18.1, MCP SDK 1.26 → 1.29 (pulls hono 4.12.32, form-data 4.0.6, fast-uri 3.1.4), vitest/coverage-v8 3.2.6 → 4.1.10 (clears the brace-expansion, minimatch, glob, test-exclude, postcss and esbuild advisories in the test toolchain).
+- Added an `overrides` entry pinning `@hono/node-server` to `^2.0.11`. The MCP SDK declares `^1.19.9`, a range that cannot reach the version fixing GHSA-frvp-7c67-39w9; the override is covered by the HTTP integration tests and should be removed once the SDK widens its range.
+- `SECURITY.md` refreshed: the tool inventory said "two safe tools" when there are five, and the new HTTP controls are documented.
+
+### Maintenance
+- Dropped the unused `body-parser` direct dependency (Express 5 bundles its own), bumped the OpenAI SDK to 6.x, and corrected `@types/express` to v5 to match the installed Express.
+- `smithery.yaml`: declared Node `>=20` to match `package.json` (was `>=18`), passed `MCP_ALLOWED_HOSTS` so hosted deployments keep working under the new default, and added the missing `anthropic` tag.
+- `scripts/docker-setup.sh` now emits `MCP_ALLOWED_HOSTS` in the generated `docker-compose.yml`. The compose service publishes no ports, so it is reached by service name — which the new loopback-only default would otherwise reject. Documented in [docker-automation.md](./docker-automation.md).
+- README: fixed the quickstart's HTTP endpoints, which pointed at `/health` and `/rpc` instead of the real `/healthz` and `/mcp`.
+- New tests: `tests/http-security.test.ts` plus HTTP integration coverage for host rejection, allowlisted hosts, oversized bodies and header hygiene.
+
+### Upgrade notes
+- If you run the HTTP transport on a non-loopback hostname (Docker, reverse proxy, hosted), set `MCP_ALLOWED_HOSTS` to that hostname or `*`, otherwise requests are rejected with HTTP 403.
+- If a browser client on a non-loopback origin calls the server, set `CORS_ORIGIN` to that origin.
+- No changes to the stdio transport, the tool contracts, or the response formats.
+
 ## v2.8.1 — 2026-06-12 (Maintenance Release)
 
 **Note:** The project remains in maintenance mode: no active feature development, but maintenance patches like this one are still published.

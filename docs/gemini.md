@@ -19,7 +19,7 @@ The server supports Gemini, OpenAI and OpenRouter LLMs. History is maintained ac
    - `OPENAI_API_KEY`
    - `OPENROUTER_API_KEY`
    - `DEFAULT_LLM_PROVIDER` (gemini | openai | openrouter)
-   - `DEFAULT_MODEL` (e.g., gemini-2.5-pro)
+   - `DEFAULT_MODEL` (e.g., gemini-3.6-flash; leave unset for the provider default)
 3. Start the server:
    ```bash
    npm start

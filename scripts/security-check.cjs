@@ -55,7 +55,15 @@ function runAudit() {
 }
 
 function scanSource() {
-  const suspiciousPatterns = [/eval\s*\(/, /child_process/, /exec\s*\(/, /spawn\s*\(/];
+  // The `(?<![.\w])` guards keep method calls such as `regex.exec(` and
+  // `promise.then(...).spawn(` from masquerading as process execution. Actual
+  // process spawning still trips the `child_process` pattern, which has no guard.
+  const suspiciousPatterns = [
+    /(?<![.\w])eval\s*\(/,
+    /child_process/,
+    /(?<![.\w])exec\s*\(/,
+    /(?<![.\w])spawn\s*\(/,
+  ];
   let flagged = false;
 
   function scanDir(dir) {

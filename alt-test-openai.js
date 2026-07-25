@@ -10,8 +10,8 @@ const request = JSON.stringify({
             goal: 'Test OpenAI provider',
             plan: '1. Make a call to vibe_check using the OpenAI provider.',
             modelOverride: { 
-              provider: 'openai', 
-              model: 'o4-mini' 
+              provider: 'openai',
+              model: 'gpt-5.6-terra'
             }
         }
     },

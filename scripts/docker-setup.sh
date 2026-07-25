@@ -40,6 +40,9 @@ services:
     restart: always
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      # Other containers reach this service by its compose name, so that
+      # hostname has to be allowed alongside the loopback defaults.
+      - MCP_ALLOWED_HOSTS=${MCP_ALLOWED_HOSTS:-vibe-check-mcp,localhost,127.0.0.1,::1}
     volumes:
       - vibe-check-data:/app/data
 

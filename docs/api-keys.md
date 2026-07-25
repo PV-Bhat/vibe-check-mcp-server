@@ -4,12 +4,14 @@ Vibe Check MCP works with multiple LLM providers. Use this guide to decide which
 
 ## Supported providers
 
-- **Anthropic** – `ANTHROPIC_API_KEY`
-- **Google Gemini** – `GEMINI_API_KEY`
-- **OpenAI** – `OPENAI_API_KEY`
-- **OpenRouter** – `OPENROUTER_API_KEY`
+| Provider | Key | Default model | Notes |
+|---|---|---|---|
+| Google Gemini | `GEMINI_API_KEY` | `gemini-3.6-flash` | Native Google AI Studio (Gemini Developer API). Keys start with `AI`. |
+| Anthropic | `ANTHROPIC_API_KEY` | `claude-sonnet-5` | Also `claude-opus-5`, `claude-fable-5`. Keys start with `sk-ant-`. |
+| OpenAI | `OPENAI_API_KEY` | `gpt-5.6-terra` | Also `gpt-5.6-sol`, `gpt-5.6-luna`. Keys start with `sk-`. |
+| OpenRouter | `OPENROUTER_API_KEY` | *(none — required)* | Pass a fully-qualified slug. Keys start with `sk-or-`. |
 
-Only one key is required to run the server, but you can set more than one to enable provider switching.
+Only one key is required to run the server, but you can set more than one to enable provider switching. Anthropic-compatible gateways are supported through `ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_BASE_URL` and `ANTHROPIC_VERSION`.
 
 ## Secret resolution order
 

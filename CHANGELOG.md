@@ -2,6 +2,16 @@
 
 See [docs/changelog.md](docs/changelog.md) for the full release history.
 
+## v2.9.0 - 2026-07-25
+
+- **Models:** current defaults are `gemini-3.6-flash`, `claude-sonnet-5` and `gpt-5.6-terra`, with Opus 5 / Fable 5 and GPT-5.6 Sol / Luna also supported. Providers and model IDs now live in one registry (`src/utils/models.ts`).
+- **Native Google AI Studio:** migrated from the retired `@google/generative-ai` package to the unified `@google/genai` SDK.
+- **HTTP hardening:** CORS defaults to loopback origins instead of `*`, `Host` headers are validated to block DNS rebinding (`MCP_ALLOWED_HOSTS`), and the JSON body cap is explicit and validated (`MCP_MAX_BODY_SIZE`). Adopts the intent of PR #99 with a working implementation.
+- **Security:** `npm audit` clean again — 10 advisories (6 high) resolved via axios 1.18.1, MCP SDK 1.29, vitest 4.x, and an `overrides` pin on `@hono/node-server` that the SDK's own range cannot reach.
+- **Bug fixes:** a blocked/empty Gemini response no longer returns a blank vibe check (it now falls through to the retry and static questions); `DEFAULT_MODEL` is scoped to `DEFAULT_LLM_PROVIDER` so overriding only the provider no longer sends the wrong provider's model ID.
+- **Maintenance:** dropped the unused `body-parser` dependency, OpenAI SDK 6.x, `@types/express` v5, `smithery.yaml` Node `>=20` + `MCP_ALLOWED_HOSTS`, README quickstart endpoints corrected, `SECURITY.md` refreshed.
+- **Upgrade note:** serving HTTP on a non-loopback hostname now requires `MCP_ALLOWED_HOSTS`.
+
 ## v2.8.1 - 2026-06-12
 
 - **Release pipeline:** v2.8.0 was never published to npm because no `v2.8.0` tag was pushed; v2.8.1 ships all v2.8.0 fixes to npm. GitHub Releases are now created automatically on tag push (`.github/workflows/create-release.yml`).
