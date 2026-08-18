@@ -92,7 +92,7 @@ npx -y @pv-bhat/vibe-check-mcp start --http --port 2091
 
 npx downloads the package on demand for both options. For detailed client setup and other commands like `install` and `doctor`, see the documentation below.
 
-[![Star History Chart](https://api.star-history.com/svg?repos=PV-Bhat/vibe-check-mcp-server&type=Date)](https://www.star-history.com/#PV-Bhat/vibe-check-mcp-server&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=PV-Bhat/vibe-check-mcp-server&type=Date)](https://star-history.dera.page/#PV-Bhat/vibe-check-mcp-server&Date)
 
 ### Recognition
 - Featured on PulseMCP “Most Popular (This Week)” front page (week of 13 Oct 2025) [🔗](https://www.pulsemcp.com/servers/pv-bhat-vibe-check)
