@@ -68,6 +68,50 @@ export interface MainOptions {
   startHttp?: (options: HttpServerOptions) => Promise<HttpServerInstance>;
 }
 
+// The largest number of elements any single tool-input array accepts. Declared
+// on `uncertainties` (vibe_check) and `rules` (reset_constitution) below.
+const MAX_TOOL_INPUT_ARRAY_ITEMS = 1000;
+
+// The element ceiling for one tools/call: the largest declared array (1,000)
+// plus every object key counted around it in its widest envelope (8 top-level
+// properties of vibe_check plus modelOverride's 2 nested keys) plus 1, so the
+// schema's own declared maximum (1,010 counted elements) is accepted.
+const MAX_TOOL_INPUT_ELEMENTS = 1011;
+
+// Copied verbatim from @modelcontextprotocol/sdk@1.32.2
+// dist/esm/server/mcp.js, where it is module-private and not exported; only
+// TypeScript type annotations were added. Counts array elements and object
+// members in `value`, stopping once the running total passes `max`.
+function toolInputElementCount(value: any, max: number): number {
+    let count = 0;
+    const stack: any[] = [value];
+    while (stack.length > 0) {
+        const node = stack.pop();
+        if (node === null || typeof node !== 'object')
+            continue;
+        if (Array.isArray(node)) {
+            for (const child of node) {
+                if (++count > max)
+                    return count;
+                if (child !== null && typeof child === 'object')
+                    stack.push(child);
+            }
+        }
+        else {
+            for (const key in node) {
+                if (!Object.prototype.hasOwnProperty.call(node, key))
+                    continue;
+                if (++count > max)
+                    return count;
+                const child = node[key];
+                if (child !== null && typeof child === 'object')
+                    stack.push(child);
+            }
+        }
+    }
+    return count;
+}
+
 export async function createMcpServer(): Promise<Server> {
   await loadHistory();
 
@@ -124,6 +168,7 @@ export async function createMcpServer(): Promise<Server> {
             uncertainties: {
               type: 'array',
               items: { type: 'string' },
+              maxItems: MAX_TOOL_INPUT_ARRAY_ITEMS,
               description: "The agent's uncertainties",
               examples: [['uncertain about deployment']]
             },
@@ -203,6 +248,7 @@ export async function createMcpServer(): Promise<Server> {
             rules: {
               type: 'array',
               items: { type: 'string' },
+              maxItems: MAX_TOOL_INPUT_ARRAY_ITEMS,
               examples: [['Be kind', 'Avoid loops']]
             }
           },
@@ -227,6 +273,12 @@ export async function createMcpServer(): Promise<Server> {
 
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
     const { name, arguments: raw } = req.params;
+    if (toolInputElementCount(raw, MAX_TOOL_INPUT_ELEMENTS) > MAX_TOOL_INPUT_ELEMENTS) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Invalid arguments for tool ${name}: arguments contain more than the maximum of ${MAX_TOOL_INPUT_ELEMENTS} elements`
+      );
+    }
     const args: any = raw;
 
     switch (name) {
